@@ -14,8 +14,10 @@ Kaggler's entry for the Kaggle **Kaggriculture** simulation competition
 | `scripts/replay_check.py` | Re-step an official Kaggle replay through the local engine and diff every step (engine-parity proof). |
 | `scripts/fetch_replays.py` | Download official replays / the episodes index with the Kaggle CLI. |
 | `scripts/make_submission.py` | Build `dist/main.py` (or `dist/submission.tar.gz`) and verify it plays standalone in a fresh venv. |
+| `scripts/engine_watch.py` | Exit 1 if PyPI has a newer `kaggle-environments` than our pin (daily cron / CI). |
+| `arena/` | **The internal arena** — registry, paired-seed scheduler, SQLite store, BT/Elo leaderboard, gates, remote runs. See "Arena" below. |
 | `docs/engine/` | Copies of the engine's `README.md` (rules), `AGENTS.md` (API), `kaggriculture.json` (config) and `VERSION.md` (pinned version + sha256 + parity evidence). |
-| `tests/` | `pytest` smoke tests (engine pin, determinism, replay checker, packaging). |
+| `tests/` | `pytest` smoke tests (engine pin, determinism, replay checker, packaging) + `test_arena.py`. |
 | `data/` | Git-ignored: replays (`data/replays/official`, `data/replays/local`), index, anything large. |
 
 ## Setup (Windows / Linux / WSL / remote node)
@@ -101,6 +103,95 @@ step-for-step identical to the one that produced the replay. Replays record the
 `kaggle-environments` version that produced them (`module_version`); replays from a
 different engine version generally do **not** reproduce (the economy changed in 1.32.7).
 See `docs/engine/VERSION.md` for the evidence and the upgrade procedure.
+
+## The Pit (internal arena)
+
+The Pit (`arena/`, run as `uv run python -m arena ...` **from the repo root**) is the org's single
+source of truth for which agent is better. Both teams evaluate through it; nothing else counts.
+Frozen generations live in `agents/<team>/` (see `agents/README.md`).
+All state is git-ignored under `data/arena/`: `registry.json` (agents + champions), `agents/`
+(immutable snapshots of every registered agent), `arena.sqlite` (every game), `replays/`
+(kept only for crashes/timeouts, or losses with `--keep-replays loss`), `leaderboard.md/json`,
+`runs/` (per-run deltas from remote nodes).
+
+```bash
+uv run python -m arena info                                   # paths, engine, default workers
+uv run python -m arena register agent/main.py --name v0 --team A --notes "exp-001 baseline"
+uv run python -m arena register-ghost 93459920 --seat 0       # replay-ghost from data/replays/official/
+uv run python -m arena list
+uv run python -m arena match v0 random starter --mode screen   # 64 eps per opponent, seeds 0..31 x both seats
+uv run python -m arena match v1 v0 --mode confirm              # 400 eps, held-out seeds 1000..1199
+uv run python -m arena match --mode round-robin --n 16         # every registered agent vs every other
+uv run python -m arena match --mode ladder --n 200             # continuous: least-played agent vs the field
+uv run python -m arena match v1 v0 --mode confirm --node barrelaged@barrelagedworkflows-1.tail547ecd.ts.net
+uv run python -m arena serve                                  # live dashboard + JSON API on http://127.0.0.1:8765
+uv run python -m arena leaderboard                            # markdown/json export -> data/arena/leaderboard.md (+ workshop/notes/leaderboard-internal.md)
+uv run python -m arena champion set v0 --team A               # teams: A | B | org
+uv run python -m arena gate v1 --team A                       # PASS/FAIL vs team A's champion on the confirm set
+uv run python -m arena retire v0                              # drop from the rating fit (rows kept); --undo
+uv run python -m arena export --out data/arena/games.csv
+```
+
+How a match works:
+- **Agents** are `name@sha` (git short sha of the file if committed & clean, else a content hash);
+  registering snapshots the bytes, so the arena always plays what was registered. Plain `name`
+  resolves to the most recently registered `name@...`. Built-ins `random`, `starter`, `pass` are
+  auto-registered residents.
+- **Paired seeds with side swap**: each seed is played twice (A as player 0, then as player 1).
+  `--n` is episodes per opponent pair (so `--n 64` = 32 seed pairs). Seed hygiene: `screen` uses
+  0..; `confirm` uses held-out 1000..; `--seeds 5-9` / `--seeds 1,4,9` for explicit sets.
+- **Parallel & isolated**: one worker process per game (`--workers`, default cpu_count-2); a worker
+  that dies hard is replaced and its game recorded as a harness crash; `--game-timeout` kills a hung
+  game. Each file agent is exec'd into its own namespace by the framework, exceptions become status
+  ERROR.
+- **Per game** the store keeps: seed, seats, final money both, result for p0 (1/0.5/0), per-agent
+  p50/p99/max turn time (the framework's timer), crash/timeout flags, engine version, arena git sha,
+  host, run id. A crash or a timeout is scored as a **loss** for that agent regardless of bank
+  (the strategy's rule: a crash is a certain loss; note the local engine itself lets a crashed agent
+  keep its bank and stop acting). "Timeout" = framework TIMEOUT status **or any turn over 1000 ms**
+  (locally the framework only times out after the 60 s overage bank is spent).
+- Re-running the same pairing on the same seeds **replaces** those rows (game id = p0|p1|seed|engine);
+  results from other machines merge by id (`arena import file.sqlite`).
+
+Dashboard (`arena serve`, stdlib `http.server`, no extra deps): leaderboard with BT + Elo, win%
+by opponent class (builtin / team A / team B / ghost), crash/timeout counts, p99/max, champions
+(★), head-to-head matrix with Wilson CIs, recent games (flagged in red), running matches with a
+progress bar (the scheduler publishes `data/arena/progress/<run>.json` as it goes) and recent
+runs, engine version. Auto-refreshes every 3 s; start it any time, it only reads `data/arena/`.
+JSON API for the teams and the Registrar: `/api/leaderboard`, `/api/games?limit=50&agent=<id>&flagged=1`,
+`/api/agents`, `/api/runs`, `/api/status`, `/api/leaderboard.md`. Defaults to 127.0.0.1:8765;
+`--host 0.0.0.0 --port N` to listen on all interfaces. To share it on the tailnet later:
+`tailscale serve --bg --https=8765 http://127.0.0.1:8765` on the host (or Guildhall's `/api/share`
+helper), no code change needed; the API is read-only so exposure is low-risk.
+
+Leaderboard export: **BT** (Bradley-Terry MM fit over all stored games — the final Kaggle tournament is BT;
+shown as 1000 + 400·log10(strength), 100 pts ≈ 64 % win odds), **Elo** (sequential, diagnostic),
+head-to-head win % with **Wilson 95 % CI**, crash/timeout counts, worst p99/max. Written to
+`data/arena/leaderboard.md` + `.json` and, when the workshop exists next to the clone, to
+`workshop/notes/leaderboard-internal.md` (`--publish PATH` to send it elsewhere).
+
+Gates (`arena gate <agent> --team T`): over games against the team's champion on the confirm seeds
+(1000-1199, ≥ 400 games by default): 0 crashes, 0 timeouts, p99 ≤ 150 ms, max ≤ 400 ms, and
+Wilson lower bound > 50 %. Exit 0 = PASS. The first champion of a team is set by decision.
+
+Replay ghosts (`register-ghost`): a resident that replays one seat's recorded actions from an
+official episode. **Only meaningful on its replay's seed and engine** — the scheduler forces the
+seed (so a match vs one ghost is 2 games) and refuses other engine versions; ghosts are open-loop
+(they do not react to you) and were validated against their recorded partner on their own seat
+(bank must reproduce within ±15 %; with the pinned engine it reproduces exactly). Seat swap is
+allowed but approximate. Ghosts are excluded from round-robin/ladder unless named.
+
+Remote (`--node host`): ships the working tree + registry + agent snapshots as a tar.gz over
+scp (the node has no access to the private repo), bootstraps `uv` + `uv sync --frozen` in
+`~/kaggri-arena/repo`, runs the same match with `--db data/arena/runs/<run>.sqlite`, copies that
+file back and imports it. Crash replays stay on the node. `--remote-workers` overrides the node's
+default (cpu_count-2; workflows-box has 16 vCPU).
+
+Engine watch: `uv run python scripts/engine_watch.py` exits 1 when PyPI has a newer
+`kaggle-environments`. Any bump voids tuning results: re-pin, re-run `replay_check.py`, re-run the
+round-robin, and filter the leaderboard with `--engine <version>`.
+
+Prior art: `docs/arena-prior-art.md`.
 
 ## Submission
 
