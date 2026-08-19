@@ -124,7 +124,9 @@ uv run python -m arena match v1 v0 --mode confirm              # 400 eps, held-o
 uv run python -m arena match --mode round-robin --n 16         # every registered agent vs every other
 uv run python -m arena match --mode ladder --n 200             # continuous: least-played agent vs the field
 uv run python -m arena match v1 v0 --mode confirm --node barrelaged@barrelagedworkflows-1.tail547ecd.ts.net
-uv run python -m arena serve                                  # live dashboard + JSON API on http://127.0.0.1:8765
+uv run python -m arena serve                                  # dashboard + JSON API on http://127.0.0.1:8765
+uv run python -m arena serve --hub --host 0.0.0.0             # + the continuous ladder (the hub service; see docs/pit.md)
+uv run python -m arena bench v0a                              # out of the ladder (still rated); --undo re-activates
 uv run python -m arena leaderboard                            # markdown/json export -> data/arena/leaderboard.md (+ workshop/notes/leaderboard-internal.md)
 uv run python -m arena champion set v0 --team A               # teams: A | B | org
 uv run python -m arena gate v1 --team A                       # PASS/FAIL vs team A's champion on the confirm set
@@ -153,16 +155,19 @@ How a match works:
 - Re-running the same pairing on the same seeds **replaces** those rows (game id = p0|p1|seed|engine);
   results from other machines merge by id (`arena import file.sqlite`).
 
-Dashboard (`arena serve`, stdlib `http.server`, no extra deps): leaderboard with BT + Elo, win%
-by opponent class (builtin / team A / team B / ghost), crash/timeout counts, p99/max, champions
-(★), head-to-head matrix with Wilson CIs, recent games (flagged in red), running matches with a
-progress bar (the scheduler publishes `data/arena/progress/<run>.json` as it goes) and recent
-runs, engine version. Auto-refreshes every 3 s; start it any time, it only reads `data/arena/`.
-JSON API for the teams and the Registrar: `/api/leaderboard`, `/api/games?limit=50&agent=<id>&flagged=1`,
-`/api/agents`, `/api/runs`, `/api/status`, `/api/leaderboard.md`. Defaults to 127.0.0.1:8765;
-`--host 0.0.0.0 --port N` to listen on all interfaces. To share it on the tailnet later:
-`tailscale serve --bg --https=8765 http://127.0.0.1:8765` on the host (or Guildhall's `/api/share`
-helper), no code change needed; the API is read-only so exposure is low-risk.
+Dashboard + hub (`arena serve [--hub]`, stdlib `http.server`, vanilla JS, no build step):
+leaderboard with BT + Elo, win% by opponent class (builtin / team A / team B / ghost),
+crash/timeout counts, p99/max, champions (★), head-to-head matrix with Wilson CIs, per-agent
+detail pages (click a name), recent games (flagged in red), the live ladder round and any running
+match with a progress bar, recent runs, engine version; header controls for pause/resume, worker
+count, bench/retire/re-activate/champion per agent, and a register form (git ref or path).
+Auto-refreshes every 3 s. With `--hub` the same process runs the **continuous ladder**: the
+least-played active agent anchors a star match vs its most rating-similar active opponents on
+fresh paired seeds, forever; without it the dashboard just watches CLI runs. JSON API for the
+teams/Registrar: `/api/leaderboard`, `/api/games?limit=50&agent=<id>&flagged=1`, `/api/agents`,
+`/api/runs`, `/api/status`, `/api/hub`, `/api/leaderboard.md`, and `POST /api/control/*`
+(pause/resume/config/bench/retire/champion/register — register takes `git_ref`+`path`, a local
+`path`, or `code_b64`). Service deployment on workflows-box + tailnet URL: **docs/pit.md**.
 
 Leaderboard export: **BT** (Bradley-Terry MM fit over all stored games — the final Kaggle tournament is BT;
 shown as 1000 + 400·log10(strength), 100 pts ≈ 64 % win odds), **Elo** (sequential, diagnostic),

@@ -16,7 +16,11 @@ def _p(*a, **k):
 
 
 def cmd_register(args) -> int:
-    if args.path in ("random", "starter", "pass"):
+    if args.git_ref:
+        if not args.name:
+            raise SystemExit("--name is required")
+        a = registry.register_git_ref(args.git_ref, args.path, args.name, args.team, args.notes)
+    elif args.path in ("random", "starter", "pass"):
         a = registry.register_builtin(args.path)
     else:
         if not args.name:
@@ -40,9 +44,10 @@ def cmd_register_ghost(args) -> int:
 
 def cmd_list(args) -> int:
     reg = registry.ensure_residents()
-    _p(f"{'id':<44} {'team':<9} {'kind':<8} {'engine':<8} {'registered':<20} source")
+    _p(f"{'id':<44} {'team':<9} {'kind':<8} {'state':<8} {'engine':<8} {'registered':<20} source")
     for a in registry.list_agents(reg):
-        _p(f"{a['id']:<44} {a['team']:<9} {a['kind']:<8} {a['engine']:<8} {a['registered_at']:<20} {a['source']}")
+        state = "retired" if a.get("retired") else ("active" if registry.is_active(a) else "benched")
+        _p(f"{a['id']:<44} {a['team']:<9} {a['kind']:<8} {state:<8} {a['engine']:<8} {a['registered_at']:<20} {a['source']}")
     if reg["champions"]:
         _p("champions: " + ", ".join(f"{t}={c}" for t, c in sorted(reg['champions'].items())))
     return 0
@@ -137,6 +142,12 @@ def cmd_champion(args) -> int:
     return 0
 
 
+def cmd_bench(args) -> int:
+    a = registry.set_flag(args.agent, "active", args.undo)
+    _p(f"{a['id']} active={a.get('active', True)}")
+    return 0
+
+
 def cmd_retire(args) -> int:
     a = registry.set_retired(args.agent, not args.undo)
     _p(f"{a['id']} retired={a.get('retired', False)}")
@@ -166,7 +177,7 @@ def cmd_export(args) -> int:
 
 def cmd_serve(args) -> int:
     from .serve import serve
-    return serve(args.host, args.port, args.verbose)
+    return serve(args.host, args.port, args.verbose, hub=args.hub)
 
 
 def cmd_info(args) -> int:
@@ -185,7 +196,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("register", help="register an agent file/dir (snapshot) or a built-in")
-    s.add_argument("path", help="path to agent .py (or dir with main.py), or random|starter|pass")
+    s.add_argument("path", help="path to agent .py (or dir with main.py), or random|starter|pass; with --git-ref: repo-relative path at that ref")
+    s.add_argument("--git-ref", help="register the file as it is at this branch/tag/sha (fetched from origin)")
     s.add_argument("--name", help="agent name (id becomes name@sha)")
     s.add_argument("--team", default="resident", choices=registry.TEAMS)
     s.add_argument("--notes", default="")
@@ -250,6 +262,11 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--team", default="org", choices=("A", "B", "org"))
     g.set_defaults(fn=cmd_champion)
 
+    s = sub.add_parser("bench", help="take an agent out of the hub ladder (still rated); --undo to re-activate")
+    s.add_argument("agent")
+    s.add_argument("--undo", action="store_true")
+    s.set_defaults(fn=cmd_bench)
+
     s = sub.add_parser("retire", help="exclude an agent from the leaderboard fit (rows are kept); --undo to restore")
     s.add_argument("agent")
     s.add_argument("--undo", action="store_true")
@@ -265,9 +282,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--db")
     s.set_defaults(fn=cmd_export)
 
-    s = sub.add_parser("serve", help="The Pit dashboard + JSON API on 127.0.0.1:8765 (stdlib http.server)")
-    s.add_argument("--host", default="127.0.0.1")
+    s = sub.add_parser("serve", help="The Pit dashboard + JSON API (+ --hub: the continuous ladder) on :8765")
+    s.add_argument("--host", default="127.0.0.1", help="0.0.0.0 to serve the tailnet")
     s.add_argument("--port", type=int, default=8765)
+    s.add_argument("--hub", action="store_true", help="also run the continuous ladder matchmaker")
     s.add_argument("--verbose", action="store_true", help="log every request")
     s.set_defaults(fn=cmd_serve)
 

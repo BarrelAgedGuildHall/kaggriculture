@@ -12,8 +12,10 @@ LIMITATIONS (read before trusting a ghost number):
   shop draw and weeds are seeded, and the recorded plan assumed that draw. The scheduler
   therefore forces the replay's seed for any match involving a ghost (so a "screen" vs one
   ghost is 2 games: one per seat). It refuses to run a ghost on another engine version.
-* Seat swap is allowed (the engine's only seat asymmetry is tie-break order on HIRE/BUY_LAND)
-  but the ghost was validated on its recorded seat only.
+* Seat swap is allowed but approximate: the engine's seat asymmetry is that `_end_of_day` draws
+  weed-spawn randomness sequentially per farm index from one shared RNG (Auditor finding,
+  2026-08-19), so swapping seats changes each farm's weed rolls. The ghost was validated on its
+  recorded seat only.
 * Validation at registration: the ghost is replayed on its seed against the ghost of its
   recorded partner; its final bank must be within +-15 % of the recorded bank (with the pinned
   engine it reproduces exactly, see scripts/replay_check.py). Ghosts that drift more are refused.
@@ -149,6 +151,6 @@ def register_ghost(replay_path: str | Path, seat: int, name: str | None = None, 
         "id": agent_id, "name": name, "sha": sha, "team": "resident", "kind": "ghost",
         "entry": entry_file.name, "source": str(p),
         "engine": eng.engine_version(), "engine_sha": eng.engine_sha(),
-        "registered_at": registry._now(), "notes": notes, "ghost": meta,
+        "registered_at": registry._now(), "notes": notes, "ghost": meta, "active": False,
     }
     return registry.register_entry(entry)

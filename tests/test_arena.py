@@ -207,3 +207,89 @@ def test_store_import_merges_by_game_id(tmp_path):
     assert len(games) == 2 and {g["game_id"] for g in games} == {"same", "other"}
     assert next(g for g in games if g["game_id"] == "same")["result0"] == 1.0, "imported row replaces by id"
     a.close()
+
+
+# ----------------------------------------------------------------------------- hub + serve
+def test_hub_plan_round_prefers_least_played_active():
+    from arena import hub
+    registry.ensure_residents()
+    a = registry.register_file(TRIVIAL, "hub-a", "A")
+    registry.register_file(REPO / "agents" / "team_a" / "v0a.py", "hub-b", "B")
+    # bench the built-ins so the plan is deterministic over our two agents
+    for b in ("random", "starter", "pass", "pass-file", "boom", "cand", "champ"):
+        try:
+            registry.set_flag(b, "active", False)
+        except KeyError:
+            pass
+    plan = hub.plan_round()
+    assert plan is not None
+    ids = {plan["anchor"]["id"]} | {o["id"] for o in plan["opponents"]}
+    assert a["id"] in ids and len(ids) >= 2
+    assert plan["next_seed"] >= hub.LADDER_SEED_BASE
+    # pausing is a durable flag file
+    assert hub.set_paused(True) is True
+    assert hub.is_paused()
+    assert hub.set_paused(False) is False
+    cfg = hub.set_config(workers=3, games_per_pairing=6)
+    assert cfg["workers"] == 3 and cfg["games_per_pairing"] == 6
+
+
+def test_registry_flags_bench_and_retire():
+    a = registry.register_file(TRIVIAL, "flaggy", "B")
+    assert registry.is_active(registry.resolve("flaggy"))
+    registry.set_flag("flaggy", "active", False)
+    assert not registry.is_active(registry.resolve("flaggy"))
+    registry.set_flag("flaggy", "active", True)
+    registry.set_retired("flaggy", True)
+    got = registry.resolve("flaggy")
+    assert got.get("retired") and not registry.is_active(got)
+    registry.set_retired("flaggy", False)
+    assert not registry.resolve("flaggy").get("retired")
+    assert a["id"] == registry.resolve("flaggy")["id"]
+
+
+def test_serve_api_endpoints_and_controls():
+    import json as _json
+    import threading
+    import urllib.request
+    from http.server import ThreadingHTTPServer
+
+    from arena import serve as srv
+    httpd = ThreadingHTTPServer(("127.0.0.1", 0), srv.Handler)
+    httpd.daemon_threads = True
+    port = httpd.server_address[1]
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    try:
+        def get(path):
+            with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=10) as r:
+                return _json.loads(r.read())
+
+        def post(path, body):
+            req = urllib.request.Request(f"http://127.0.0.1:{port}{path}", method="POST",
+                                         data=_json.dumps(body).encode(), headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                return _json.loads(r.read())
+
+        assert get("/health") == {"ok": True}
+        lb = get("/api/leaderboard")
+        assert "table" in lb and "h2h" in lb and "champions" in lb
+        ags = get("/api/agents")
+        assert any(x["name"] == "random" for x in ags["agents"])
+        st = get("/api/status")
+        assert st["engine"] and "hub" in st
+        assert isinstance(get("/api/games?limit=5"), list)
+        assert "live" in get("/api/runs")
+        r = post("/api/control/bench", {"agent": "flaggy"})
+        assert r["agent"]["active"] is False
+        r = post("/api/control/bench", {"agent": "flaggy", "undo": True})
+        assert r["agent"]["active"] is True
+        r = post("/api/control/pause", {})
+        assert r["paused"] is True
+        r = post("/api/control/resume", {})
+        assert r["paused"] is False
+        with pytest.raises(urllib.error.HTTPError):
+            post("/api/control/bench", {"agent": "no-such-agent"})
+    finally:
+        httpd.shutdown()
+        httpd.server_close()

@@ -56,7 +56,7 @@ def register_builtin(name: str, reg: dict | None = None) -> dict:
             "id": agent_id, "name": name, "sha": sha, "team": "resident", "kind": "builtin",
             "entry": name, "source": f"kaggle_environments.envs.kaggriculture:{name}_agent",
             "engine": eng.engine_version(), "engine_sha": eng.engine_sha(),
-            "registered_at": _now(), "notes": "engine built-in resident",
+            "registered_at": _now(), "notes": "engine built-in resident", "active": True,
         }
         save(reg)
     return reg["agents"][agent_id]
@@ -69,7 +69,8 @@ def ensure_residents(reg: dict | None = None) -> dict:
     return reg
 
 
-def register_file(path: str | Path, name: str, team: str, notes: str = "", sha: str | None = None) -> dict:
+def register_file(path: str | Path, name: str, team: str, notes: str = "", sha: str | None = None,
+                  git_ref: str | None = None) -> dict:
     """Snapshot a .py file (or a directory with main.py) into the agents store."""
     _validate_team(team)
     src = Path(path)
@@ -102,10 +103,74 @@ def register_file(path: str | Path, name: str, team: str, notes: str = "", sha: 
         "id": agent_id, "name": name, "sha": sha, "team": team, "kind": "file",
         "entry": entry, "source": source,
         "engine": eng.engine_version(), "engine_sha": eng.engine_sha(),
-        "registered_at": _now(), "notes": notes,
+        "registered_at": _now(), "notes": notes, "active": True, "git_ref": git_ref,
     }
     save(reg)
     return reg["agents"][agent_id]
+
+
+def register_git_ref(ref: str, path: str, name: str, team: str, notes: str = "", repo: Path | None = None) -> dict:
+    """Register `path` as it is at git `ref` (branch, tag or sha): fetches the ref from origin,
+    materialises the file(s) into a temp dir and registers them with sha = the commit's short sha.
+    Needs a clone with access to origin (the desktop has it; workflows-box needs a deploy key)."""
+    import subprocess
+    import tempfile
+    repo = repo or REPO_ROOT
+
+    def git(*a):
+        return subprocess.run(["git", *a], cwd=repo, text=True, capture_output=True, timeout=120)
+
+    fetched = git("fetch", "--quiet", "origin", ref)
+    if fetched.returncode != 0:
+        git("fetch", "--quiet", "origin")   # a bare sha cannot be fetched by name; refresh everything
+    # Prefer what origin just gave us (FETCH_HEAD / origin/<ref>) over a possibly stale local branch.
+    r = git("rev-parse", "--short", "FETCH_HEAD^{commit}") if fetched.returncode == 0 else \
+        git("rev-parse", "--short", "origin/" + ref + "^{commit}")
+    if r.returncode != 0:
+        r = git("rev-parse", "--short", "origin/" + ref + "^{commit}")
+    if r.returncode != 0:
+        r = git("rev-parse", "--short", ref + "^{commit}")
+    if r.returncode != 0:
+        raise ValueError(f"git ref {ref!r} not found in {repo} (fetch failed or no access): {r.stderr.strip()}")
+    sha = r.stdout.strip()
+    full = git("rev-parse", sha + "^{commit}").stdout.strip()
+    rel = path.replace("\\", "/").strip("/")
+    with tempfile.TemporaryDirectory() as td:
+        ls = git("ls-tree", "-r", "--name-only", full, "--", rel)
+        files = [ln for ln in ls.stdout.splitlines() if ln.strip()]
+        if not files:
+            raise FileNotFoundError(f"{rel} not found at {ref} ({sha})")
+        is_dir = not (len(files) == 1 and files[0] == rel)
+        for f in files:
+            blob = subprocess.run(["git", "show", f"{full}:{f}"], cwd=repo, capture_output=True, timeout=120)
+            if blob.returncode != 0:
+                raise FileNotFoundError(f"cannot read {f} at {sha}")
+            out = Path(td) / (f[len(rel):].lstrip("/") if is_dir else Path(rel).name)
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes(blob.stdout)
+        src = Path(td) if is_dir else Path(td) / Path(rel).name
+        entry = register_file(src, name, team, notes=notes or f"{rel}@{ref}", sha=sha, git_ref=f"{ref}:{rel}@{sha}")
+    reg = load()
+    reg["agents"][entry["id"]]["source"] = f"git {ref}:{rel} ({sha})"
+    save(reg)
+    return reg["agents"][entry["id"]]
+
+
+def set_flag(spec: str, flag: str, value: bool) -> dict:
+    """active: takes part in the hub ladder; retired: excluded from the rating fit (rows kept)."""
+    if flag not in ("active", "retired"):
+        raise ValueError("flag must be active or retired")
+    reg = load()
+    agent = resolve(spec, reg)
+    reg["agents"][agent["id"]][flag] = bool(value)
+    if flag == "retired" and value:
+        reg["agents"][agent["id"]]["active"] = False
+    save(reg)
+    return reg["agents"][agent["id"]]
+
+
+def is_active(agent: dict) -> bool:
+    return bool(agent.get("active", True)) and not agent.get("retired") and agent.get("kind") != "ghost"
 
 
 def register_entry(entry: dict) -> dict:
@@ -158,10 +223,6 @@ def get_champion(team: str, reg: dict | None = None) -> dict | None:
 
 
 def set_retired(spec: str, retired: bool = True) -> dict:
-    """Retired agents keep their rows but are excluded from the leaderboard fit by default
+    """Retired agents keep their rows but are excluded from the leaderboard fit and the ladder
     (the PTCG arena's 'benched' idea): old generations stop distorting the current field."""
-    reg = load()
-    agent = resolve(spec, reg)
-    reg["agents"][agent["id"]]["retired"] = bool(retired)
-    save(reg)
-    return reg["agents"][agent["id"]]
+    return set_flag(spec, "retired", retired)
