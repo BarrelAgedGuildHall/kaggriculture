@@ -66,6 +66,11 @@ MKT_IX = {t: i for i, t in enumerate(MKT_TYPES)}
 N_MKT = len(MKT_TYPES)                          # 7
 QTY_BUCKETS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20, 24, 32, 48, 64, 96, 128]
 N_QTY = len(QTY_BUCKETS)                        # 18
+# PICKUP carries a COUNT ("PICKUP WHEAT 3"); PLACE does not (arity 2 in every observed
+# teacher op). The count must be CLONED, not assumed: taking the whole shed stock -- the
+# obvious-looking default -- matches the teacher on only 4.2% of its PICKUP ops, and
+# emptying the shed with the first unit breaks every later unit's plan in the same turn.
+N_UQTY = len(QTY_BUCKETS)
 
 # --- concrete market orders, as a per-turn MULTI-LABEL problem ---------------
 # The autoregressive slot formulation (predict a type per slot, terminated by an END token)

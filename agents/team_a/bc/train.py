@@ -29,11 +29,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features as F  # noqa: E402
 from net import MLP, Adam, bce_grad, ce_grad, masked_softmax, sigmoid  # noqa: E402
 
-UNIT_HEADS = {"op": F.N_OPS, "crop": F.N_CROPS, "item": F.N_ITEMS}
+UNIT_HEADS = {"op": F.N_OPS, "crop": F.N_CROPS, "item": F.N_ITEMS, "qty": F.N_UQTY}
 MKT_HEADS = {"orders": F.N_ORDERS, "qty": F.N_ORDERS * F.N_QTY, "hire": F.MAX_HIRES}
 # crop/item are only supervised on the minority of rows that carry an argument, so they get
 # a smaller share of the gradient than the op head.
-UNIT_W = {"op": 1.0, "crop": 0.3, "item": 0.3}
+UNIT_W = {"op": 1.0, "crop": 0.3, "item": 0.3, "qty": 0.3}
 MKT_W = {"orders": 1.0, "qty": 0.5, "hire": 0.5}
 
 
@@ -211,10 +211,12 @@ def main(argv=None) -> int:
     ux, uxv = d["train_unit_x"], d["val_unit_x"]
     uy = {"op": d["train_unit_op"].astype(np.int32),
           "crop": d["train_unit_crop"].astype(np.int32),
-          "item": d["train_unit_item"].astype(np.int32)}
+          "item": d["train_unit_item"].astype(np.int32),
+          "qty": d["train_unit_qty"].astype(np.int32)}
     uyv = {"op": d["val_unit_op"].astype(np.int32),
            "crop": d["val_unit_crop"].astype(np.int32),
-           "item": d["val_unit_item"].astype(np.int32)}
+           "item": d["val_unit_item"].astype(np.int32),
+           "qty": d["val_unit_qty"].astype(np.int32)}
     um = {"op": d["train_unit_mask"].astype(np.float32)}
     umv = {"op": d["val_unit_mask"].astype(np.float32)}
 

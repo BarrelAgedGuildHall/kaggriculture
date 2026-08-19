@@ -26,7 +26,7 @@ except ImportError:  # imported as a package
     from . import features as F
     from .net import MLP, masked_softmax, sigmoid
 
-UNIT_HEADS = {"op": F.N_OPS, "crop": F.N_CROPS, "item": F.N_ITEMS}
+UNIT_HEADS = {"op": F.N_OPS, "crop": F.N_CROPS, "item": F.N_ITEMS, "qty": F.N_UQTY}
 MKT_HEADS = {"orders": F.N_ORDERS, "qty": F.N_ORDERS * F.N_QTY, "hire": F.MAX_HIRES}
 
 
@@ -46,7 +46,8 @@ class Member:
     def unit_probs(self, x, mask):
         out = self.unit.forward(((x - self.umu) / self.usd)[None, :])
         return (masked_softmax(out["op"], mask[None, :])[0],
-                masked_softmax(out["crop"])[0], masked_softmax(out["item"])[0])
+                masked_softmax(out["crop"])[0], masked_softmax(out["item"])[0],
+                masked_softmax(out["qty"])[0])
 
     def mkt_probs(self, x):
         out = self.mkt.forward(((x - self.mmu) / self.msd)[None, :])
@@ -66,12 +67,13 @@ class BCPolicy:
     def _unit_op(self, ctx, u, claimed):
         mask = ctx.unit_mask(u)
         x = ctx.unit_features(u, claimed)
-        pops = pcrop = pitem = None
+        pops = pcrop = pitem = pqty = None
         for m in self.members:
-            a, b, c = m.unit_probs(x, mask)
+            a, b, c, q = m.unit_probs(x, mask)
             pops = a if pops is None else pops + a
             pcrop = b if pcrop is None else pcrop + b
             pitem = c if pitem is None else pitem + c
+            pqty = q if pqty is None else pqty + q
         oi = int(np.argmax(pops))
         name = F.OPS[oi]
         if name == "PLANT":
@@ -80,7 +82,11 @@ class BCPolicy:
         if name == "PICKUP":
             im = ctx.item_mask_pickup()
             item = F.ITEMS[int(np.argmax(pitem * im))]
-            return ["PICKUP", item, int(min(20, ctx.shed.get(item, 0) or 1))], True
+            # The COUNT is cloned. Hardcoding "take the whole shed" (the first version of
+            # this line) matched the teacher on 4.2% of PICKUPs and let unit 0 empty the
+            # shed, which silently invalidated every later unit's plan in the same turn.
+            n = F.QTY_BUCKETS[int(np.argmax(pqty))]
+            return ["PICKUP", item, int(max(1, min(n, ctx.shed.get(item, 0))))], True
         if name == "PLACE":
             im = ctx.item_mask_place(u)
             return ["PLACE", F.ITEMS[int(np.argmax(pitem * im))]], True

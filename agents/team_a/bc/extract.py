@@ -39,14 +39,14 @@ def val_fold(episode_id: int, folds: int = 5) -> int:
 
 
 def _norm_op(op):
-    """Recorded op -> (op_index, crop_index or -1, item_index or -1). None if unmappable."""
+    """Recorded op -> (op_index, crop_index, item_index, qty_bucket); -1 where absent."""
     if not op:
         return None
     name = op[0]
     if name not in F.OP_IX:
         return None
     oi = F.OP_IX[name]
-    ci = ii = -1
+    ci = ii = qi = -1
     if name == "PLANT":
         ci = F.CROP_IX.get(op[1] if len(op) > 1 else None, -1)
         if ci < 0:
@@ -55,7 +55,9 @@ def _norm_op(op):
         ii = F.ITEM_IX.get(op[1] if len(op) > 1 else None, -1)
         if ii < 0:
             return None
-    return oi, ci, ii
+        if name == "PICKUP" and len(op) > 2:
+            qi = F.qty_bucket(int(op[2]))
+    return oi, ci, ii, qi
 
 
 def _norm_market(order):
@@ -81,7 +83,7 @@ def extract_episode(path: Path, seat: int, stats: collections.Counter):
     if replay.get("module_version") != ENGINE:
         stats["skipped_engine"] += 1
         return None
-    ux, uop, ucrop, uitem, umask = [], [], [], [], []
+    ux, uop, ucrop, uitem, uqty, umask = [], [], [], [], [], []
     mx, mtype, mitem, mqty, mmask = [], [], [], [], []
 
     steps = replay["steps"]
@@ -113,7 +115,7 @@ def extract_episode(path: Path, seat: int, stats: collections.Counter):
             if lab is None:
                 stats["unit_unmapped"] += 1
                 continue
-            oi, ci, ii = lab
+            oi, ci, ii, qi = lab
             mask = ctx.unit_mask(u)
             if mask[oi] == 0.0:
                 # The teacher emitted an op that is a silent no-op in this state -- e.g.
@@ -124,11 +126,12 @@ def extract_episode(path: Path, seat: int, stats: collections.Counter):
                 # *effective* action (identical state transition), which is PASS.
                 stats["noop_relabelled"] += 1
                 stats["noop_" + F.OPS[oi]] += 1
-                oi, ci, ii = F.OP_IX["PASS"], -1, -1
+                oi, ci, ii, qi = F.OP_IX["PASS"], -1, -1, -1
             ux.append(ctx.unit_features(u, claimed))
             uop.append(oi)
             ucrop.append(ci)
             uitem.append(ii)
+            uqty.append(qi)
             umask.append(mask)
             if F.OPS[oi] not in ("PASS", "NORTH", "SOUTH", "EAST", "WEST"):
                 claimed.add(tuple(ctx.unit_pos[u]))
@@ -178,6 +181,7 @@ def extract_episode(path: Path, seat: int, stats: collections.Counter):
         "unit_op": np.asarray(uop, dtype=np.int16),
         "unit_crop": np.asarray(ucrop, dtype=np.int16),
         "unit_item": np.asarray(uitem, dtype=np.int16),
+        "unit_qty": np.asarray(uqty, dtype=np.int16),
         "unit_mask": np.asarray(umask, dtype=np.uint8),
         "mkt_x": np.asarray(mx, dtype=np.float32),
         "mkt_multi": np.asarray(mtype, dtype=np.uint8),      # (n, N_ORDERS) 0/1
