@@ -15,12 +15,29 @@ Usage:
     uv run python scripts/make_submission.py --verify        # build + standalone episode in a fresh venv
     uv run python scripts/make_submission.py --verify --no-fresh-venv
 
-This script never submits. Submitting is a deliberate, separate command:
+By default this script never submits. `--submit` is a deliberate, separate path:
+
+    uv run python scripts/make_submission.py --submit --message "<message>" --team teamA
+
+Only the CEO submits to Kaggle -- that is an **org policy** (workshop/notes/team-charter.md),
+not something this script can technically enforce. `--submit` checks the environment variable
+`KAGGLER_SUBMITTER=ceo` as a belt-and-braces **policy guard** (catches accidents, e.g. running
+the wrong command from the wrong session) -- it is NOT real access control: any operative with
+shell access could export that variable themselves and bypass it. The actual enforcement is
+the org rule plus visibility: every `--submit` attempt -- refused, dry-run, failed, or a real
+submission -- is logged append-only to `data/submission-audit.log` (timestamp, the
+`$GUILDHALL_ARTISAN` identity if set, artefact sha256, dry-run/real, outcome) AND as a row in
+`workshop/notes/submissions.md` (the ledger), so a bypass is at least visible after the fact,
+not silently possible. `--submit` also always forces `--verify` first (a broken artefact is
+never worth burning one of the 5 daily submission slots on). Equivalent to running by hand:
     kaggle competitions submit kaggriculture -f dist/main.py -m "<message>"
 """
 from __future__ import annotations
 
 import argparse
+import csv
+import datetime as dt
+import hashlib
 import json
 import os
 import shutil
@@ -32,6 +49,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _engine import ENV_NAME, REPO_ROOT, engine_version  # noqa: E402
+
+COMPETITION = "kaggriculture"
+LEDGER_COLUMNS = [
+    "date (UTC)", "team", "agent@sha", "artefact sha256", "Pit gate", "Auditor",
+    "Kaggle sub id", "slot (active?)", "validation result",
+    "ladder record (W-L-T, rating) as of", "notes",
+]
 
 AGENT_DIR = REPO_ROOT / "agent"
 DIST_DIR = REPO_ROOT / "dist"
@@ -111,33 +135,19 @@ def fresh_venv_python(work: Path, version: str) -> str:
     return str(py)
 
 
-def main(argv=None) -> int:
-    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--verify", action="store_true", help="play one episode with the packaged artefact")
-    p.add_argument("--no-fresh-venv", action="store_true", help="verify with the current interpreter instead of a fresh uv venv")
-    p.add_argument("--seed", type=int, default=0)
-    p.add_argument("--steps", type=int, default=720)
-    args = p.parse_args(argv)
-
-    files = collect_files()
-    artefact = build(files)
-    print(f"artefact : {artefact}  ({artefact.stat().st_size} B, {len(files)} file(s): {[f.name for f in files]})")
-
-    if not args.verify:
-        return 0
-
+def run_verify(artefact: Path, seed: int, steps: int, no_fresh_venv: bool) -> tuple[bool, dict | None]:
     version = engine_version()
     work = Path(tempfile.mkdtemp(prefix="kaggriculture-verify-"))
     try:
         sub = work / "submission"
         sub.mkdir()
         unpack(artefact, sub)
-        py = sys.executable if args.no_fresh_venv else fresh_venv_python(work, version)
-        print(f"verify   : {'current interpreter' if args.no_fresh_venv else 'fresh venv'} -> {py}")
+        py = sys.executable if no_fresh_venv else fresh_venv_python(work, version)
+        print(f"verify   : {'current interpreter' if no_fresh_venv else 'fresh venv'} -> {py}")
         runner = work / "runner.py"
         runner.write_text(RUNNER, encoding="utf-8")
         res = subprocess.run(
-            [py, "-I", str(runner), str(sub), ENV_NAME, str(args.steps), str(args.seed)],
+            [py, "-I", str(runner), str(sub), ENV_NAME, str(steps), str(seed)],
             text=True, capture_output=True, cwd=str(work),
         )
         lines = [ln for ln in res.stdout.splitlines() if ln.startswith("VERIFY ")]
@@ -145,14 +155,225 @@ def main(argv=None) -> int:
             print(res.stdout[-3000:])
             print(res.stderr[-3000:], file=sys.stderr)
             print("VERIFY FAILED")
-            return 1
+            return False, None
         info = json.loads(lines[-1][len("VERIFY "):])
         print(f"result   : {info}")
-        ok = info["statuses"][0] == "DONE" and info["steps"] == args.steps
+        ok = info["statuses"][0] == "DONE" and info["steps"] == steps
         print("VERIFY " + ("OK" if ok else "FAILED"))
-        return 0 if ok else 1
+        return ok, info
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+def sha256_of(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def git_sha(short: bool = True) -> str:
+    try:
+        args = ["git", "rev-parse", "--short", "HEAD"] if short else ["git", "rev-parse", "HEAD"]
+        return subprocess.run(args, cwd=REPO_ROOT, text=True, capture_output=True, check=True).stdout.strip()
+    except Exception:
+        return "unknown"
+
+
+def find_ledger(explicit: str | None) -> Path:
+    """Locate workshop/notes/submissions.md. The competition repo is normally cloned inside
+    a Guildhall subsidiary tree (guilds/kaggler/artisans/<op>/bench/repo); walk up from the
+    repo root looking for a sibling workshop/ -- works regardless of which operative's bench
+    the repo is cloned into, or how deep."""
+    if explicit:
+        return Path(explicit)
+    env = os.environ.get("KAGGLER_LEDGER")
+    if env:
+        return Path(env)
+    here = REPO_ROOT
+    for _ in range(8):
+        candidate = here / "workshop" / "notes" / "submissions.md"
+        if candidate.exists():
+            return candidate
+        here = here.parent
+    raise SystemExit(
+        "Cannot locate workshop/notes/submissions.md by walking up from the repo. "
+        "Pass --ledger explicitly or set $KAGGLER_LEDGER."
+    )
+
+
+def latest_submission_id(env: dict) -> str:
+    """Best-effort: read back the most recent submission id via `kaggle competitions
+    submissions`. Returns "" if this fails for any reason -- never blocks the ledger row."""
+    try:
+        cmd = kaggle_cmd() + ["competitions", "submissions", COMPETITION, "-v"]
+        res = subprocess.run(cmd, env=env, text=True, capture_output=True, timeout=30)
+        if res.returncode != 0:
+            return ""
+        rows = list(csv.DictReader(res.stdout.splitlines()))
+        if not rows:
+            return ""
+        # Kaggle lists submissions newest-first; the id/ref column name has varied across
+        # kaggle CLI versions, so take whichever of the likely id columns is present.
+        row0 = rows[0]
+        for key in ("ref", "submissionId", "id"):
+            if key in row0 and row0[key]:
+                return row0[key]
+        return ""
+    except Exception:
+        return ""
+
+
+def append_ledger_row(ledger: Path, row: dict) -> None:
+    new_file = not ledger.exists()
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    line = "| " + " | ".join(row[c] for c in LEDGER_COLUMNS) + " |\n"
+    if new_file:
+        header = "# Submission ledger — Kaggriculture\n\n"
+        header += "| " + " | ".join(LEDGER_COLUMNS) + " |\n"
+        header += "|" + "|".join(["---"] * len(LEDGER_COLUMNS)) + "|\n"
+        ledger.write_text(header + line, encoding="utf-8")
+    else:
+        with open(ledger, "a", encoding="utf-8") as f:
+            f.write(line)
+
+
+def kaggle_cmd() -> list[str]:
+    exe = shutil.which("kaggle")
+    if exe:
+        return [exe]
+    return [sys.executable, "-m", "kaggle.cli"]
+
+
+def audit_log_path() -> Path:
+    return REPO_ROOT / "data" / "submission-audit.log"
+
+
+def append_audit_log(fields: dict) -> None:
+    p = audit_log_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with open(p, "a", encoding="utf-8") as f:
+        f.write(" | ".join(f"{k}={v}" for k, v in fields.items()) + "\n")
+
+
+def record_attempt(args, artefact: Path, mode: str, result: str, sub_id: str = "") -> None:
+    """Log every --submit attempt -- refused, dry-run, failed, or a real submission -- to
+    both data/submission-audit.log (append-only, one line) and the ledger (one row). This is
+    the actual enforcement/visibility net for the KAGGLER_SUBMITTER=ceo check: that env var is
+    a policy guard an operative could bypass by exporting it themselves, so every attempt
+    leaves a trail regardless of outcome, including who/what ran it
+    ($GUILDHALL_ARTISAN, if the session set it)."""
+    ts = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    agent_identity = os.environ.get("GUILDHALL_ARTISAN", "unset")
+    submitter_env = os.environ.get("KAGGLER_SUBMITTER", "unset")
+    sha = sha256_of(artefact) if artefact.exists() else "n/a"
+
+    append_audit_log({
+        "ts": ts,
+        "agent": agent_identity,
+        "submitter_env": submitter_env,
+        "artefact_sha256": sha,
+        "mode": mode,
+        "result": result,
+    })
+
+    submitted = result == "submitted"
+    ledger = find_ledger(args.ledger)
+    append_ledger_row(ledger, {
+        "date (UTC)": ts,
+        "team": args.team or "unspecified",
+        "agent@sha": f"agent/main.py@{git_sha()}",
+        "artefact sha256": sha,
+        "Pit gate": args.pit_gate or "n/a",
+        "Auditor": args.auditor or "n/a",
+        "Kaggle sub id": (sub_id or "unknown (check Kaggle UI)") if submitted else "n/a",
+        "slot (active?)": "?" if submitted else "n/a",
+        "validation result": "pending (Kaggle runs a self-play validation episode on upload)" if submitted else "n/a",
+        "ladder record (W-L-T, rating) as of": "n/a (Ops fills from ingestion)",
+        "notes": f"[{mode}] {result} -- {args.message or '(no message)'} "
+                 f"(submitter_env={submitter_env}, agent={agent_identity})",
+    })
+    print(f"audit    : {audit_log_path()}  |  ledger: {ledger}  ({mode}, {result})")
+
+
+def do_submit(artefact: Path, args) -> int:
+    """Submit path -- gated by policy (KAGGLER_SUBMITTER=ceo, see module docstring), not by
+    real access control. Every branch below logs via record_attempt() before returning or
+    raising, including refusals, so an attempted bypass is visible in the audit trail even
+    though it isn't technically prevented. Never called unless --submit was passed."""
+    mode = "dry-run" if args.dry_run else "real"
+
+    if os.environ.get("KAGGLER_SUBMITTER") != "ceo":
+        record_attempt(args, artefact, mode, "refused:submitter-env-not-ceo")
+        raise SystemExit(
+            "--submit refused: $KAGGLER_SUBMITTER is not 'ceo'. Only the CEO submits to "
+            "Kaggle (workshop/notes/team-charter.md) -- this is a policy guard, not real "
+            "enforcement (the audit log/ledger just recorded this attempt regardless)."
+        )
+    if not args.message:
+        record_attempt(args, artefact, mode, "refused:no-message")
+        raise SystemExit("--submit requires --message")
+    if not os.environ.get("KAGGLE_API_TOKEN"):
+        record_attempt(args, artefact, mode, "refused:no-kaggle-token")
+        raise SystemExit("KAGGLE_API_TOKEN is not set in the environment (export it in-shell; never write it to a file)")
+
+    ok, info = run_verify(artefact, args.seed, args.steps, args.no_fresh_venv)
+    if not ok:
+        record_attempt(args, artefact, mode, "refused:verify-failed")
+        raise SystemExit("--submit refused: --verify failed on the packaged artefact. Fix it before submitting.")
+
+    env = dict(os.environ)
+    if "KAGGLE_CONFIG_DIR" not in env:
+        tmp = tempfile.mkdtemp(prefix="nokaggle-")
+        env["KAGGLE_CONFIG_DIR"] = tmp
+
+    if args.dry_run:
+        print(f"[dry-run] would run: kaggle competitions submit {COMPETITION} -f {artefact} -m {args.message!r}")
+        record_attempt(args, artefact, mode, "dry-run-ok")
+        return 0
+
+    cmd = kaggle_cmd() + ["competitions", "submit", COMPETITION, "-f", str(artefact), "-m", args.message]
+    print("$ kaggle " + " ".join(cmd[1:]))
+    res = subprocess.run(cmd, env=env, text=True, capture_output=True)
+    print(res.stdout)
+    if res.returncode != 0:
+        print(res.stderr, file=sys.stderr)
+        record_attempt(args, artefact, mode, f"failed:kaggle-submit-rc{res.returncode}")
+        raise SystemExit(f"kaggle competitions submit failed ({res.returncode})")
+
+    sub_id = latest_submission_id(env)
+    record_attempt(args, artefact, mode, "submitted", sub_id=sub_id)
+    return 0
+
+
+def main(argv=None) -> int:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--verify", action="store_true", help="play one episode with the packaged artefact")
+    p.add_argument("--no-fresh-venv", action="store_true", help="verify with the current interpreter instead of a fresh uv venv")
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--steps", type=int, default=720)
+    p.add_argument("--submit", action="store_true", help="submit to Kaggle -- guarded, CEO only (see module docstring)")
+    p.add_argument("--message", help="submission message (required with --submit)")
+    p.add_argument("--team", help="team label for the ledger row (e.g. teamA/teamB)")
+    p.add_argument("--pit-gate", help="Pit gate summary for the ledger row (e.g. a run id or verdict)")
+    p.add_argument("--auditor", help="Auditor verdict reference for the ledger row")
+    p.add_argument("--ledger", help="override path to workshop/notes/submissions.md")
+    p.add_argument("--dry-run", action="store_true", help="with --submit: do everything except call `kaggle competitions submit` for real (verify still runs; the attempt is still logged to the audit log + ledger)")
+    args = p.parse_args(argv)
+
+    files = collect_files()
+    artefact = build(files)
+    print(f"artefact : {artefact}  ({artefact.stat().st_size} B, {len(files)} file(s): {[f.name for f in files]})")
+
+    if args.submit:
+        return do_submit(artefact, args)
+
+    if not args.verify:
+        return 0
+
+    ok, _info = run_verify(artefact, args.seed, args.steps, args.no_fresh_venv)
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
