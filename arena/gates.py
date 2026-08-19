@@ -31,14 +31,19 @@ def evaluate(name: str, team: str = "org", db_path: Path | None = None, opponent
         res["pass"] = False
         return res
     con = store.connect(db_path)
-    games = store.games_between(con, agent["id"], champ["id"], seed_lo, seed_hi)
+    games = store.games_between(con, agent["id"], champ["id"], seed_lo, seed_hi, modes=("confirm",))
+    # Defence in depth (Auditor 2026-08-19): only mode='confirm' rows are evidence. Report what
+    # else sits on those seeds so contamination fails loudly instead of silently counting.
+    other = store.games_between(con, agent["id"], champ["id"], seed_lo, seed_hi)
     con.close()
+    excluded = len(other) - len(games)
     n = len(games)
     st = ratings.per_agent_stats(games).get(agent["id"], {"crashes": 0, "timeouts": 0, "p99_ms": 0.0, "max_ms": 0.0})
     score = sum(float(g["result0"]) if g["p0"] == agent["id"] else 1.0 - float(g["result0"]) for g in games)
     lo, hi = ratings.wilson(score, n)
     checks = {
-        "enough_games": (n >= min_games, f"{n} games on confirm seeds {seed_lo}-{seed_hi} (need {min_games})"),
+        "enough_games": (n >= min_games, f"{n} mode=confirm games on seeds {seed_lo}-{seed_hi} (need {min_games}"
+                                          + (f"; {excluded} non-confirm games on these seeds excluded" if excluded else "") + ")"),
         "no_crashes": (st["crashes"] == 0, f"{st['crashes']} crashes"),
         "no_timeouts": (st["timeouts"] == 0, f"{st['timeouts']} timeouts"),
         "p99_under_limit": (st["p99_ms"] <= p99_limit, f"worst p99 {st['p99_ms']:.1f} ms (limit {p99_limit:.0f})"),
@@ -48,6 +53,7 @@ def evaluate(name: str, team: str = "org", db_path: Path | None = None, opponent
     }
     res["checks"] = {k: {"ok": ok, "detail": d} for k, (ok, d) in checks.items()}
     res["n"] = n
+    res["excluded_non_confirm"] = excluded
     res["win_rate"] = score / n if n else None
     res["ci95"] = [lo, hi]
     for k, (ok, d) in checks.items():

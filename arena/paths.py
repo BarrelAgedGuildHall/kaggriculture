@@ -28,6 +28,7 @@ SCREEN_SEED_BASE = 0
 CONFIRM_SEED_BASE = 1000
 SCREEN_N = 64
 CONFIRM_N = 400
+LADDER_SEED_BASE = 2000     # the hub's ladder band; strictly above screen (0..) and confirm (1000..)
 
 
 def ensure_dirs() -> None:

@@ -214,9 +214,9 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("list", help="list registered agents and champions")
     s.set_defaults(fn=cmd_list)
 
-    s = sub.add_parser("match", help="run games: screen|confirm A vs B [C...], round-robin, ladder")
-    s.add_argument("agents", nargs="*", help="agent names or name@sha (round-robin/ladder: empty = all registered)")
-    s.add_argument("--mode", default="screen", choices=("screen", "confirm", "round-robin", "ladder"))
+    s = sub.add_parser("match", help="run games: screen|confirm A vs B [C...], or round-robin (ladder = `arena serve --hub`)")
+    s.add_argument("agents", nargs="*", help="agent names or name@sha (round-robin: empty = all registered)")
+    s.add_argument("--mode", default="screen", choices=("screen", "confirm", "round-robin"))
     s.add_argument("--n", type=int, help="episodes (per opponent pair); default 64 screen / 400 confirm")
     s.add_argument("--seeds", help="screen | confirm | a-b | a,b,c (default by mode; each seed is played on both seats)")
     s.add_argument("--workers", type=int, help="default cpu_count-2")

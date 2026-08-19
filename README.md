@@ -122,7 +122,6 @@ uv run python -m arena list
 uv run python -m arena match v0 random starter --mode screen   # 64 eps per opponent, seeds 0..31 x both seats
 uv run python -m arena match v1 v0 --mode confirm              # 400 eps, held-out seeds 1000..1199
 uv run python -m arena match --mode round-robin --n 16         # every registered agent vs every other
-uv run python -m arena match --mode ladder --n 200             # continuous: least-played agent vs the field
 uv run python -m arena match v1 v0 --mode confirm --node barrelaged@barrelagedworkflows-1.tail547ecd.ts.net
 uv run python -m arena serve                                  # dashboard + JSON API on http://127.0.0.1:8765
 uv run python -m arena serve --hub --host 0.0.0.0             # + the continuous ladder (the hub service; see docs/pit.md)
@@ -166,8 +165,9 @@ least-played active agent anchors a star match vs its most rating-similar active
 fresh paired seeds, forever; without it the dashboard just watches CLI runs. JSON API for the
 teams/Registrar: `/api/leaderboard`, `/api/games?limit=50&agent=<id>&flagged=1`, `/api/agents`,
 `/api/runs`, `/api/status`, `/api/hub`, `/api/leaderboard.md`, and `POST /api/control/*`
-(pause/resume/config/bench/retire/champion/register — register takes `git_ref`+`path`, a local
-`path`, or `code_b64`). Service deployment on workflows-box + tailnet URL: **docs/pit.md**.
+(pause/resume/config/bench/retire/champion/register — register only takes `git_ref` + a `path`
+under `agents/`, and the agent starts benched; see docs/pit.md "Security"). Service deployment
+on workflows-box + tailnet URL: **docs/pit.md**.
 
 Leaderboard export: **BT** (Bradley-Terry MM fit over all stored games — the final Kaggle tournament is BT;
 shown as 1000 + 400·log10(strength), 100 pts ≈ 64 % win odds), **Elo** (sequential, diagnostic),
@@ -184,7 +184,7 @@ official episode. **Only meaningful on its replay's seed and engine** — the sc
 seed (so a match vs one ghost is 2 games) and refuses other engine versions; ghosts are open-loop
 (they do not react to you) and were validated against their recorded partner on their own seat
 (bank must reproduce within ±15 %; with the pinned engine it reproduces exactly). Seat swap is
-allowed but approximate. Ghosts are excluded from round-robin/ladder unless named.
+allowed but approximate. Ghosts are excluded from round-robin and the hub ladder unless named.
 
 Remote (`--node host`): ships the working tree + registry + agent snapshots as a tar.gz over
 scp (the node has no access to the private repo), bootstraps `uv` + `uv sync --frozen` in

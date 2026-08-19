@@ -293,3 +293,69 @@ def test_serve_api_endpoints_and_controls():
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+# ----------------------------------------------------------------- auditor fixes (2026-08-19)
+def test_gate_counts_only_confirm_mode_games(tmp_path):
+    """Ladder/screen rows sitting on confirm seeds must not count as gate evidence."""
+    db = tmp_path / "m.sqlite"
+    con = store.connect(db)
+    champ = registry.resolve("champ")
+    cand = registry.resolve("cand")
+    registry.set_champion("A", champ["id"])
+    base = {"run_id": "t", "steps": 720, "engine": "1.32.7", "arena_sha": "x", "host": "t",
+            "status0": "DONE", "status1": "DONE", "over_budget0": 0, "over_budget1": 0, "error0": "", "error1": "",
+            "harness_error": "", "steps_played": 720, "wall_s": 1.0, "replay_path": "", "p50_0": 1, "p50_1": 1}
+    rows = []
+    for k in range(10):
+        seed = 1000 + k
+        for mode in ("confirm", "ladder"):
+            gid = scheduler.game_id(cand["id"], champ["id"], seed, "1.32.7") + ("L" if mode == "ladder" else "")
+            rows.append({**base, **_g(cand["id"], champ["id"], 1.0, seed), "mode": mode, "game_id": gid})
+    store.upsert_rows(con, rows)
+    con.close()
+    res = gates.evaluate("cand", team="A", db_path=db, min_games=10, seed_lo=1000, seed_hi=1199)
+    assert res["n"] == 10, "only the mode=confirm rows count"
+    assert res["excluded_non_confirm"] == 10
+    assert "10 non-confirm games on these seeds excluded" in res["checks"]["enough_games"]["detail"]
+
+
+def test_single_ladder_implementation_on_the_2000_band():
+    """The hub is the only ladder (Auditor blocker 1): the CLI mode is gone, the seed band is
+    shared from paths.LADDER_SEED_BASE and sits strictly above the confirm band."""
+    from arena import hub
+    from arena.paths import CONFIRM_N, CONFIRM_SEED_BASE, LADDER_SEED_BASE
+    assert LADDER_SEED_BASE > CONFIRM_SEED_BASE + CONFIRM_N // 2 - 1
+    assert hub.LADDER_SEED_BASE is LADDER_SEED_BASE
+    assert not hasattr(scheduler, "run_ladder")
+    with pytest.raises(ValueError, match="hub"):
+        scheduler.run_match(["random", "pass"], mode="ladder", n=2, quiet=True)
+    plan = hub.plan_round()
+    assert plan is None or plan["next_seed"] >= LADDER_SEED_BASE
+
+
+def test_control_register_is_locked_down(tmp_path):
+    """Auditor blocker 2: API registration only accepts agents/ paths at a git ref, and the
+    result starts benched; raw path / code_b64 need the default-off unsafe flag."""
+    import base64 as b64
+    from arena import serve as srv
+    with pytest.raises(ValueError, match="agents/"):
+        srv.control("register", {"name": "evil", "team": "A", "git_ref": "main", "path": "scripts/evaluate.py"})
+    with pytest.raises(ValueError, match="agents/"):
+        srv.control("register", {"name": "evil", "team": "A", "git_ref": "main", "path": "agents/../scripts/x.py"})
+    with pytest.raises(ValueError, match="only git_ref"):
+        srv.control("register", {"name": "evil", "team": "A", "path": str(tmp_path / "evil.py")})
+    with pytest.raises(ValueError, match="only git_ref"):
+        srv.control("register", {"name": "evil", "team": "A",
+                                 "code_b64": b64.b64encode(b"import os\n").decode()})
+    # with the unsafe flag ON (local dev), path registration works but still starts benched
+    from arena import hub
+    hub.HUB_CONFIG.write_text('{"allow_unsafe_register": true}', encoding="utf-8")
+    try:
+        f = tmp_path / "ok.py"
+        f.write_text("def agent(obs):\n    return {'farmer': ['PASS'], 'hands': [], 'market': []}\n", encoding="utf-8")
+        out = srv.control("register", {"name": "api-reg", "team": "B", "path": str(f)})
+        assert out["agent"]["active"] is False, "API registrations start benched"
+        assert not registry.is_active(registry.resolve("api-reg"))
+    finally:
+        hub.HUB_CONFIG.unlink(missing_ok=True)

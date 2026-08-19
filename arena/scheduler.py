@@ -4,8 +4,9 @@ Modes
   screen       64 episodes (32 seed pairs x 2 seats) on tuning seeds 0..    -- cheap signal
   confirm      400 episodes (200 pairs) on held-out seeds 1000..            -- accept/reject
   round-robin  every registered agent vs every other, `--n` episodes per pair
-  ladder       continuous Kaggle-like pairing: each round pairs agents of similar rating on a
-               fresh seed; runs until `--n` games have been played
+
+(The continuous ladder is NOT here: it lives in arena/hub.py (`arena serve --hub`), the single
+implementation, on its own seed band LADDER_SEED_BASE=2000 -- one ladder, one seed authority.)
 
 Every game is one job in a worker pool (multiprocessing Processes owned here, not a
 concurrent.futures pool: if a worker dies hard -- os._exit, segfault, OOM -- its job is recorded
@@ -228,7 +229,7 @@ def run_match(agent_specs: list[str], mode: str = "screen", n: int | None = None
         # all registered agents except retired ones and ghosts (a ghost's seed is fixed: name it explicitly)
         agents = [a for a in registry.list_agents(reg) if not a.get("retired") and a["kind"] != "ghost"]
     if mode == "ladder":
-        return run_ladder(agents, n, workers, steps, keep_replay, db_path, game_timeout, quiet, run_id, common)
+        raise ValueError("the ladder runs in the hub only: `arena serve --hub` (see docs/pit.md)")
 
     seed_list = parse_seeds(seeds, mode, n)
     jobs = plan_jobs(mode, agents, seed_list, steps, common)
@@ -287,42 +288,3 @@ def _execute(jobs, mode, agents, seed_list, workers, db_path, game_timeout, quie
     prog.update(status="done", done=len(rows), wall_s=round(wall, 1), finished_at=time.strftime("%Y-%m-%dT%H:%M:%S"))
     _write_progress(run_id, prog)
     return {"run_id": run_id, "rows": rows, "wall_s": wall, "jobs": jobs, "agents": agents, "mode": mode}
-
-
-def run_ladder(agents, n, workers, steps, keep_replay, db_path, game_timeout, quiet, run_id, common) -> dict:
-    """Continuous rating (the PTCG arena's proven 24/7 format): each round the *least-played* agent
-    anchors a star match against the whole field (one seed pair per opponent, fresh seeds from a
-    ladder band), so a new agent gets rated fast and the field stays balanced. Runs until >= n games.
-    Ghosts are excluded (their seed is fixed); use screen/confirm against ghosts explicitly."""
-    if len(agents) < 2:
-        agents = [a for a in registry.list_agents() if not a.get("retired")]
-    field = [a for a in agents if a["kind"] != "ghost"]
-    if len(field) < 2:
-        raise ValueError("ladder needs at least two non-ghost agents")
-    con = store.connect(db_path)
-    counts = {a["id"]: 0 for a in field}
-    for g in store.all_games(con, "mode = 'ladder'"):
-        for pid in (g["p0"], g["p1"]):
-            if pid in counts:
-                counts[pid] += 1
-    seed_ptr = SCREEN_SEED_BASE + 500 + (con.execute("SELECT COUNT(*) FROM games WHERE mode = 'ladder'").fetchone()[0] // 2)
-    con.close()
-    all_rows, all_jobs = [], []
-    t0 = time.monotonic()
-    while len(all_rows) < n:
-        anchor = min(field, key=lambda a: (counts[a["id"]], a["id"]))
-        jobs = []
-        for b in field:
-            if b["id"] == anchor["id"]:
-                continue
-            jobs += _pair_jobs(anchor, b, [seed_ptr], steps, {**common, "mode": "ladder"})
-            seed_ptr += 1
-        res = _execute(jobs, "ladder", field, [seed_ptr - len(jobs) // 2, seed_ptr - 1], workers, db_path,
-                       game_timeout, quiet, run_id, common["host"])
-        for r in res["rows"]:
-            for pid in (r["p0"], r["p1"]):
-                if pid in counts:
-                    counts[pid] += 1
-        all_rows += res["rows"]; all_jobs += jobs
-    return {"run_id": run_id, "rows": all_rows, "wall_s": time.monotonic() - t0, "jobs": all_jobs,
-            "agents": field, "mode": "ladder"}

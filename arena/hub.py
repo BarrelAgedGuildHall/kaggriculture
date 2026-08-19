@@ -24,12 +24,11 @@ import uuid
 
 from . import engine as eng
 from . import ratings, registry, store
-from .paths import ARENA_DIR, ensure_dirs
+from .paths import ARENA_DIR, LADDER_SEED_BASE, ensure_dirs
 from .scheduler import run_match
 
 PAUSE_FLAG = ARENA_DIR / "paused"
 HUB_CONFIG = ARENA_DIR / "hub.json"
-LADDER_SEED_BASE = 2000          # clear of screen (0..) and confirm (1000..) seed bands
 DEFAULTS = {"workers": 0, "games_per_pairing": 4, "max_opponents": 5}
 
 

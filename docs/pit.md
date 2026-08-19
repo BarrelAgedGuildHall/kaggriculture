@@ -52,10 +52,24 @@ curl -X POST http://HOST:8765/api/control/champion -d '{"team":"A","agent":"v1"}
 curl -X POST http://HOST:8765/api/control/register -d '{"name":"v1","team":"A","git_ref":"feature/exp-004","path":"agents/team_a/v1.py"}'
 ```
 
-`register` accepts `git_ref` + `path` (the hub fetches the ref from origin — needs git access on
-the hub machine), a local `path`, or inline `code_b64`. Teams' normal flow: commit the frozen
-generation under `agents/team_a|team_b/`, push, then register it by git ref from the UI form or
-the API. No auth — the service trusts the tailnet; keep it off public interfaces.
+`register` requires `git_ref` + a `path` under the repo's `agents/` tree (the hub fetches the
+ref from origin — needs git access on the hub machine) and the new agent starts **benched**:
+someone must explicitly activate it before the ladder will play it. Teams' flow: commit the
+frozen generation under `agents/team_a|team_b/`, push, register by ref, review, activate.
+
+### Security (read before widening anything)
+
+Registering an agent **is scheduling code for execution on this host**: `kaggle_environments`
+loads a file agent by exec'ing the whole file as the `pit` service user — no sandbox, no
+network block (this host does not replicate the Kaggle sandbox). That is why the API only
+accepts committed files under `agents/` at an origin ref, and why new registrations are benched.
+Residual risk the founder has accepted: anyone with tailnet access who can also push to the
+repo (or who activates a malicious committed agent) runs code on workflows-box; the tailnet is
+the auth boundary and the commit + explicit-activation steps are the review gate. Raw local
+paths / inline `code_b64` are OFF by default; `"allow_unsafe_register": true` in
+`data/arena/hub.json` re-enables them for local dev only — never set it on the node. The rest
+of `/api/control/*` mutates arena state only (pause/bench/champion), which is the accepted
+tailnet-trust level.
 
 ## Running it on workflows-box (16 vCPU)
 
@@ -126,8 +140,12 @@ use the API's `code_b64`/local-path form.
 - **Engine bumps void the board.** `scripts/engine_watch.py` (cron) exits 1 on a new PyPI
   release: pause the hub, re-pin, re-run parity, restart; filter old games with
   `leaderboard?engine=`.
-- Screen/confirm/gate remain CLI commands (`arena match --mode screen|confirm|round-robin`,
-  `arena gate`); the hub only runs the ladder. Promotion is still gate-based:
+- **The hub is the only ladder.** `arena match --mode ladder` was removed (it was a second,
+  divergent implementation); the hub owns the ladder seed band `LADDER_SEED_BASE = 2000+`
+  (`arena/paths.py`), strictly above screen (0–199) and confirm (1000–1199), so held-out seeds
+  are never touched. The gate additionally counts only `mode='confirm'` rows and reports any
+  other games it excluded on those seeds. Screen/confirm/gate remain CLI commands
+  (`arena match --mode screen|confirm|round-robin`, `arena gate`). Promotion is still gate-based:
   0 crashes, 0 timeouts, p99 ≤ 150 ms, Wilson lower bound > 50 % vs the team champion over the
   confirm set (seeds 1000–1199, 400 games).
 - Seat note (Auditor, 2026-08-19): the seat asymmetry the side-swap cancels comes from

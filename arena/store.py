@@ -70,9 +70,13 @@ def all_games(con: sqlite3.Connection, where: str = "", params: tuple = ()) -> l
     return [dict(r) for r in con.execute(sql, params)]
 
 
-def games_between(con: sqlite3.Connection, a: str, b: str, seed_lo: int | None = None, seed_hi: int | None = None) -> list[dict]:
+def games_between(con: sqlite3.Connection, a: str, b: str, seed_lo: int | None = None, seed_hi: int | None = None,
+                  modes: tuple[str, ...] | None = None) -> list[dict]:
     where = "((p0 = ? AND p1 = ?) OR (p0 = ? AND p1 = ?))"
     params: list = [a, b, b, a]
+    if modes:
+        where += f" AND mode IN ({', '.join('?' for _ in modes)})"
+        params += list(modes)
     if seed_lo is not None:
         where += " AND seed >= ?"
         params.append(seed_lo)

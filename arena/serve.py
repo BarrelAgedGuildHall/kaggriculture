@@ -18,8 +18,10 @@ POST /api/control/config      {"workers":14,"games_per_pairing":4,"max_opponents
 POST /api/control/bench       {"agent":"v0a","undo":false}      out of the ladder, still rated
 POST /api/control/retire      {"agent":"v0a","undo":false}      out of ladder AND rating fit
 POST /api/control/champion    {"team":"A","agent":"v1"}
-POST /api/control/register    {"name","team","path"} | {"name","team","git_ref","path"} | {"name","team","code_b64"}
-No auth: bind 127.0.0.1 or trust the tailnet.
+POST /api/control/register    {"name","team","git_ref","path under agents/"}  -> registers BENCHED
+No auth: bind 127.0.0.1 or trust the tailnet. Registration is deliberately restricted to
+committed files under agents/ at an origin ref (registering schedules code execution here);
+see docs/pit.md "Security".
 """
 from __future__ import annotations
 
@@ -30,7 +32,7 @@ import threading
 import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from urllib.parse import parse_qs, urlparse
 
 from . import engine as eng
@@ -136,20 +138,37 @@ def control(action: str, body: dict) -> dict:
     if action == "champion":
         return {"champion": registry.set_champion(body["team"], body["agent"])}
     if action == "register":
+        # Locked down per the Auditor (2026-08-19): registering IS scheduling code for execution
+        # on this host (the framework execs the file, and the hub anchors new agents within
+        # minutes). The API therefore only accepts files under the repo's agents/ tree at a git
+        # ref that exists on origin -- i.e. code that went through a commit + push. Raw local
+        # paths / inline code require `"allow_unsafe_register": true` in data/arena/hub.json
+        # (default off), and every API-registered agent starts BENCHED (explicit activation).
         name, team = body["name"], body.get("team", "resident")
         notes = body.get("notes", "")
+        unsafe_ok = bool(hubmod.config().get("allow_unsafe_register"))
+        rel = (body.get("path") or "").replace("\\", "/").strip("/")
         if body.get("git_ref"):
-            a = registry.register_git_ref(body["git_ref"], body.get("path", f"agents/team_{team.lower()}/{name}.py"),
-                                          name, team, notes)
-        elif body.get("code_b64"):
-            with tempfile.TemporaryDirectory() as td:
-                f = Path(td) / f"{name}.py"
-                f.write_bytes(base64.b64decode(body["code_b64"]))
-                a = registry.register_file(f, name, team, notes or "registered via API (inline code)")
-        elif body.get("path"):
-            a = registry.register_file(body["path"], name, team, notes)
+            if not rel:
+                raise ValueError("register needs path (repo-relative, under agents/)")
+            norm = PurePosixPath(rel)
+            if norm.parts[:1] != ("agents",) or ".." in norm.parts:
+                raise ValueError(f"path must be under the repo's agents/ tree, got {rel!r}")
+            a = registry.register_git_ref(body["git_ref"], rel, name, team, notes)
+        elif body.get("code_b64") or body.get("path"):
+            if not unsafe_ok:
+                raise ValueError("only git_ref registration is allowed over the API "
+                                 "(set allow_unsafe_register in data/arena/hub.json to override)")
+            if body.get("code_b64"):
+                with tempfile.TemporaryDirectory() as td:
+                    f = Path(td) / f"{name}.py"
+                    f.write_bytes(base64.b64decode(body["code_b64"]))
+                    a = registry.register_file(f, name, team, notes or "registered via API (inline code)")
+            else:
+                a = registry.register_file(body["path"], name, team, notes)
         else:
-            raise ValueError("register needs git_ref, path or code_b64")
+            raise ValueError("register needs git_ref + path (agents/...)")
+        a = registry.set_flag(a["id"], "active", False)   # benched until someone activates it
         return {"agent": a}
     raise ValueError(f"unknown control action {action!r}")
 
@@ -197,9 +216,10 @@ a{color:var(--a)}footer{padding:8px 20px;color:var(--dim);font-size:12px}
    <b class="small">REGISTER:</b>
    <input id="regName" placeholder="name (e.g. v1)" required>
    <select id="regTeam"><option>A</option><option>B</option><option>resident</option></select>
-   <input id="regRef" placeholder="git ref (branch/sha), blank = local path" size="22">
-   <input id="regPath" placeholder="repo path, e.g. agents/team_a/v1.py" size="34">
+   <input id="regRef" placeholder="git ref (branch/sha) on origin" size="22" required>
+   <input id="regPath" placeholder="repo path under agents/, e.g. agents/team_a/v1.py" size="34" required>
    <button type="submit">register</button>
+   <span class="small">registers <b>benched</b> — activate it to enter the ladder</span>
   </form></section>
 </main>
 <footer>API: <a href="/api/leaderboard">/api/leaderboard</a> · <a href="/api/games?limit=50">/api/games</a> · <a href="/api/agents">/api/agents</a> · <a href="/api/runs">/api/runs</a> · <a href="/api/status">/api/status</a> · <a href="/api/hub">/api/hub</a> · <a href="/api/leaderboard.md">/api/leaderboard.md</a> — POST /api/control/* to script it · refreshes every 3 s</footer>
@@ -248,9 +268,10 @@ async function openDetail(id){detailAgent=id;$('detailSec').style.display='';$('
 $('btnCloseDetail').onclick=()=>{detailAgent=null;$('detailSec').style.display='none';};
 $('btnPause').onclick=()=>ctl('pause');$('btnResume').onclick=()=>ctl('resume');
 $('btnCfg').onclick=()=>ctl('config',{workers:+$('cfgWorkers').value,games_per_pairing:+$('cfgGames').value,max_opponents:+$('cfgOpp').value});
-$('regForm').onsubmit=e=>{e.preventDefault();const b={name:$('regName').value.trim(),team:$('regTeam').value};
- const ref=$('regRef').value.trim(),path=$('regPath').value.trim();if(ref)b.git_ref=ref;if(path)b.path=path;
- if(!ref&&!path){toast('give a git ref and/or a path',1);return;}ctl('register',b);};
+$('regForm').onsubmit=e=>{e.preventDefault();const b={name:$('regName').value.trim(),team:$('regTeam').value,
+ git_ref:$('regRef').value.trim(),path:$('regPath').value.trim()};
+ if(!b.git_ref||!b.path.startsWith('agents/')){toast('need a git ref and a path under agents/',1);return;}
+ ctl('register',b);};
 let cfgTouched=false;['cfgWorkers','cfgGames','cfgOpp'].forEach(id=>$(id).addEventListener('input',()=>cfgTouched=true));
 async function tick(){try{const [lb,rs,ag,st]=await Promise.all([j('/api/leaderboard'),j('/api/runs'),j('/api/agents'),j('/api/status')]);
  const gs=await j('/api/games?limit=40');
