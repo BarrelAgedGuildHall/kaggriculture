@@ -1,0 +1,20 @@
+[project]
+name = "kaggriculture"
+version = "0.1.0"
+description = "Kaggler's agent and tooling for the Kaggle Kaggriculture simulation competition"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "kaggle-environments==1.32.7",
+    "kaggle>=2.2",
+    "numpy>=2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.uv]
+# Keep the lock file authoritative; `uv sync` reproduces the environment exactly.
+package = false

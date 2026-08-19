@@ -1,0 +1,33 @@
+# Environments
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Data, replays, indexes, model weights -- never in git (downloaded via scripts)
+data/
+*.replay.json
+replay*.json
+episode-*-replay.json
+*.pkl
+*.pt
+*.pth
+*.npz
+*.h5
+*.onnx
+
+# Submission artefacts
+dist/
+submission*.tar.gz
+
+# Credentials / local config
+.env
+kaggle.json
+.kaggle/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
