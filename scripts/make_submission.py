@@ -15,16 +15,21 @@ Usage:
     uv run python scripts/make_submission.py --verify        # build + standalone episode in a fresh venv
     uv run python scripts/make_submission.py --verify --no-fresh-venv
 
-By default this script never submits. `--submit` is a deliberate, separate, guarded path:
+By default this script never submits. `--submit` is a deliberate, separate path:
 
     uv run python scripts/make_submission.py --submit --message "<message>" --team teamA
 
-Only the CEO submits to Kaggle (org policy, workshop/notes/team-charter.md). `--submit`
-refuses unless the environment variable `KAGGLER_SUBMITTER=ceo` is set (never hardcode or
-prompt for this -- it comes from the CEO's own session), always forces `--verify` first
-(a broken artefact is never worth burning one of the 5 daily submission slots on) and, on a
-successful `kaggle competitions submit`, appends a row to `workshop/notes/submissions.md`
-(the ledger). Equivalent to running by hand:
+Only the CEO submits to Kaggle -- that is an **org policy** (workshop/notes/team-charter.md),
+not something this script can technically enforce. `--submit` checks the environment variable
+`KAGGLER_SUBMITTER=ceo` as a belt-and-braces **policy guard** (catches accidents, e.g. running
+the wrong command from the wrong session) -- it is NOT real access control: any operative with
+shell access could export that variable themselves and bypass it. The actual enforcement is
+the org rule plus visibility: every `--submit` attempt -- refused, dry-run, failed, or a real
+submission -- is logged append-only to `data/submission-audit.log` (timestamp, the
+`$GUILDHALL_ARTISAN` identity if set, artefact sha256, dry-run/real, outcome) AND as a row in
+`workshop/notes/submissions.md` (the ledger), so a bypass is at least visible after the fact,
+not silently possible. `--submit` also always forces `--verify` first (a broken artefact is
+never worth burning one of the 5 daily submission slots on). Equivalent to running by hand:
     kaggle competitions submit kaggriculture -f dist/main.py -m "<message>"
 """
 from __future__ import annotations
@@ -241,20 +246,81 @@ def kaggle_cmd() -> list[str]:
     return [sys.executable, "-m", "kaggle.cli"]
 
 
+def audit_log_path() -> Path:
+    return REPO_ROOT / "data" / "submission-audit.log"
+
+
+def append_audit_log(fields: dict) -> None:
+    p = audit_log_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with open(p, "a", encoding="utf-8") as f:
+        f.write(" | ".join(f"{k}={v}" for k, v in fields.items()) + "\n")
+
+
+def record_attempt(args, artefact: Path, mode: str, result: str, sub_id: str = "") -> None:
+    """Log every --submit attempt -- refused, dry-run, failed, or a real submission -- to
+    both data/submission-audit.log (append-only, one line) and the ledger (one row). This is
+    the actual enforcement/visibility net for the KAGGLER_SUBMITTER=ceo check: that env var is
+    a policy guard an operative could bypass by exporting it themselves, so every attempt
+    leaves a trail regardless of outcome, including who/what ran it
+    ($GUILDHALL_ARTISAN, if the session set it)."""
+    ts = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    agent_identity = os.environ.get("GUILDHALL_ARTISAN", "unset")
+    submitter_env = os.environ.get("KAGGLER_SUBMITTER", "unset")
+    sha = sha256_of(artefact) if artefact.exists() else "n/a"
+
+    append_audit_log({
+        "ts": ts,
+        "agent": agent_identity,
+        "submitter_env": submitter_env,
+        "artefact_sha256": sha,
+        "mode": mode,
+        "result": result,
+    })
+
+    submitted = result == "submitted"
+    ledger = find_ledger(args.ledger)
+    append_ledger_row(ledger, {
+        "date (UTC)": ts,
+        "team": args.team or "unspecified",
+        "agent@sha": f"agent/main.py@{git_sha()}",
+        "artefact sha256": sha,
+        "Pit gate": args.pit_gate or "n/a",
+        "Auditor": args.auditor or "n/a",
+        "Kaggle sub id": (sub_id or "unknown (check Kaggle UI)") if submitted else "n/a",
+        "slot (active?)": "?" if submitted else "n/a",
+        "validation result": "pending (Kaggle runs a self-play validation episode on upload)" if submitted else "n/a",
+        "ladder record (W-L-T, rating) as of": "n/a (Ops fills from ingestion)",
+        "notes": f"[{mode}] {result} -- {args.message or '(no message)'} "
+                 f"(submitter_env={submitter_env}, agent={agent_identity})",
+    })
+    print(f"audit    : {audit_log_path()}  |  ledger: {ledger}  ({mode}, {result})")
+
+
 def do_submit(artefact: Path, args) -> int:
-    """Guarded submit path. Never called unless --submit was passed."""
+    """Submit path -- gated by policy (KAGGLER_SUBMITTER=ceo, see module docstring), not by
+    real access control. Every branch below logs via record_attempt() before returning or
+    raising, including refusals, so an attempted bypass is visible in the audit trail even
+    though it isn't technically prevented. Never called unless --submit was passed."""
+    mode = "dry-run" if args.dry_run else "real"
+
     if os.environ.get("KAGGLER_SUBMITTER") != "ceo":
+        record_attempt(args, artefact, mode, "refused:submitter-env-not-ceo")
         raise SystemExit(
             "--submit refused: $KAGGLER_SUBMITTER is not 'ceo'. Only the CEO submits to "
-            "Kaggle (workshop/notes/team-charter.md) -- this is a hard guard, not a suggestion."
+            "Kaggle (workshop/notes/team-charter.md) -- this is a policy guard, not real "
+            "enforcement (the audit log/ledger just recorded this attempt regardless)."
         )
     if not args.message:
+        record_attempt(args, artefact, mode, "refused:no-message")
         raise SystemExit("--submit requires --message")
     if not os.environ.get("KAGGLE_API_TOKEN"):
+        record_attempt(args, artefact, mode, "refused:no-kaggle-token")
         raise SystemExit("KAGGLE_API_TOKEN is not set in the environment (export it in-shell; never write it to a file)")
 
     ok, info = run_verify(artefact, args.seed, args.steps, args.no_fresh_venv)
     if not ok:
+        record_attempt(args, artefact, mode, "refused:verify-failed")
         raise SystemExit("--submit refused: --verify failed on the packaged artefact. Fix it before submitting.")
 
     env = dict(os.environ)
@@ -264,7 +330,7 @@ def do_submit(artefact: Path, args) -> int:
 
     if args.dry_run:
         print(f"[dry-run] would run: kaggle competitions submit {COMPETITION} -f {artefact} -m {args.message!r}")
-        print("[dry-run] would append a ledger row to " + str(find_ledger(args.ledger)))
+        record_attempt(args, artefact, mode, "dry-run-ok")
         return 0
 
     cmd = kaggle_cmd() + ["competitions", "submit", COMPETITION, "-f", str(artefact), "-m", args.message]
@@ -273,24 +339,11 @@ def do_submit(artefact: Path, args) -> int:
     print(res.stdout)
     if res.returncode != 0:
         print(res.stderr, file=sys.stderr)
+        record_attempt(args, artefact, mode, f"failed:kaggle-submit-rc{res.returncode}")
         raise SystemExit(f"kaggle competitions submit failed ({res.returncode})")
 
     sub_id = latest_submission_id(env)
-    ledger = find_ledger(args.ledger)
-    append_ledger_row(ledger, {
-        "date (UTC)": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M"),
-        "team": args.team or "unspecified",
-        "agent@sha": f"agent/main.py@{git_sha()}",
-        "artefact sha256": sha256_of(artefact),
-        "Pit gate": args.pit_gate or "n/a",
-        "Auditor": args.auditor or "n/a",
-        "Kaggle sub id": sub_id or "unknown (check Kaggle UI)",
-        "slot (active?)": "?",
-        "validation result": "pending (Kaggle runs a self-play validation episode on upload)",
-        "ladder record (W-L-T, rating) as of": "n/a (Ops fills from ingestion)",
-        "notes": args.message,
-    })
-    print(f"ledger   : appended row to {ledger}")
+    record_attempt(args, artefact, mode, "submitted", sub_id=sub_id)
     return 0
 
 
@@ -306,7 +359,7 @@ def main(argv=None) -> int:
     p.add_argument("--pit-gate", help="Pit gate summary for the ledger row (e.g. a run id or verdict)")
     p.add_argument("--auditor", help="Auditor verdict reference for the ledger row")
     p.add_argument("--ledger", help="override path to workshop/notes/submissions.md")
-    p.add_argument("--dry-run", action="store_true", help="with --submit: do everything except call `kaggle competitions submit` and append the ledger row")
+    p.add_argument("--dry-run", action="store_true", help="with --submit: do everything except call `kaggle competitions submit` for real (verify still runs; the attempt is still logged to the audit log + ledger)")
     args = p.parse_args(argv)
 
     files = collect_files()
