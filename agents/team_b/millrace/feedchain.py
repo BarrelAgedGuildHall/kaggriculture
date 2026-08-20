@@ -42,16 +42,19 @@ Engine: kaggle-environments 1.32.7.
 from __future__ import annotations
 
 import math
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "probes"))
-import probe_core as pc  # frozen chassis: constants + helpers + PRESETS
-
-from .layout import SitePlan
-from .main import make_chassis
-from .market import MarketModel
-from .service import FeedRouter, animal_tasks, plant_tasks
+try:  # package context (repo tools/tests: agents/team_b on sys.path)
+    from . import probe_core as pc  # vendored frozen chassis constants/helpers
+    from .chassis import make_chassis
+    from .layout import SitePlan
+    from .market import MarketModel
+    from .service import FeedRouter, animal_tasks, plant_tasks
+except ImportError:  # Kaggle/arena loader: main.py exec'd flat, dir on sys.path
+    import probe_core as pc
+    from chassis import make_chassis
+    from layout import SitePlan
+    from market import MarketModel
+    from service import FeedRouter, animal_tasks, plant_tasks
 
 BATCH = {"WHEAT": 8, "FERTILIZER": 4, "GOOSE": 3, "COW": 3, "SHEEP": 3}
 COURIER_CARRY = 5

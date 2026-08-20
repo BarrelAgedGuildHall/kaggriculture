@@ -30,7 +30,10 @@ Engine: kaggle-environments 1.32.7.
 """
 from __future__ import annotations
 
-from .layout import ANCHORS, dist, quadrant_of
+try:  # package context (repo tools/tests)
+    from .layout import ANCHORS, dist, quadrant_of
+except ImportError:  # Kaggle/arena loader: exec'd flat, dir on sys.path
+    from layout import ANCHORS, dist, quadrant_of
 
 URGENT_PRIO = 2.5  # keep-alive band: PLACE 0, FEED 1, BUILD 2, WATER-critical 2.5
 

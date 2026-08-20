@@ -21,15 +21,16 @@ Engine: kaggle-environments 1.32.7.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "probes"))
-import probe_core as pc  # frozen chassis: constants + helpers + PRESETS
-
-from .layout import SitePlan
-from .main import make_chassis
-from .routing import Router
+try:  # package context (repo tools/tests: agents/team_b on sys.path)
+    from . import probe_core as pc  # vendored frozen chassis constants/helpers
+    from .chassis import make_chassis
+    from .layout import SitePlan
+    from .routing import Router
+except ImportError:  # Kaggle/arena loader: main.py exec'd flat, dir on sys.path
+    import probe_core as pc
+    from chassis import make_chassis
+    from layout import SitePlan
+    from routing import Router
 
 # Batch/courier constants: probe values, kept after two measured attempts to
 # trade sale/feed latency for fewer trips BOTH lost win rate (expB-201):

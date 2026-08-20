@@ -36,8 +36,12 @@ Engine: kaggle-environments 1.32.7.
 """
 from __future__ import annotations
 
-from .layout import dist, quadrant_of
-from .routing import Router, URGENT_PRIO
+try:  # package context (repo tools/tests)
+    from .layout import dist, quadrant_of
+    from .routing import Router, URGENT_PRIO
+except ImportError:  # Kaggle/arena loader: exec'd flat, dir on sys.path
+    from layout import dist, quadrant_of
+    from routing import Router, URGENT_PRIO
 
 URGENT_FEED = 0.25
 URGENT_WATER = 0.5     # dies tonight; below FEED-critical, above routine FEED

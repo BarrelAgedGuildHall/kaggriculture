@@ -5,7 +5,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "agents" / "team_b"))
 
-from millrace.main import fallback_action, make_chassis, sanitise  # noqa: E402
+from millrace.chassis import fallback_action, make_chassis, sanitise  # noqa: E402
 from millrace.market import MarketModel  # noqa: E402
 from millrace.routing import Router  # noqa: E402
 
@@ -329,3 +329,53 @@ def test_feedrouter_borrows_urgent_cross_cluster():
     r.day = 0
     r.plan(0, units, busy, actions, tasks, ctx)
     assert busy[0] and actions[0] != ["PASS"]
+
+
+# ------------------------------------------------- submission packaging
+MILLRACE_DIR = REPO_ROOT / "agents" / "team_b" / "millrace"
+ROUTED_DIR = REPO_ROOT / "agents" / "team_b" / "routed"
+
+
+def test_vendored_probe_core_is_byte_identical():
+    canonical = (REPO_ROOT / "agents" / "team_b" / "probes" / "probe_core.py").read_bytes()
+    assert (MILLRACE_DIR / "probe_core.py").read_bytes() == canonical
+
+
+def test_frozen_routed_snapshot_matches_millrace_modules():
+    # The expB-201 Pit snapshot is byte-identical to its millrace counterparts.
+    # If millrace/* diverge later (post-freeze refactors), drop this test and
+    # leave agents/team_b/routed/ untouched -- it is a frozen champion.
+    for name in ("chassis.py", "layout.py", "routing.py", "routed_probe.py", "probe_core.py"):
+        assert (ROUTED_DIR / name).read_bytes() == (MILLRACE_DIR / name).read_bytes(), name
+
+
+def _flat_exec_agent(agent_dir):
+    """Mimic kaggle_environments.get_last_callable exactly: main.py exec'd into
+    a PLAIN dict (no __name__/__package__) with the dir appended to sys.path
+    only during the exec (popped before the agent is ever called), then the
+    last callable is the agent."""
+    src = (agent_dir / "main.py").read_text(encoding="utf-8")
+    before = set(sys.modules)
+    try:
+        ns = {}
+        sys.path.append(str(agent_dir))
+        try:
+            exec(compile(src, str(agent_dir / "main.py"), "exec"), ns)
+        finally:
+            sys.path.remove(str(agent_dir))  # the loader pops before calling
+        fn = [v for v in ns.values() if callable(v)][-1]
+        assert fn.__name__ == "agent"
+        out = fn(_obs())  # dir no longer importable: imports must have been eager
+        assert isinstance(out, dict) and "farmer" in out and "market" in out
+        return out
+    finally:
+        for m in set(sys.modules) - before:
+            del sys.modules[m]
+
+
+def test_kaggle_loader_flat_exec_millrace_entry():
+    _flat_exec_agent(MILLRACE_DIR)
+
+
+def test_kaggle_loader_flat_exec_routed_entry():
+    _flat_exec_agent(ROUTED_DIR)
