@@ -153,7 +153,7 @@ def run(agent_a: str, agent_b: str, seed: int, steps: int, trace_path: str | Non
         cum_sales = [{p: 0 for p in K.PRODUCTS} for _ in range(2)]
         cum_rev = [{p: 0 for p in K.PRODUCTS} for _ in range(2)]
         cum_buys = [{}, {}]
-        act_counts = [{"moves": 0, "pass": 0, "noop": 0, "executed": 0, "unknown": 0, "none": 0, "unit_turns": 0} for _ in range(2)]
+        act_counts = [{"moves": 0, "pass": 0, "noop": 0, "executed": 0, "unknown": 0, "none": 0, "unit_turns": 0, "hour23_unmeasured": 0} for _ in range(2)]
         lastday_actions = [{"FEED": 0, "WATER": 0, "CARE": 0} for _ in range(2)]
         fert_floor_step = None
         daily = []  # per-day snapshot rows
@@ -188,6 +188,16 @@ def run(agent_a: str, agent_b: str, seed: int, steps: int, trace_path: str | Non
                     if ui >= len(pre_pos):
                         break
                     act_counts[pi]["unit_turns"] += 1
+                    # Hour 23: unit actions execute and THEN the end-of-day
+                    # refresh runs inside the same env.step (farmer respawned,
+                    # hands cleared, daily tile flags reset), so post-state
+                    # comparison misclassifies every hour-23 action as "noop".
+                    # Verified 2026-08-20 (feed_audit.py): 100% of a
+                    # routed_mixed mirror's classified no-ops were hour-23
+                    # artifacts. Excluded from classification; counted apart.
+                    if day * turns_per_day + 23 == step and isinstance(ua, list) and ua and ua[0] != "PASS":
+                        act_counts[pi]["hour23_unmeasured"] += 1
+                        continue
                     px, py = pre_pos[ui]
                     pre_tile = pre_farms[pi]["tiles"][py][px]
                     post_tile = post_farms[pi]["tiles"][py][px]
@@ -275,8 +285,8 @@ def run(agent_a: str, agent_b: str, seed: int, steps: int, trace_path: str | Non
             "cum_rev": [dict(cum_rev[i]) for i in range(2)],
             "cum_buys": cum_buys,
             "action_stats": act_counts,
-            "move_fraction": [round(act_counts[i]["moves"] / max(1, act_counts[i]["unit_turns"]), 4) for i in range(2)],
-            "noop_fraction": [round(act_counts[i]["noop"] / max(1, act_counts[i]["unit_turns"]), 4) for i in range(2)],
+            "move_fraction": [round(act_counts[i]["moves"] / max(1, act_counts[i]["unit_turns"] - act_counts[i]["hour23_unmeasured"]), 4) for i in range(2)],
+            "noop_fraction": [round(act_counts[i]["noop"] / max(1, act_counts[i]["unit_turns"] - act_counts[i]["hour23_unmeasured"]), 4) for i in range(2)],
             "pass_fraction": [round(act_counts[i]["pass"] / max(1, act_counts[i]["unit_turns"]), 4) for i in range(2)],
             "final_accounting": final_acct,
             "daily": daily,
