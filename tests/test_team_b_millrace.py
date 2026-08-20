@@ -182,3 +182,92 @@ def test_router_rebinds_on_new_day():
     assert r.locks
     r.plan(1, [(0, 0)], [False], [["PASS"]], tasks, _ctx([{}], {}))
     assert r.day == 1
+
+
+# ------------------------------------------------- market M1 v2 estimators
+def _feed_day(m, day, inv_series, orders_series=None, shops=()):
+    """Feed one day of synthetic EGG observations (24 turns)."""
+    obs = _obs()
+    for h in range(24):
+        obs = dict(obs)
+        obs["day"], obs["hour"] = day, h
+        obs["market"] = {"inventory": {"EGG": inv_series[h]}, "prices": {"EGG": 40}}
+        obs["town"] = {"unlocked_shops": list(shops)}
+        m.observe(obs, (orders_series[h] if orders_series else None))
+
+
+def test_market_drain_daily_balance_tick_aligned():
+    m = MarketModel()
+    # drain of 2 lands at obs steps s where (s-1) % 4 == 0 (engine consumes at
+    # engine-step s-1); no trades. 6 ticks/day -> drain 12/day.
+    inv = []
+    cur = 10000
+    for day in range(2):
+        for h in range(24):
+            s = day * 24 + h
+            if s > 0 and (s - 1) % 4 == 0:
+                cur -= 2
+            inv.append(cur)
+    _feed_day(m, 0, inv[:24])
+    _feed_day(m, 1, inv[24:])
+    est, n = m.drain_live("EGG")
+    assert m.tick_ok
+    assert n == 1
+    assert abs(est - 12.0) < 1e-6
+
+
+def test_market_drain_sees_through_our_sales():
+    m = MarketModel()
+    # we sell 1 EGG every turn; drain 2 on tick turns. Net dI: +1 off-tick,
+    # -1 on tick. Balance must still find drain = 12/day.
+    inv, cur = [], 10000
+    orders = []
+    for day in range(2):
+        for h in range(24):
+            s = day * 24 + h
+            if s > 0:
+                cur += 1  # our sale from last turn
+                if (s - 1) % 4 == 0:
+                    cur -= 2
+            inv.append(cur)
+            orders.append([["SELL", "EGG", 1]])
+    _feed_day(m, 0, inv[:24], orders[:24])
+    _feed_day(m, 1, inv[24:], orders[24:])
+    est, n = m.drain_live("EGG")
+    assert m.tick_ok
+    assert abs(est - 12.0) < 1e-6
+
+
+def test_market_tick_selfcheck_flips_on_offtick_decrement():
+    m = MarketModel()
+    # EGG (non-buyable) decrement on an off-tick turn with no sale of ours
+    inv = [10000] * 24
+    for h in range(3, 24):
+        inv[h] = 9999  # decrement lands at h=3, an off-tick obs step
+    _feed_day(m, 0, inv)
+    assert not m.tick_ok
+
+
+def test_market_shop_unlock_resets_drain_window():
+    m = MarketModel()
+    inv = [10000] * 24
+    _feed_day(m, 0, inv)
+    _feed_day(m, 1, inv)  # closes day 0 -> EGG has a sample
+    assert m.drain_live("EGG")[1] >= 1
+    obs = dict(_obs())
+    obs["day"], obs["hour"] = 1, 5
+    obs["market"] = {"inventory": {"EGG": 10000}, "prices": {"EGG": 40}}
+    obs["town"] = {"unlocked_shops": ["BAKERY"]}  # sells EGG -> stale window
+    m.observe(obs)
+    assert m.drain_live("EGG") == (None, 0) or m.drain_live("EGG")[1] == 0
+
+
+def test_market_price_table_interpolates_observed_curve():
+    m = MarketModel()
+    obs = _obs()
+    for inv, price in [(100, 50), (104, 42)]:
+        obs = dict(obs)
+        obs["market"] = {"inventory": {"EGG": inv}, "prices": {"EGG": price}}
+        m.observe(obs)
+    assert abs(m.price_at("EGG", 102) - 46.0) < 1e-9   # interpolated
+    assert m.price_at("EGG", 100) == 50.0              # exact
