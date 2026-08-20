@@ -1,10 +1,13 @@
 """Driver for the sim-checklist A/B sweeps (expB-101..112, minus instrumentation).
 
-Runs each A/B via run_ab.main() with fixed screen-band seeds (0..pairs-1),
-paired + side-swapped, writing one JSON per A/B to the runs dir. Idempotent:
-skips an A/B whose output file already exists.
+Runs each A/B via run_ab.main() with fixed seeds, paired + side-swapped,
+writing one JSON per A/B to the runs dir. Idempotent: skips an A/B whose
+output file already exists. Two seed bands: --band screen (seeds 0..pairs-1,
+default) and --band heldout (seeds 1000..1000+pairs-1, output files suffixed
+`_heldout`) — any experiment quoting a held-out replication must be
+reproducible with `--only expB-NNN --band heldout`.
 
-Usage: uv run python agents/team_b/tools/run_checklist.py [--only expB-103] [--runs-dir ../../runs]
+Usage: uv run python agents/team_b/tools/run_checklist.py [--only expB-103] [--band heldout] [--runs-dir ../../runs]
 """
 from __future__ import annotations
 
@@ -65,23 +68,35 @@ SWEEP.append(("expB-112", "goose5_vs_carrot5", p(_g5), p(_c5), 24, 120))
 SWEEP.append(("expB-112", "goose5_vs_mixed5", p(_g5), p(_m5), 24, 120))
 SWEEP.append(("expB-112", "mixed5_vs_carrot5", p(_m5), p(_c5), 24, 120))
 
+# expB-110: shop-draw adaptivity — daily carrot re-pricing vs fixed 6-carrot opening plan
+# (extreme-band variant runs the same arms via run_ab --seed-list over the
+#  PET_CAFE>=2 seeds from scan_shops.py)
+SWEEP.append(("expB-110", "adaptive_vs_fixed6",
+              p({"adaptive_carrots": True}), p({"carrots_day0": 6}), 32, 720))
+
+BANDS = {"screen": (0, ""), "heldout": (1000, "_heldout")}
+
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", default=None, help="run only this expB id")
+    ap.add_argument("--band", choices=sorted(BANDS), default="screen",
+                    help="seed band: screen = seeds 0.., heldout = seeds 1000.. (suffix _heldout)")
     ap.add_argument("--runs-dir", default=str(Path(__file__).resolve().parents[3].parent / "runs"))
     args = ap.parse_args(argv)
     runs = Path(args.runs_dir)
+    seed_base, suffix = BANDS[args.band]
     for exp, name, a, b, pairs, steps in SWEEP:
         if args.only and exp != args.only:
             continue
-        out = runs / exp / f"{name}.json"
+        out = runs / exp / f"{name}{suffix}.json"
         if out.exists():
-            print(f"skip {exp}/{name} (exists)")
+            print(f"skip {exp}/{name}{suffix} (exists)")
             continue
-        print(f"=== {exp}/{name}  pairs={pairs} steps={steps}", flush=True)
+        print(f"=== {exp}/{name}{suffix}  pairs={pairs} steps={steps} seeds={seed_base}..", flush=True)
         run_ab.main(["--a", a, "--b", b, "--pairs", str(pairs), "--steps", str(steps),
-                     "--tag", f"{exp}:{name}", "--out", str(out)])
+                     "--seed-base", str(seed_base),
+                     "--tag", f"{exp}:{name}{suffix}", "--out", str(out)])
     return 0
 
 
