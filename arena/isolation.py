@@ -102,12 +102,16 @@ class SubprocessAgent:
 
     # -- protocol --------------------------------------------------------------------
     def _kill(self) -> None:
-        if self.proc is not None:
+        proc, self.proc = self.proc, None
+        if proc is not None:
             try:
-                self.proc.kill()
+                proc.kill()
             except Exception:
                 pass
-            self.proc = None
+            try:
+                proc.wait(timeout=3)   # reap: a killed-but-unwaited child is a zombie on POSIX
+            except Exception:
+                pass
 
     def _stderr_tail(self, n: int = 2000) -> str:
         try:

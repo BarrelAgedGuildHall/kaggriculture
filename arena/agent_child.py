@@ -63,7 +63,9 @@ def main() -> int:
         proto.flush()
 
     try:
-        sys.path.insert(0, os.path.dirname(entry))
+        # append, not insert(0): the real loader (kaggle_environments/agent.py,
+        # get_last_callable) appends, so stdlib/site-packages names shadow agent siblings.
+        sys.path.append(os.path.dirname(entry))
         with open(entry, encoding="utf-8") as f:
             src = f.read()
         env: dict = {}
@@ -75,7 +77,9 @@ def main() -> int:
     except BaseException:
         send({"ready": False, "error": traceback.format_exc()})
         return 1
-    nargs = getattr(getattr(agent, "__code__", None), "co_argcount", 2) or 2
+    # Default 2 only when there is no __code__ at all; a real co_argcount of 0 is legal
+    # (the real loader trims with no floor: args[:co_argcount]).
+    nargs = getattr(getattr(agent, "__code__", None), "co_argcount", 2)
     send({"ready": True})
 
     for line in sys.stdin:
