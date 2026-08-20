@@ -106,6 +106,212 @@ def test_crashing_agent_is_flagged_and_loses(tmp_path):
         assert r["replay_path"] and Path(r["replay_path"]).exists(), "crash replays are kept"
 
 
+# ------------------------------------------------------------------- module isolation
+# Regression for the 2026-08-19 arena bug: two directory-agents whose main.py resolved
+# siblings with a bare `import policy` were silently played as the SAME policy inside a
+# shared worker (first import wins sys.modules; byte-identical banks at --workers 1).
+
+def _write_dir_agent(root: Path, policy_body: str) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "policy.py").write_text(policy_body, encoding="utf-8")
+    (root / "main.py").write_text("import policy\n\n\ndef agent(obs):\n    return policy.act(obs)\n",
+                                  encoding="utf-8")
+    return root
+
+
+def test_subprocess_agents_do_not_share_modules(tmp_path):
+    """Direct proxy check, no engine: colliding `policy` modules stay distinct policies."""
+    from arena.isolation import SubprocessAgent
+    _write_dir_agent(tmp_path / "alpha", "def act(obs):\n    return {'who': 'alpha', 'step': obs.step}\n")
+    _write_dir_agent(tmp_path / "beta", "def act(obs):\n    return {'who': 'beta', 'step': obs.step}\n")
+    a = SubprocessAgent(tmp_path / "alpha" / "main.py", name="alpha")
+    b = SubprocessAgent(tmp_path / "beta" / "main.py", name="beta")
+    try:
+        obs = {"step": 7, "remainingOverageTime": 60}
+        cfg = {"actTimeout": 1}
+        ra, rb = a(obs, cfg), b(obs, cfg)
+        ra2 = a(obs, cfg)
+    finally:
+        a.close()
+        b.close()
+    assert ra == {"who": "alpha", "step": 7}
+    assert rb == {"who": "beta", "step": 7}, "second agent must play its OWN policy module"
+    assert ra2 == ra
+
+
+def test_colliding_directory_agents_play_their_own_policies(tmp_path):
+    """Engine-level regression at workers=1 (the proven-corrupt case): a PASS-only agent and
+    a HIRE-at-hour-0 agent, both with a sibling module named `policy`, must produce
+    different action streams (visible as different banks) on the same fixed seed."""
+    _write_dir_agent(tmp_path / "iso_pass",
+                     "def act(obs):\n    return {'farmer': ['PASS'], 'hands': [], 'market': []}\n")
+    _write_dir_agent(tmp_path / "iso_hire",
+                     "def act(obs):\n"
+                     "    hands = obs.farms[obs.player]['hands']\n"
+                     "    market = [['HIRE']] if obs.hour == 0 else []\n"
+                     "    return {'farmer': ['PASS'], 'hands': [['PASS'] for _ in hands], 'market': market}\n")
+    registry.register_file(tmp_path / "iso_pass", "iso-pass", "A")
+    registry.register_file(tmp_path / "iso_hire", "iso-hire", "B")
+    res = scheduler.run_match(["iso-pass", "iso-hire"], mode="screen", n=2, workers=1, steps=48, quiet=True)
+    assert len(res["rows"]) == 2
+    for r in res["rows"]:
+        assert r["status0"] == "DONE" and r["status1"] == "DONE", r
+        assert r["crash0"] == r["crash1"] == 0 and r["harness_error"] == "", r
+        pass_side = 0 if r["p0"].startswith("iso-pass") else 1
+        hire_side = 1 - pass_side
+        assert r[f"money{pass_side}"] == 3000.0, "PASS agent never spends"
+        assert r[f"money{hire_side}"] < 3000.0, \
+            "colliding-module agents were played as the same policy (sys.modules leak)"
+
+
+def test_crashing_directory_agent_leaks_no_child_processes(tmp_path, monkeypatch):
+    """2026-08-19 audit finding 1, engine level: after a multi-step game against a
+    permanently-broken agent (import-time failure -> `_kill()` on every call that reaches
+    the child), every child ever spawned must have been reaped -- an unreaped kill leaves
+    zombie processes on the hub host."""
+    import subprocess as _subprocess
+
+    from arena import runner
+
+    broken = tmp_path / "broken"
+    broken.mkdir()
+    (broken / "main.py").write_text(
+        "import totally_missing_module\n\n\ndef agent(obs):\n    return {}\n", encoding="utf-8")
+    entry = registry.register_file(broken, "broken-import", "B")
+    passer = registry.resolve("pass")
+
+    spawned: list = []
+    real_popen = _subprocess.Popen
+
+    class RecordingPopen(real_popen):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            spawned.append(self)
+
+    monkeypatch.setattr(_subprocess, "Popen", RecordingPopen)
+    job = {"game_id": "reap-test", "p0": entry, "p1": passer, "seed": 0, "steps": 24,
+           "keep_replay": "none", "mode": "screen", "run_id": "reap-test"}
+    row = runner.play_game(job)
+
+    # Snapshot returncodes BEFORE any poll/wait of our own -- poll() reaps, hiding the bug.
+    unreaped = [p for p in spawned if p.returncode is None]
+    for p in unreaped:   # never leak real zombies out of the test itself
+        try:
+            p.kill()
+            p.wait(timeout=3)
+        except Exception:
+            pass
+    assert row["harness_error"] == "", row
+    side = 0 if row["p0"].startswith("broken-import") else 1
+    assert row[f"crash{side}"] == 1 and row["result0"] == (0.0 if side == 0 else 1.0), \
+        "a permanently-broken agent is scored a crash-loss"
+    assert len(spawned) >= 1, "the broken agent must actually have spawned a child"
+    assert not unreaped, \
+        f"{len(unreaped)}/{len(spawned)} killed children were never wait()ed (zombie leak)"
+
+
+def test_kill_reaps_live_child(tmp_path):
+    """2026-08-19 audit finding 1, the deterministic core: `_kill()` on a LIVE child must
+    reap it (kill + wait), like `close()` does. Pre-fix it only killed -- on POSIX a
+    killed-but-unwaited child is a zombie until the parent (the hub process) exits, and
+    `__call__` respawns a fresh child on every subsequent call, so the leak is unbounded."""
+    from arena.isolation import SubprocessAgent
+
+    _write_dir_agent(tmp_path / "alive", "def act(obs):\n    return {'ok': obs.step}\n")
+    proxy = SubprocessAgent(tmp_path / "alive" / "main.py", name="alive")
+    try:
+        assert proxy({"step": 1, "remainingOverageTime": 60}, {"actTimeout": 1}) == {"ok": 1}
+        child = proxy.proc
+        assert child is not None and child.poll() is None, "child must be alive before _kill"
+        proxy._kill()
+        assert proxy.proc is None
+        assert child.returncode is not None, \
+            "_kill() left the child un-reaped (zombie on POSIX); it must wait() like close()"
+    finally:
+        proxy.close()
+
+
+def test_stdlib_shadowing_matches_real_loader(tmp_path):
+    """2026-08-19 audit finding 2: the child must sys.path.APPEND the agent dir like the real
+    loader (kaggle_environments.agent.get_last_callable), so a sibling module named after a
+    stdlib module (here `string`) is shadowed BY the stdlib in both loaders. insert(0) made
+    the sibling win in the Pit only -- silent Pit-vs-Kaggle behaviour drift."""
+    import arena.engine as eng
+    from arena.isolation import SubprocessAgent
+
+    shadow = tmp_path / "shadow"
+    shadow.mkdir()
+    (shadow / "string.py").write_text("MARKER = 'FAKE_STRING_MODULE'\n", encoding="utf-8")
+    (shadow / "main.py").write_text(
+        "import string\n\n\ndef agent(obs, config):\n"
+        "    return {'marker': getattr(string, 'MARKER', 'REAL_STDLIB')}\n", encoding="utf-8")
+
+    eng.import_engine()
+    from kaggle_environments.agent import get_last_callable
+    raw = (shadow / "main.py").read_text(encoding="utf-8")
+    real_agent = get_last_callable(raw, path=str(shadow / "main.py"))
+    real_result = real_agent({"step": 0}, {})
+
+    proxy = SubprocessAgent(shadow / "main.py", name="shadow")
+    try:
+        pit_result = proxy({"step": 0, "remainingOverageTime": 60}, {"actTimeout": 1})
+    finally:
+        proxy.close()
+
+    assert real_result == {"marker": "REAL_STDLIB"}, "the real loader shadows agent siblings with the stdlib"
+    assert pit_result == real_result, \
+        "Pit loader resolves a stdlib-shadowing sibling import differently from the real loader"
+
+
+def test_zero_arg_agent_matches_real_loader_trim(tmp_path):
+    """2026-08-19 audit finding 3: the real loader trims args to co_argcount with NO floor
+    (args[:co_argcount]), so a legal zero-argument agent is called with (). The old `or 2`
+    clobbered co_argcount == 0 into a TypeError crash-loss. Two-arg agents keep (obs, config)."""
+    from arena.isolation import SubprocessAgent
+
+    zero = tmp_path / "zero"
+    zero.mkdir()
+    (zero / "main.py").write_text(
+        "def agent():\n    return {'farmer': ['PASS'], 'hands': [], 'market': []}\n", encoding="utf-8")
+    two = tmp_path / "two"
+    two.mkdir()
+    (two / "main.py").write_text(
+        "def agent(obs, config):\n    return {'step': obs.step, 'act': config.actTimeout}\n",
+        encoding="utf-8")
+
+    obs = {"step": 3, "remainingOverageTime": 60}
+    cfg = {"actTimeout": 1}
+    z = SubprocessAgent(zero / "main.py", name="zero")
+    t = SubprocessAgent(two / "main.py", name="two")
+    try:
+        za = z(obs, cfg)
+        ta = t(obs, cfg)
+    finally:
+        z.close()
+        t.close()
+    assert za == {"farmer": ["PASS"], "hands": [], "market": []}, \
+        "a zero-arg agent is legal and must be called with zero args, not (obs, config)"
+    assert ta == {"step": 3, "act": 1}
+
+
+def test_registered_id_covers_gitignored_files():
+    """2026-08-19 hazard: a clean committed dir got a git-sha id that ignored gitignored
+    weights, so re-registering changed weights silently resolved to the old snapshot."""
+    src = REPO / "agent"                      # committed directory agent (the PASS placeholder)
+    marker = src / "zz_test_weights.npz"      # *.npz is gitignored
+    try:
+        marker.write_bytes(b"weights-v1")
+        e1 = registry.register_file(src, "idhaz", "A")
+        assert e1["sha"].startswith("h"), "a snapshot holding gitignored files must not use the git sha"
+        assert (ARENA_DIR / "agents" / e1["id"] / "zz_test_weights.npz").read_bytes() == b"weights-v1"
+        marker.write_bytes(b"weights-v2")
+        e2 = registry.register_file(src, "idhaz", "A")
+        assert e2["id"] != e1["id"], "changed weight bytes must yield a new id"
+        assert (ARENA_DIR / "agents" / e2["id"] / "zz_test_weights.npz").read_bytes() == b"weights-v2"
+    finally:
+        marker.unlink(missing_ok=True)
+
+
 # ----------------------------------------------------------------------------- ratings
 def _g(p0, p1, r0, seed=0):
     return {"p0": p0, "p1": p1, "result0": r0, "seed": seed, "crash0": 0, "crash1": 0, "timeout0": 0, "timeout1": 0,

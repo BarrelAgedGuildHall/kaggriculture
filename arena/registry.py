@@ -2,7 +2,9 @@
 
 Registering a file agent copies it into data/arena/agents/<name>@<sha>[.py] so the arena
 always plays the exact bytes that were registered, whatever happens to the source file later.
-`sha` is the git short sha of the file when it is committed and clean, else a content hash.
+`sha` is the git short sha of the file when it is committed, clean and contains nothing git
+does not track (gitignored weights force it); else a content hash over every file, weights
+included, so re-registering changed bytes always yields a new id.
 Built-ins (`random`, `starter`, `pass`) are residents and are auto-registered on first use.
 """
 from __future__ import annotations
