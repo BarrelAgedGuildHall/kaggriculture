@@ -106,6 +106,82 @@ def test_crashing_agent_is_flagged_and_loses(tmp_path):
         assert r["replay_path"] and Path(r["replay_path"]).exists(), "crash replays are kept"
 
 
+# ------------------------------------------------------------------- module isolation
+# Regression for the 2026-08-19 arena bug: two directory-agents whose main.py resolved
+# siblings with a bare `import policy` were silently played as the SAME policy inside a
+# shared worker (first import wins sys.modules; byte-identical banks at --workers 1).
+
+def _write_dir_agent(root: Path, policy_body: str) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "policy.py").write_text(policy_body, encoding="utf-8")
+    (root / "main.py").write_text("import policy\n\n\ndef agent(obs):\n    return policy.act(obs)\n",
+                                  encoding="utf-8")
+    return root
+
+
+def test_subprocess_agents_do_not_share_modules(tmp_path):
+    """Direct proxy check, no engine: colliding `policy` modules stay distinct policies."""
+    from arena.isolation import SubprocessAgent
+    _write_dir_agent(tmp_path / "alpha", "def act(obs):\n    return {'who': 'alpha', 'step': obs.step}\n")
+    _write_dir_agent(tmp_path / "beta", "def act(obs):\n    return {'who': 'beta', 'step': obs.step}\n")
+    a = SubprocessAgent(tmp_path / "alpha" / "main.py", name="alpha")
+    b = SubprocessAgent(tmp_path / "beta" / "main.py", name="beta")
+    try:
+        obs = {"step": 7, "remainingOverageTime": 60}
+        cfg = {"actTimeout": 1}
+        ra, rb = a(obs, cfg), b(obs, cfg)
+        ra2 = a(obs, cfg)
+    finally:
+        a.close()
+        b.close()
+    assert ra == {"who": "alpha", "step": 7}
+    assert rb == {"who": "beta", "step": 7}, "second agent must play its OWN policy module"
+    assert ra2 == ra
+
+
+def test_colliding_directory_agents_play_their_own_policies(tmp_path):
+    """Engine-level regression at workers=1 (the proven-corrupt case): a PASS-only agent and
+    a HIRE-at-hour-0 agent, both with a sibling module named `policy`, must produce
+    different action streams (visible as different banks) on the same fixed seed."""
+    _write_dir_agent(tmp_path / "iso_pass",
+                     "def act(obs):\n    return {'farmer': ['PASS'], 'hands': [], 'market': []}\n")
+    _write_dir_agent(tmp_path / "iso_hire",
+                     "def act(obs):\n"
+                     "    hands = obs.farms[obs.player]['hands']\n"
+                     "    market = [['HIRE']] if obs.hour == 0 else []\n"
+                     "    return {'farmer': ['PASS'], 'hands': [['PASS'] for _ in hands], 'market': market}\n")
+    registry.register_file(tmp_path / "iso_pass", "iso-pass", "A")
+    registry.register_file(tmp_path / "iso_hire", "iso-hire", "B")
+    res = scheduler.run_match(["iso-pass", "iso-hire"], mode="screen", n=2, workers=1, steps=48, quiet=True)
+    assert len(res["rows"]) == 2
+    for r in res["rows"]:
+        assert r["status0"] == "DONE" and r["status1"] == "DONE", r
+        assert r["crash0"] == r["crash1"] == 0 and r["harness_error"] == "", r
+        pass_side = 0 if r["p0"].startswith("iso-pass") else 1
+        hire_side = 1 - pass_side
+        assert r[f"money{pass_side}"] == 3000.0, "PASS agent never spends"
+        assert r[f"money{hire_side}"] < 3000.0, \
+            "colliding-module agents were played as the same policy (sys.modules leak)"
+
+
+def test_registered_id_covers_gitignored_files():
+    """2026-08-19 hazard: a clean committed dir got a git-sha id that ignored gitignored
+    weights, so re-registering changed weights silently resolved to the old snapshot."""
+    src = REPO / "agent"                      # committed directory agent (the PASS placeholder)
+    marker = src / "zz_test_weights.npz"      # *.npz is gitignored
+    try:
+        marker.write_bytes(b"weights-v1")
+        e1 = registry.register_file(src, "idhaz", "A")
+        assert e1["sha"].startswith("h"), "a snapshot holding gitignored files must not use the git sha"
+        assert (ARENA_DIR / "agents" / e1["id"] / "zz_test_weights.npz").read_bytes() == b"weights-v1"
+        marker.write_bytes(b"weights-v2")
+        e2 = registry.register_file(src, "idhaz", "A")
+        assert e2["id"] != e1["id"], "changed weight bytes must yield a new id"
+        assert (ARENA_DIR / "agents" / e2["id"] / "zz_test_weights.npz").read_bytes() == b"weights-v2"
+    finally:
+        marker.unlink(missing_ok=True)
+
+
 # ----------------------------------------------------------------------------- ratings
 def _g(p0, p1, r0, seed=0):
     return {"p0": p0, "p1": p1, "result0": r0, "seed": seed, "crash0": 0, "crash1": 0, "timeout0": 0, "timeout1": 0,
