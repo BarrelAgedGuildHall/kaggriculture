@@ -31,7 +31,15 @@ from .layout import SitePlan
 from .main import make_chassis
 from .routing import Router
 
+# Batch/courier constants: probe values, kept after two measured attempts to
+# trade sale/feed latency for fewer trips BOTH lost win rate (expB-201):
+#   iter2 (courier 8, WHEAT 16, FERT 8): MOVE 35-38 -> 32%, win 62.5/65.6 ->
+#     43.8/29.7% — sellables delayed in pockets sell a day late;
+#   iter3 (WHEAT 16 only): 43.8/48.4% — one unit hoards the shed's wheat and
+#     the other clusters' FEEDs starve.
+# MOVE fraction is a diagnostic, not the objective.
 BATCH = {"WHEAT": 8, "FERTILIZER": 4, "GOOSE": 3, "COW": 3, "SHEEP": 3}
+COURIER_CARRY = 5  # same-day shed delivery is a measured chassis lesson
 
 
 def _requirement(act):
@@ -323,7 +331,7 @@ def _plan(obs, S, deadline):
     if not endgame:
         for i, pos in enumerate(units):
             carry = sum(n for it, n in invs[i].items() if it not in ("WHEAT",) and it not in pc.ANIMALS)
-            if carry >= 5:
+            if carry >= COURIER_CARRY:
                 if pos in pc.SHED_TILES:
                     actions[i] = ["DROP"]
                 else:
