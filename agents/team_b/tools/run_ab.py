@@ -76,14 +76,20 @@ def main(argv=None):
     ap.add_argument("--b", required=True, help="agent B spec")
     ap.add_argument("--pairs", type=int, default=32, help="seed pairs (2 episodes each)")
     ap.add_argument("--seed-base", type=int, default=0)
+    ap.add_argument("--seed-list", default=None,
+                    help="comma-separated explicit seeds (overrides --pairs/--seed-base)")
     ap.add_argument("--steps", type=int, default=720)
     ap.add_argument("--workers", type=int, default=0)
     ap.add_argument("--out", default=None)
     ap.add_argument("--tag", default="")
     args = ap.parse_args(argv)
 
+    if args.seed_list:
+        seeds = [int(x) for x in args.seed_list.split(",") if x.strip() != ""]
+    else:
+        seeds = list(range(args.seed_base, args.seed_base + args.pairs))
     jobs = []
-    for s in range(args.seed_base, args.seed_base + args.pairs):
+    for s in seeds:
         jobs.append((args.a, args.b, s, False, args.steps))
         jobs.append((args.a, args.b, s, True, args.steps))
 
@@ -113,8 +119,9 @@ def main(argv=None):
     from importlib.metadata import version as _v
     summary = {
         "engine": _v("kaggle-environments"),
-        "tag": args.tag, "a": args.a, "b": args.b, "n_episodes": n, "pairs": args.pairs,
-        "seeds": [args.seed_base, args.seed_base + args.pairs - 1], "steps": args.steps,
+        "tag": args.tag, "a": args.a, "b": args.b, "n_episodes": n, "pairs": len(seeds),
+        "seeds": seeds if args.seed_list else [args.seed_base, args.seed_base + len(seeds) - 1],
+        "steps": args.steps,
         "win_rate_a": round(score / n, 4), "ci95": [round(lo, 4), round(hi, 4)],
         "money_a_mean": round(statistics.fmean(ma), 1), "money_a_std": round(statistics.pstdev(ma), 1),
         "money_b_mean": round(statistics.fmean(mb), 1), "money_b_std": round(statistics.pstdev(mb), 1),

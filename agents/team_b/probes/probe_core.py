@@ -60,6 +60,10 @@ DEFAULTS = {
     "care": True,             # CARE fed animals daily
     "wheat_buy_cap": 55,      # stop buying feed above this quote (autarky band)
     "capex_stop_day": 24,     # no new assets from this day
+    # ---- shop-draw adaptivity (expB-110)
+    "adaptive_carrots": False,  # plant carrots only while the quote is rich (re-priced daily)
+    "carrot_price_gate": 45,    # CARROT quote that turns carrot planting on
+    "carrot_tiles_max": 10,     # adaptive carrot tile cap
     # ---- selling
     "sell_policy": "onsight", # "onsight" | "meter" (class-aware, expB-106)
     "wheat_reserve": 2.0,     # keep wheat >= reserve * herd
@@ -102,6 +106,15 @@ def _fib(n):
     for _ in range(n):
         a, b = b, a + b
     return a
+
+
+def _want_carrots(P, prices, day):
+    """Carrot tile target: fixed opening plan, or re-priced daily (expB-110)."""
+    if P["adaptive_carrots"]:
+        if day <= 22 and prices.get("CARROT", 0) >= P["carrot_price_gate"]:
+            return P["carrot_tiles_max"]
+        return 0
+    return P["carrots_day0"] if day <= 3 else 0
 
 
 def _drain_per_day(town, product):
@@ -311,7 +324,7 @@ def _act(obs, P, st):
                                max(0, 25 * len(me["unlocked_quadrants"]) - n_animals - 2))
         need = {
             "WHEAT": 0 if seeds.get("WHEAT", 0) > 8 else max(0, want_wheat_tiles - crop_counts.get("WHEAT", 0) - seeds.get("WHEAT", 0)),
-            "CARROT": max(0, (P["carrots_day0"] if day <= 3 else 0) - crop_counts.get("CARROT", 0) - seeds.get("CARROT", 0)),
+            "CARROT": max(0, _want_carrots(P, prices, day) - crop_counts.get("CARROT", 0) - seeds.get("CARROT", 0)),
             "MELON": max(0, (P["melon_tiles"] if day <= 18 else 0) - crop_counts.get("MELON", 0) - seeds.get("MELON", 0)),
         }
         for crop, k in need.items():
@@ -409,7 +422,7 @@ def _act(obs, P, st):
             plan = []
             plan += ["MELON"] * max(0, P["melon_tiles"] - crop_counts.get("MELON", 0))
             plan += ["WHEAT"] * max(0, min(P["wheat_tiles"], 3 * len(units)) - crop_counts.get("WHEAT", 0))
-            plan += ["CARROT"] * max(0, (P["carrots_day0"] if day <= 3 else 0) - crop_counts.get("CARROT", 0))
+            plan += ["CARROT"] * max(0, _want_carrots(P, prices, day) - crop_counts.get("CARROT", 0))
             avail_seeds = dict(seeds)
             for crop in plan:
                 if not free:
