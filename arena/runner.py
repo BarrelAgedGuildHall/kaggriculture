@@ -1,8 +1,10 @@
 """Play one arena game inside a worker process and return a flat result row.
 
-The framework's own `Agent` wrapper runs each agent (file agents are exec'd into their own
-namespace, exactly as Kaggle does), catches exceptions (status ERROR) and measures per-turn
-wall time (`duration`), which is what we store. Timing is whatever the framework measured.
+File agents run behind `isolation.SubprocessAgent` -- each in its own interpreter, exactly
+one agent per process, like Kaggle's sandbox (see isolation.py for the 2026-08-19
+sys.modules-collision bug this prevents). The framework's `Agent` wrapper still catches
+exceptions (status ERROR) and measures per-turn wall time (`duration`), which is what we
+store; a subprocess agent's duration now includes its (small) JSON-IPC overhead.
 """
 from __future__ import annotations
 
@@ -24,7 +26,8 @@ def _agent_for(entry: dict):
     if kind == "builtin":
         return entry["entry"]
     if kind == "file":
-        return str(AGENTS_DIR / entry["entry"])
+        from .isolation import SubprocessAgent
+        return SubprocessAgent(AGENTS_DIR / entry["entry"], name=entry["id"])
     if kind == "ghost":
         from .ghost import load_ghost
         return load_ghost(entry)
@@ -65,6 +68,7 @@ def play_game(job: dict) -> dict:
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
     env = None
+    agents: list = []
     try:
         ke = eng.import_engine()
         cfg = dict(job.get("configuration") or {})
@@ -101,6 +105,14 @@ def play_game(job: dict) -> dict:
             row["result0"] = 1.0 if row["money0"] > row["money1"] else (0.0 if row["money0"] < row["money1"] else 0.5)
     except Exception:
         row["harness_error"] = traceback.format_exc()[-1000:]
+    finally:
+        for a in agents:                       # terminate subprocess agents, every game
+            close = getattr(a, "close", None)
+            if callable(close):
+                try:
+                    close()
+                except Exception:
+                    pass
     row["wall_s"] = round(time.perf_counter() - t0, 2)
 
     keep = job.get("keep_replay", "crash")

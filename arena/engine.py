@@ -73,8 +73,12 @@ def arena_git_sha() -> str:
 
 
 def file_git_sha(path: Path) -> str | None:
-    """Short commit sha of the last commit touching `path`, only if the file is committed and
-    unmodified in the working tree; otherwise None (caller falls back to a content hash)."""
+    """Short commit sha of the last commit touching `path`, only if the file is committed,
+    unmodified in the working tree AND contains nothing git does not track; otherwise None
+    (caller falls back to a content hash over every file). The last condition matters: model
+    weights are gitignored (*.npz etc.), so a snapshot with weights in it must never be
+    identified by the commit sha alone -- re-registering the same name at the same commit
+    with different weights would silently resolve to the old snapshot (2026-08-19 hazard)."""
     try:
         rel = path.resolve().relative_to(REPO_ROOT)
     except ValueError:
@@ -83,6 +87,11 @@ def file_git_sha(path: Path) -> str | None:
         status = subprocess.run(["git", "status", "--porcelain", "--", str(rel)], cwd=REPO_ROOT, text=True,
                                 capture_output=True, timeout=10).stdout.strip()
         if status:
+            return None
+        # gitignored files inside the snapshot (untracked non-ignored ones already show in status)
+        ignored = subprocess.run(["git", "ls-files", "--others", "--ignored", "--exclude-standard", "--", str(rel)],
+                                 cwd=REPO_ROOT, text=True, capture_output=True, timeout=10).stdout
+        if any(ln.strip() and "__pycache__" not in ln and not ln.endswith(".pyc") for ln in ignored.splitlines()):
             return None
         sha = subprocess.run(["git", "log", "-1", "--format=%h", "--", str(rel)], cwd=REPO_ROOT, text=True,
                              capture_output=True, timeout=10).stdout.strip()
