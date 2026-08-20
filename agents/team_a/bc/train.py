@@ -109,6 +109,28 @@ def train_net(name, xtr, ytr, mtr, xva, yva, mva, heads, weights, args, seed):
 
 
 
+def pickup_qty_by_item(net, x, mu, sd, qty_lab, item_lab):
+    """PICKUP count accuracy split by item. The aggregate (0.578 in exp-003b) hides that
+    WHEAT is within one unit 99.5% of the time while FERTILIZER is not."""
+    if not len(x):
+        return {}
+    pq = net.forward((x - mu) / sd)["qty"].argmax(1).astype(int)
+    y = qty_lab.astype(int)
+    m = y >= 0
+    rep = {}
+    for ii in range(F.N_ITEMS):
+        s = m & (item_lab == ii)
+        n = int(s.sum())
+        if n < 5:
+            continue
+        p_, y_ = pq[s], y[s]
+        rep[F.ITEMS[ii]] = {"n_val": n, "top1": round(float((p_ == y_).mean()), 3),
+                            "within1": round(float((np.abs(p_ - y_) <= 1).mean()), 3),
+                            "med_pred": F.QTY_BUCKETS[int(np.median(p_))],
+                            "med_true": F.QTY_BUCKETS[int(np.median(y_))]}
+    return rep
+
+
 def train_market(xtr, mtr, qtr, htr, xva, mva, qva, hva, args, seed):
     """Per-turn market head: one sigmoid per concrete order type (multi-label), a quantity
     softmax per order type, and a count head for HIRE.
@@ -183,10 +205,42 @@ def train_market(xtr, mtr, qtr, htr, xva, mva, qva, hva, args, seed):
                         "th": round(best[1], 3), "prec": round(best[2], 3),
                         "rec": round(best[3], 3)}
     hire_acc = 0.0
+    qty_report = {}
     if len(xva):
-        ph = net.forward((xva - mu) / sd)["hire"].argmax(1)
+        out = net.forward((xva - mu) / sd)
+        ph = out["hire"].argmax(1)
         hire_acc = float((ph == hva).mean())
-    return net, mu, sd, thresholds, {"orders": report, "hire_top1": round(hire_acc, 4)}
+        # QUANTITY IS AN EMITTED FIELD, SO IT GETS A METRIC. exp-003b was lost to a
+        # `PICKUP` count that was emitted but never scored ("an unscored field is guessed,
+        # not cloned"); the market order quantity was in exactly the same position until
+        # this block existed. Buys are what the network really decides -- SELL quantities
+        # are overridden by the safety-3 liquidation rule.
+        ql = out["qty"].reshape(len(xva), F.N_ORDERS, F.N_QTY).argmax(2)
+        agg = {"buy": [0, 0, 0], "sell": [0, 0, 0]}
+        per = {}
+        for oi in range(F.N_ORDERS):
+            sel = qva[:, oi] >= 0
+            n = int(sel.sum())
+            if n < 5:
+                continue
+            p, y = ql[sel, oi].astype(int), qva[sel, oi].astype(int)
+            hit, near = int((p == y).sum()), int((np.abs(p - y) <= 1).sum())
+            tname, item = F.ORDER_TYPES[oi]
+            per[f"{tname}:{item}"] = {"n_val": n, "top1": round(hit / n, 3),
+                                      "within1": round(near / n, 3),
+                                      "med_pred": F.QTY_BUCKETS[int(np.median(p))],
+                                      "med_true": F.QTY_BUCKETS[int(np.median(y))]}
+            g = agg["sell" if tname == "SELL" else "buy"]
+            g[0] += n
+            g[1] += hit
+            g[2] += near
+        qty_report = {"per_order": per, "buy_top1": round(agg["buy"][1] / max(1, agg["buy"][0]), 4),
+                      "buy_within1": round(agg["buy"][2] / max(1, agg["buy"][0]), 4),
+                      "buy_n": agg["buy"][0],
+                      "sell_top1": round(agg["sell"][1] / max(1, agg["sell"][0]), 4),
+                      "sell_n": agg["sell"][0]}
+    return net, mu, sd, thresholds, {"orders": report, "hire_top1": round(hire_acc, 4),
+                                     "order_qty": qty_report}
 
 
 def main(argv=None) -> int:
@@ -253,6 +307,8 @@ def main(argv=None) -> int:
         "extract_stats": meta["stats"],
         "val_unit": {k: {"top1": round(v[0], 4), "macro": round(v[1], 4), "n": v[2]}
                      for k, v in uva.items()},
+        "val_pickup_qty": pickup_qty_by_item(unet, uxv, umu, usd,
+                                             uyv["qty"], d["val_unit_item"]),
         "val_market": mreport,
         "train_wall_s": round(time.perf_counter() - t0, 1),
     }
@@ -260,7 +316,8 @@ def main(argv=None) -> int:
     path = Path(args.out)
     path.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(path, **out)
-    print("\n" + json.dumps({k: card[k] for k in ("val_unit", "val_market")}, indent=1))
+    print("\n" + json.dumps({k: card[k] for k in
+                             ("val_unit", "val_pickup_qty", "val_market")}, indent=1))
     print(f"wrote {path} ({path.stat().st_size/1e6:.2f} MB) in {card['train_wall_s']}s")
     return 0
 
