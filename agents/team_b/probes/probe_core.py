@@ -154,6 +154,7 @@ def _act(obs, P, st):
 
     units = [tuple(me["farmer"])] + [tuple(h) for h in me["hands"]]
     invs = [dict(priv["inventories"][i]) if i < len(priv["inventories"]) else {} for i in range(len(units))]
+    carried_animals = {a: sum(iv.get(a, 0) for iv in invs) for a in ANIMALS}
 
     # ---- census -----------------------------------------------------------
     animals, plants, empties, empty_structs = [], [], [], []
@@ -183,7 +184,7 @@ def _act(obs, P, st):
     orders = []
 
     # SELLs first (a same-turn sale funds a same-turn purchase).
-    herd = n_animals + sum(shed.get(a, 0) for a in ANIMALS)
+    herd = n_animals + sum(shed.get(a, 0) + carried_animals[a] for a in ANIMALS)
     # sell-side reserve is deliberately ABOVE the buy-side target: we buy up to
     # wheat_reserve*herd and only sell past 2.5*herd, so feed never round-trips.
     reserve_wheat = 0 if endgame else int(2.5 * max(1, herd))
@@ -376,7 +377,8 @@ def _act(obs, P, st):
             if not t["watered_today"] and age < cd["maxday"]:
                 prio = 2.5 if t["consecutive_unwatered"] >= 1 else 5
                 tasks.append((prio, (x, y), ["WATER"], ("W", x, y)))
-            ready = age >= cd["maxday"] or (day >= last_day - 1 and age >= cd["first"])
+            ready_age = cd["first"] if crop == "MELON" else cd["maxday"]
+            ready = age >= ready_age or (day >= last_day - 1 and age >= cd["first"])
             if ready and t.get("yield_units", 0) > 0:
                 tasks.append((4, (x, y), ["HARVEST"], ("H", x, y)))
             if (P["fertilize_wheat"] and crop == "WHEAT" and age <= 2
@@ -384,11 +386,12 @@ def _act(obs, P, st):
                 tasks.append((7, (x, y), ["FERTILIZE"], ("FZ", x, y)))
         # planting plan on empty tiles: coops/pastures for shed animals first,
         # then wheat / carrot / melon up to their targets.
-        shed_geese = shed.get("GOOSE", 0)
-        shed_pasture = shed.get("COW", 0) + shed.get("SHEEP", 0)
+        avail_geese = shed.get("GOOSE", 0) + carried_animals["GOOSE"]
+        avail_pasture = (shed.get("COW", 0) + carried_animals["COW"]
+                         + shed.get("SHEEP", 0) + carried_animals["SHEEP"])
         free = list(empties)
-        coop_needs = max(0, shed_geese - sum(1 for _, k in empty_structs if k == "COOP"))
-        past_needs = max(0, shed_pasture - sum(1 for _, k in empty_structs if k == "PASTURE"))
+        coop_needs = max(0, avail_geese - sum(1 for _, k in empty_structs if k == "COOP"))
+        past_needs = max(0, avail_pasture - sum(1 for _, k in empty_structs if k == "PASTURE"))
         for _ in range(min(coop_needs, len(free))):
             x, y = free.pop(0)
             tasks.append((2, (x, y), ["BUILD_COOP"], ("B", x, y)))
@@ -396,8 +399,11 @@ def _act(obs, P, st):
             x, y = free.pop(0)
             tasks.append((2, (x, y), ["BUILD_PASTURE"], ("B", x, y)))
         for (x, y), kind in empty_structs:
-            animal = "GOOSE" if kind == "COOP" else ("COW" if shed.get("COW", 0) > 0 else "SHEEP")
-            if shed.get(animal, 0) > 0:
+            if kind == "COOP":
+                animal = "GOOSE"
+            else:
+                animal = "COW" if (shed.get("COW", 0) + carried_animals["COW"]) > 0 else "SHEEP"
+            if shed.get(animal, 0) + carried_animals[animal] > 0:
                 tasks.append((0, (x, y), ["PLACE", animal], ("P", x, y)))
         if capex_ok:
             plan = []
@@ -483,9 +489,10 @@ def _act(obs, P, st):
                 crop = t["crop"]
                 cd = CROPS.get(crop)
                 age = day - t["planted_day"]
+                r_age = cd["first"] if crop == "MELON" else cd["maxday"] if cd else 99
                 if cd and not t["watered_today"] and age < cd["maxday"]:
                     act = ["WATER"]
-                elif cd and age >= cd["maxday"] and t.get("yield_units", 0) > 0:
+                elif cd and age >= r_age and t.get("yield_units", 0) > 0:
                     act = ["HARVEST"]
             if act:
                 actions[i] = act
