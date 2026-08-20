@@ -163,6 +163,7 @@ def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
     fert = [{"available_days": 0, "collected_days": 0} for _ in range(n_players)]
     escapes = [0, 0]
     weed_kills = [0, 0]
+    weed_detail = [[], []]
     lifespan_weeds = [0, 0]
     melon_planted = [0, 0]
     unit_days = [0, 0]
@@ -303,6 +304,10 @@ def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
                             and isinstance(post_t, dict) and post_t.get("kind") == "WEED"):
                         if hour == turns_per_day - 1 and not pre_t["watered_today"] and pre_t["consecutive_unwatered"] >= 1:
                             weed_kills[pi] += 1
+                            weed_detail[pi].append({
+                                "day": day, "pos": [x, y], "crop": pre_t["crop"],
+                                "age": day - pre_t["planted_day"],
+                                "yield": pre_t.get("yield_units", 0)})
                         else:
                             lifespan_weeds[pi] += 1
 
@@ -380,6 +385,7 @@ def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
             "unfed_detail": fd["unfed"],
             "escapes": escapes[pi],
             "weed_kills_unwatered": weed_kills[pi],
+            "weed_kill_detail": weed_detail[pi],
             "weeds_lifespan_decay": lifespan_weeds[pi],
             "fertilizer_available_days": fert[pi]["available_days"],
             "fertilizer_collected_days": fert[pi]["collected_days"],
