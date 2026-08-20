@@ -1,9 +1,11 @@
-"""Package the agent exactly as Kaggle expects and verify it runs standalone.
+"""Package an agent exactly as Kaggle expects and verify it runs standalone.
 
 Kaggle accepts (docs/engine/AGENTS.md): a single `main.py` exposing `agent(obs)`, or a
 `.tar.gz` with `main.py` at the root plus helper modules / weights. We package whatever is
-in `agent/`: if it is only `main.py`, the artefact is `dist/main.py`; otherwise it is
-`dist/submission.tar.gz` (flat, `main.py` at root; `__pycache__` and tests excluded).
+in the agent directory (`--agent-dir`, default `agent/`): if it is only `main.py`, the
+artefact is `dist/main.py`; otherwise it is `dist/submission.tar.gz` (`main.py` at root,
+subdirectories such as `weights/` preserved; `__pycache__`, tests, `*.md` excluded, plus
+anything matched by `--exclude` -- training-only modules do not belong in a submission).
 
 `--verify` unpacks the artefact into a temporary directory and plays one full episode
 (vs the built-in `random` agent) from a FRESH uv virtualenv containing only the pinned
@@ -11,9 +13,11 @@ kaggle-environments -- i.e. no access to this repo's modules -- which is what Ka
 runner sees. Pass `--no-fresh-venv` for a quick check with the current interpreter.
 
 Usage:
-    uv run python scripts/make_submission.py                 # build only
+    uv run python scripts/make_submission.py                 # build agent/ only
     uv run python scripts/make_submission.py --verify        # build + standalone episode in a fresh venv
     uv run python scripts/make_submission.py --verify --no-fresh-venv
+    uv run python scripts/make_submission.py --verify \
+        --agent-dir agents/team_a/bc --exclude train.py --exclude extract.py --exclude audit.py
 
 By default this script never submits. `--submit` is a deliberate, separate path:
 
@@ -57,7 +61,7 @@ LEDGER_COLUMNS = [
     "ladder record (W-L-T, rating) as of", "notes",
 ]
 
-AGENT_DIR = REPO_ROOT / "agent"
+DEFAULT_AGENT_DIR = "agent"
 DIST_DIR = REPO_ROOT / "dist"
 EXCLUDE_DIRS = {"__pycache__", "tests", ".pytest_cache"}
 EXCLUDE_SUFFIXES = {".pyc", ".md"}
@@ -84,22 +88,36 @@ print("VERIFY " + json.dumps({
 '''
 
 
-def collect_files() -> list[Path]:
+def resolve_agent_dir(spec: str) -> Path:
+    d = Path(spec)
+    if not d.is_absolute():
+        d = (Path.cwd() / d) if (Path.cwd() / d).is_dir() else (REPO_ROOT / d)
+    d = d.resolve()
+    if not d.is_dir():
+        raise SystemExit(f"agent directory not found: {spec}")
+    return d
+
+
+def collect_files(agent_dir: Path, excludes: list[str]) -> list[Path]:
+    import fnmatch
     files = []
-    for p in sorted(AGENT_DIR.rglob("*")):
+    for p in sorted(agent_dir.rglob("*")):
         if p.is_dir():
             continue
-        if any(part in EXCLUDE_DIRS for part in p.relative_to(AGENT_DIR).parts):
+        rel = p.relative_to(agent_dir)
+        if any(part in EXCLUDE_DIRS for part in rel.parts):
             continue
         if p.suffix in EXCLUDE_SUFFIXES:
             continue
+        if any(fnmatch.fnmatch(rel.as_posix(), pat) or fnmatch.fnmatch(p.name, pat) for pat in excludes):
+            continue
         files.append(p)
-    if not (AGENT_DIR / "main.py").exists():
-        raise SystemExit(f"{AGENT_DIR / 'main.py'} is missing -- Kaggle requires main.py at the root")
+    if not (agent_dir / "main.py").exists():
+        raise SystemExit(f"{agent_dir / 'main.py'} is missing -- Kaggle requires main.py at the root")
     return files
 
 
-def build(files: list[Path]) -> Path:
+def build(agent_dir: Path, files: list[Path]) -> Path:
     DIST_DIR.mkdir(exist_ok=True)
     for old in DIST_DIR.glob("*"):
         old.unlink() if old.is_file() else shutil.rmtree(old)
@@ -110,7 +128,7 @@ def build(files: list[Path]) -> Path:
         out = DIST_DIR / "submission.tar.gz"
         with tarfile.open(out, "w:gz") as tar:
             for f in files:
-                tar.add(f, arcname=str(f.relative_to(AGENT_DIR).as_posix()))
+                tar.add(f, arcname=str(f.relative_to(agent_dir).as_posix()))
     return out
 
 
@@ -283,7 +301,7 @@ def record_attempt(args, artefact: Path, mode: str, result: str, sub_id: str = "
     append_ledger_row(ledger, {
         "date (UTC)": ts,
         "team": args.team or "unspecified",
-        "agent@sha": f"agent/main.py@{git_sha()}",
+        "agent@sha": f"{args.agent_dir}/main.py@{git_sha()}",
         "artefact sha256": sha,
         "Pit gate": args.pit_gate or "n/a",
         "Auditor": args.auditor or "n/a",
@@ -349,6 +367,10 @@ def do_submit(artefact: Path, args) -> int:
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--agent-dir", default=DEFAULT_AGENT_DIR,
+                   help="agent directory to package (repo-relative or absolute), e.g. agents/team_a/bc")
+    p.add_argument("--exclude", action="append", default=[], metavar="GLOB",
+                   help="file name/path glob to leave out of the artefact (repeatable), e.g. train.py")
     p.add_argument("--verify", action="store_true", help="play one episode with the packaged artefact")
     p.add_argument("--no-fresh-venv", action="store_true", help="verify with the current interpreter instead of a fresh uv venv")
     p.add_argument("--seed", type=int, default=0)
@@ -362,9 +384,12 @@ def main(argv=None) -> int:
     p.add_argument("--dry-run", action="store_true", help="with --submit: do everything except call `kaggle competitions submit` for real (verify still runs; the attempt is still logged to the audit log + ledger)")
     args = p.parse_args(argv)
 
-    files = collect_files()
-    artefact = build(files)
-    print(f"artefact : {artefact}  ({artefact.stat().st_size} B, {len(files)} file(s): {[f.name for f in files]})")
+    agent_dir = resolve_agent_dir(args.agent_dir)
+    files = collect_files(agent_dir, args.exclude)
+    artefact = build(agent_dir, files)
+    print(f"agent    : {agent_dir}")
+    print(f"artefact : {artefact}  ({artefact.stat().st_size} B, {len(files)} file(s): "
+          f"{[f.relative_to(agent_dir).as_posix() for f in files]})")
 
     if args.submit:
         return do_submit(artefact, args)

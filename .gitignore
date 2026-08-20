@@ -16,6 +16,9 @@ episode-*-replay.json
 *.npz
 *.h5
 *.onnx
+# EXCEPTION (repo policy): small inference weights that SHIP WITH a frozen agent are
+# allowed in git, <= 5 MB per file -- training corpora/checkpoints stay in the warehouse.
+!agents/**/weights/*.npz
 
 # Submission artefacts
 dist/
