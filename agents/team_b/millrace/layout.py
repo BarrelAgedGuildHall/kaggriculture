@@ -52,8 +52,47 @@ class SitePlan:
     def take_melon_site(self):
         return self._pop(self._far, False)
 
+    def take_melon_site_capped(self, board=10):
+        """Feed-chain arm only (the frozen expB-201 champion keeps the plain
+        far-pop above). Fringe but never the far corners: melon needs one
+        WATER every day for 10-12 days, and at anchor-distance 8-9 that
+        service reliably loses scheduling races (14 of 17 weed-kills in the
+        expB-213 M4 gate run were corner melons at age 8-11)."""
+        for p in reversed(self._far):
+            if p not in self._taken and dist(p, anchor_of(p, board)) <= 6:
+                self._taken.add(p)
+                return p
+        return self._pop(self._far, False)
+
     def take_crop_site(self):
         return self._pop(self._far, False)
+
+    def take_crop_site_capped(self, board=10):
+        """Feed-chain arm only (the frozen expB-201 champion keeps the plain
+        far-pop above). Fringe, but corners (anchor-distance 7-8) only as a
+        last resort — daily watering at that distance reliably loses
+        scheduling races and the plant weeds out (measured in both expB-213
+        M4 gate runs)."""
+        for p in reversed(self._far):
+            if p not in self._taken and dist(p, anchor_of(p, board)) <= 6:
+                self._taken.add(p)
+                return p
+        return self._pop(self._far, False)
+
+    def take_wheat_site(self, board=10):
+        """M6 siting: wheat lives INSIDE the animal clusters so feed does not
+        have to be couriered from the shed (the load-bearing feed-courier MOVE
+        found by expB-201) — but NOT in the innermost ring: the first cut of
+        this method popped the near pool front and displaced later pastures to
+        the cluster fringe (measured: unfed cows at anchor-distance 4-5,
+        expB-213 audit_v1). Animals keep the ring at distance < 2; wheat takes
+        the nearest tile at distance >= 2. Only the feed-chain arm calls this;
+        the frozen expB-201 champion keeps wheat on the fringe."""
+        for p in self._near:
+            if p not in self._taken and dist(p, anchor_of(p, board)) >= 2:
+                self._taken.add(p)
+                return p
+        return self._pop(self._near, True)
 
     def remaining(self):
         return [p for p in self._near if p not in self._taken]

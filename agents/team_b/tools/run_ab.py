@@ -65,9 +65,14 @@ def _load(spec: str):
         # in sys.modules with probe_core or any directory-agent (arena bug of
         # 2026-08-19 — two directory-agents sharing top-level module names).
         from millrace.routed_probe import make_routed_agent
+        from millrace.feedchain import make_feedchain_agent
         arg = spec[9:]
         if arg == "routed_mixed":
             return make_routed_agent()
+        if arg == "feedchain":
+            return make_feedchain_agent()
+        if arg.startswith("feedchain{"):
+            return make_feedchain_agent(json.loads(arg[len("feedchain"):]))
         if arg.startswith("{"):
             return make_routed_agent(json.loads(arg))
         raise ValueError(f"unknown millrace spec: {spec}")

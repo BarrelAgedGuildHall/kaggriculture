@@ -129,4 +129,5 @@ def make_chassis(plan_fn, state_factory=dict, deadline_s=0.25):
         return out
 
     agent.timings = timings
+    agent.state = state  # read-only diagnostics hook (feed_audit / debug tools)
     return agent

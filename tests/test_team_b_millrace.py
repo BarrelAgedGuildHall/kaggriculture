@@ -271,3 +271,61 @@ def test_market_price_table_interpolates_observed_curve():
         m.observe(obs)
     assert abs(m.price_at("EGG", 102) - 46.0) < 1e-9   # interpolated
     assert m.price_at("EGG", 100) == 50.0              # exact
+
+
+# ------------------------------------------------- service M4 scheduler
+def _animal(fed=False, cared=False, unfed_days=0, fert=False, yld=0, kind="GOOSE"):
+    return {"kind": "COOP" if kind == "GOOSE" else "PASTURE", "animal": kind,
+            "fed_today": fed, "cared_today": cared, "consecutive_unfed": unfed_days,
+            "fertilizer_available": fert, "yield_units": yld, "placed_day": 0}
+
+
+def test_service_feed_rationing_criticals_always_eat():
+    from millrace.service import animal_tasks, URGENT_FEED
+    animals = [((0, 0), _animal(unfed_days=1)),   # critical
+               ((1, 0), _animal()), ((2, 0), _animal())]  # routine
+    P = {"care": True}
+    tasks = animal_tasks(animals, wheat_stock=2, P=P, hour=5, last_day_soon=False)
+    feeds = [t for t in tasks if t[2] == ["FEED"]]
+    # wheat 2, criticals 1 -> 1 critical + 1 routine task, second routine starves
+    assert len(feeds) == 2
+    assert feeds[0][0] == URGENT_FEED or any(t[0] == URGENT_FEED for t in feeds)
+
+
+def test_service_care_only_when_fed():
+    from millrace.service import animal_tasks
+    animals = [((0, 0), _animal(fed=True)), ((1, 0), _animal(fed=False))]
+    tasks = animal_tasks(animals, wheat_stock=0, P={"care": True}, hour=5, last_day_soon=False)
+    cares = [t for t in tasks if t[2] == ["CARE"]]
+    assert len(cares) == 1
+    assert cares[0][1] == (0, 0)  # only the fed animal gets CARE
+
+
+def test_feedrouter_skips_unsuppliable_tasks():
+    from millrace.service import FeedRouter
+    r = FeedRouter()
+    units = [(2, 2)]
+    busy = [False]
+    actions = [["PASS"]]
+    # FEED requires WHEAT; the unit carries none and the shed is empty ->
+    # the task must not be picked (the base router churned a claim on it)
+    tasks = [(1, (1, 1), ["FEED"], ("F", 1, 1))]
+    ctx = _ctx([{}], {"WHEAT": 0})
+    r.plan(0, units, busy, actions, tasks, ctx)
+    assert actions[0] == ["PASS"] and not busy[0]
+
+
+def test_feedrouter_borrows_urgent_cross_cluster():
+    from millrace.service import FeedRouter
+    r = FeedRouter()
+    units = [(2, 2)]  # NW
+    busy = [False]
+    actions = [["PASS"]]
+    # home (NW) has only routine work it cannot supply; NE has an urgent FEED
+    # and the unit carries wheat -> it must leave home
+    tasks = [(0.25, (7, 1), ["FEED"], ("F", 7, 1))]
+    ctx = _ctx([{"WHEAT": 3}], {"WHEAT": 0}, quads=("NW", "NE"))
+    r.home = {0: "NW"}
+    r.day = 0
+    r.plan(0, units, busy, actions, tasks, ctx)
+    assert busy[0] and actions[0] != ["PASS"]
