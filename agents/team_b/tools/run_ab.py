@@ -38,6 +38,7 @@ def wilson(score: float, n: int, z: float = 1.96):
 def _init_worker():
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
     sys.path.insert(0, str(REPO_ROOT / "agents" / "team_b" / "probes"))
+    sys.path.insert(0, str(REPO_ROOT / "agents" / "team_b"))
     global _KE
     from _engine import import_engine
     _KE = import_engine()
@@ -49,6 +50,17 @@ def _load(spec: str):
         arg = spec[6:]
         params = json.loads(arg) if arg.startswith("{") else dict(PRESETS[arg])
         return make_agent(params)
+    if spec.startswith("millrace:"):
+        # in-process factory with a package-unique module name: cannot collide
+        # in sys.modules with probe_core or any directory-agent (arena bug of
+        # 2026-08-19 — two directory-agents sharing top-level module names).
+        from millrace.routed_probe import make_routed_agent
+        arg = spec[9:]
+        if arg == "routed_mixed":
+            return make_routed_agent()
+        if arg.startswith("{"):
+            return make_routed_agent(json.loads(arg))
+        raise ValueError(f"unknown millrace spec: {spec}")
     if spec in ("pass", "random", "starter"):
         return spec
     p = Path(spec)

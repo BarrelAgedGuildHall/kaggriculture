@@ -41,6 +41,15 @@ def load_agent(spec: str):
         arg = spec[6:]
         params = json.loads(arg) if arg.startswith("{") else PRESETS[arg]
         return make_agent(params)
+    if spec.startswith("millrace:"):
+        sys.path.insert(0, str(REPO_ROOT / "agents" / "team_b"))
+        from millrace.routed_probe import make_routed_agent
+        arg = spec[9:]
+        if arg == "routed_mixed":
+            return make_routed_agent()
+        if arg.startswith("{"):
+            return make_routed_agent(json.loads(arg))
+        raise ValueError(f"unknown millrace spec: {spec}")
     if spec in ("pass", "random", "starter"):
         import kaggle_environments.envs.kaggriculture.kaggriculture as K
         return {"pass": K.pass_agent, "random": K.random_agent, "starter": K.starter_agent}[spec]
