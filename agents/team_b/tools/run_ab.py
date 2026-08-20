@@ -39,6 +39,7 @@ def _init_worker():
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
     sys.path.insert(0, str(REPO_ROOT / "agents" / "team_b" / "probes"))
     sys.path.insert(0, str(REPO_ROOT / "agents" / "team_b"))
+    sys.path.insert(0, str(REPO_ROOT / "agents" / "team_b" / "tools"))
     global _KE
     from _engine import import_engine
     _KE = import_engine()
@@ -50,6 +51,15 @@ def _load(spec: str):
         arg = spec[6:]
         params = json.loads(arg) if arg.startswith("{") else dict(PRESETS[arg])
         return make_agent(params)
+    if spec.startswith("g4control:"):
+        # G4 hardcoded-price control (frozen 1.32.7 replica over routed_mixed)
+        from g4_control import make_control_agent
+        arg = spec[10:]
+        if arg == "routed_mixed":
+            return make_control_agent()
+        if arg.startswith("{"):
+            return make_control_agent(json.loads(arg))
+        raise ValueError(f"unknown g4control spec: {spec}")
     if spec.startswith("millrace:"):
         # in-process factory with a package-unique module name: cannot collide
         # in sys.modules with probe_core or any directory-agent (arena bug of
@@ -70,8 +80,11 @@ def _load(spec: str):
 
 
 def _episode(args):
-    spec_a, spec_b, seed, swap, steps = args
-    env = _KE.make("kaggriculture", configuration={"episodeSteps": steps, "seed": seed}, debug=False)
+    spec_a, spec_b, seed, swap, steps, market_perturb = args
+    cfg = {"episodeSteps": steps, "seed": seed}
+    if market_perturb:
+        cfg["marketParams"] = market_perturb
+    env = _KE.make("kaggriculture", configuration=cfg, debug=False)
     agents = [_load(spec_b), _load(spec_a)] if swap else [_load(spec_a), _load(spec_b)]
     env.run(agents)
     final = env.steps[-1]
@@ -94,7 +107,15 @@ def main(argv=None):
     ap.add_argument("--workers", type=int, default=0)
     ap.add_argument("--out", default=None)
     ap.add_argument("--tag", default="")
+    ap.add_argument("--market-perturb", default=None,
+                    help="JSON file with configuration.marketParams overrides (G4 assay)")
     args = ap.parse_args(argv)
+
+    market_perturb = None
+    if args.market_perturb:
+        market_perturb = {k: v for k, v in json.loads(
+            Path(args.market_perturb).read_text(encoding="utf-8")).items()
+            if not k.startswith("_")}
 
     if args.seed_list:
         seeds = [int(x) for x in args.seed_list.split(",") if x.strip() != ""]
@@ -102,8 +123,8 @@ def main(argv=None):
         seeds = list(range(args.seed_base, args.seed_base + args.pairs))
     jobs = []
     for s in seeds:
-        jobs.append((args.a, args.b, s, False, args.steps))
-        jobs.append((args.a, args.b, s, True, args.steps))
+        jobs.append((args.a, args.b, s, False, args.steps, market_perturb))
+        jobs.append((args.a, args.b, s, True, args.steps, market_perturb))
 
     workers = args.workers or max(1, (os.cpu_count() or 4) - 2)
     t0 = time.perf_counter()
@@ -133,7 +154,7 @@ def main(argv=None):
         "engine": _v("kaggle-environments"),
         "tag": args.tag, "a": args.a, "b": args.b, "n_episodes": n, "pairs": len(seeds),
         "seeds": seeds if args.seed_list else [args.seed_base, args.seed_base + len(seeds) - 1],
-        "steps": args.steps,
+        "steps": args.steps, "market_perturb": args.market_perturb,
         "win_rate_a": round(score / n, 4), "ci95": [round(lo, 4), round(hi, 4)],
         "money_a_mean": round(statistics.fmean(ma), 1), "money_a_std": round(statistics.pstdev(ma), 1),
         "money_b_mean": round(statistics.fmean(mb), 1), "money_b_std": round(statistics.pstdev(mb), 1),

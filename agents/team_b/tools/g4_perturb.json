@@ -1,0 +1,12 @@
+{
+  "_comment": "G4 robustness assay perturbation (spec M1 gate): amplitudes +-30% (x1.3 for even-indexed products in PRODUCTS order, x0.7 for odd), one shape swapped (MELON above_func sq -> linear). Applied via the engine's native configuration.marketParams override (kaggle-environments 1.32.7 _resolve_market_params). Registered before any G4 run; deterministic, not tuned.",
+  "WHEAT":      {"below_target": 1.04, "above_target": 0.26},
+  "CARROT":     {"below_target": 0.70, "above_target": 0.49},
+  "TOMATO":     {"below_target": 0.52, "above_target": 0.78},
+  "STRAWBERRY": {"below_target": 0.49, "above_target": 1.12},
+  "MELON":      {"below_target": 0.26, "above_target": 4.68, "above_func": "linear"},
+  "EGG":        {"below_target": 0.28, "above_target": 0.14},
+  "MILK":       {"below_target": 0.78, "above_target": 2.08},
+  "WOOL":       {"below_target": 0.14, "above_target": 2.24},
+  "FERTILIZER": {"below_target": 0.52, "above_target": 0.52}
+}
