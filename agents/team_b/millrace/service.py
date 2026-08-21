@@ -122,7 +122,11 @@ def plant_tasks(plants, day, last_day, P, crops, fertilize_fn=None):
         do_fert = (fertilize_fn(crop, t) if fertilize_fn is not None
                    else (P["fertilize_wheat"] and crop == "WHEAT" and age <= 2))
         if do_fert and t.get("fertilized_until_day", -1) < day:
-            tasks.append((7, (x, y), ["FERTILIZE"], ("FZ", x, y)))
+            # `fertilize_fn` may return a float to set the task's own priority
+            # (expB-302); a plain True keeps the legacy band-7 placement.
+            prio = do_fert if (isinstance(do_fert, float) or isinstance(do_fert, int)
+                               and not isinstance(do_fert, bool)) else 7
+            tasks.append((prio, (x, y), ["FERTILIZE"], ("FZ", x, y)))
     return tasks
 
 

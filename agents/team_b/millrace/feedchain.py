@@ -98,8 +98,20 @@ def _plan(obs, S, deadline):
             per_unit_day = st["prod_today"] / (st["unit_turns_today"] / 24.0)
             st["prod_days"].append(per_unit_day)
             st["prod_days"] = st["prod_days"][-3:]
+            # ---- expB-302: close the day's lambda_opp ledger -----------------
+            # contribution = the day's marginal-revenue-priced sales minus the
+            # day's purchased inputs (feed + seed; animals and land are capex
+            # and belong to the hurdle rate, not to the margin of an action).
+            if st["prod_today"] > 0:
+                st["contrib_days"].append(
+                    (st["gross_today"] - st["cogs_today"]) / st["prod_today"])
+                st["contrib_days"] = st["contrib_days"][-3:]
+            st["idle_days"].append(st["idle_today"] / st["unit_turns_today"])
+            st["idle_days"] = st["idle_days"][-3:]
         st["prod_today"] = 0
         st["unit_turns_today"] = 0
+        st["cogs_today"] = 0.0
+        st["idle_today"] = 0
         st["day"] = day
         st["sold_today"] = {}
         # ---- M5b ledgers: close yesterday's gross + clamp/hands diagnostics -
@@ -158,6 +170,77 @@ def _plan(obs, S, deadline):
     st["lambda"] = lam
     st["wheat_shadow"] = wheat_shadow
 
+    # ---- expB-302: lambda_opp, the OPPORTUNITY cost of one unit-turn --------
+    # `lam` above is a WAGE: what the marginal hand costs. It is the right
+    # basis for the hiring decision and the wrong one for an allocation gate,
+    # because unit-turns — not dollars — are the binding resource (expB-301:
+    # $51.8 of revenue per productive action against a $8.7 wage, so every
+    # `> lam` gate in this agent is ~6x too permissive).
+    #
+    # lambda_opp = contribution margin per productive action of the marginal
+    # executed task. Measuring that per task needs the M2 row table (expB-304);
+    # until then it is approximated from the agent's own closed books over a
+    # 3-day window: the AVERAGE contribution per productive action, scaled by
+    # how hard the action budget is actually binding. Idle units mean the
+    # marginal task is worth ~nothing, so lambda_opp collapses toward the wage
+    # — which is the correct behaviour on days 0-3 and after the last
+    # profitable purchase day. Both terms are runtime-measured ratios; no
+    # absolute-dollar or absolute-day constant enters (spec section 0).
+    if st["contrib_days"] and st["idle_days"]:
+        avg_contrib = sum(st["contrib_days"]) / len(st["contrib_days"])
+        idle_frac = sum(st["idle_days"]) / len(st["idle_days"])
+        lam_opp = max(lam, (1.0 - min(1.0, idle_frac)) * avg_contrib)
+    else:
+        lam_opp = lam
+    st["lambda_opp"] = lam_opp
+
+    # ---- expB-302: fertilizer make-or-buy, decided once per turn ------------
+    # Engine truth (`_apply_unit_action` WATER + FERTILIZE, 1.32.7): wheat's
+    # watering bonus fires at ages 2..4 (window_start = (max_yield_day+1)//2 =
+    # 2); yield starts at 1 and each watered day adds 1, or 2 while
+    # `fertilized_until_day >= day`. One FERTILIZE covers day, day+1, day+2, so
+    # applying it at age 1 or 2 covers the whole bonus window and takes the
+    # tile from 4 units to 6 (1+2+2+2 = 7, capped at max_yield 6) — exactly +2
+    # units for one action and one fertilizer unit. Age 0 covers only ages 0-2
+    # and is worth +1, so it is excluded; the legacy "shadow"/"probe" rules
+    # fired at `age <= 2` and bought that half-price application.
+    #
+    # Make-or-buy: use the unit internally iff the wheat it saves us buying is
+    # worth more than selling the unit plus the unit-turn it costs —
+    #   2 x marginal_buy_cost(WHEAT, residual shortfall)
+    #        >  marginal_revenue(FERTILIZER, 1) + lambda_opp
+    # Every term is measured by M1 at live prices; no constant enters.
+    # NOT a re-run of expB-206: that rule compared the fertilizer *quote* plus
+    # the *wage* against `2 x wheat_shadow`, where wheat_shadow was
+    # `marginal_revenue(EGG, 2)` — the egg shadow price since refuted by
+    # expB-218 — and it never priced the wheat we would actually have to BUY.
+    fert_targets = 0
+    fert_internal = False
+    if P["m6_fert"] == "opp":
+        for _, t in plants:
+            if (t["crop"] == "WHEAT" and 1 <= day - t["planted_day"] <= 2
+                    and t.get("fertilized_until_day", -1) < day):
+                fert_targets += 1
+        # Residual shortfall is a HORIZON quantity, not a same-day one: the herd
+        # eats 1 wheat/animal/day for every day left, and we grow far less than
+        # that (expB-301: 42 units grown against 502 bought), so we are a
+        # structural net buyer and the two units this fertilizer creates
+        # displace the NEXT two units we would buy — priced at today's quote,
+        # not at the far end of a season-sized walk. Gating on today's stock
+        # instead silences the rule for 24 of 30 days, because the sell layer
+        # already holds a 2.5 x herd wheat reserve (measured on seed 0 before
+        # this correction: 14 firings, arm byte-identical to the champion).
+        residual = herd * max(0, last_day - day) - wheat_stock
+        if fert_targets and residual > 0:
+            gain = model.marginal_buy_cost("WHEAT", 2)
+            cost = model.marginal_revenue("FERTILIZER", 1) + lam_opp
+            fert_internal = gain > cost
+            st["fert_calls"] = st.get("fert_calls", 0) + 1
+            st["fert_gain"] = gain
+            st["fert_cost"] = cost
+            if fert_internal:
+                st["fert_fires"] = st.get("fert_fires", 0) + 1
+
     # ---- M4 herd capacity clamp ----------------------------------------------
     # An animal-day costs ~4 productive actions (feed + collect + care +
     # amortised harvest); the probe grew the herd toward goose_target 55 while
@@ -188,6 +271,12 @@ def _plan(obs, S, deadline):
             continue
         if item == "WHEAT":
             n = max(0, n - reserve_wheat)
+        if item == "FERTILIZER" and fert_internal and not endgame:
+            # expB-302: hold back exactly the units the transfer price says
+            # belong on wheat tiles. Without this the sell-on-sight layer
+            # empties the shed every turn and the FERTILIZE task can never be
+            # supplied — the rule would be measured as a no-op.
+            n = max(0, n - fert_targets)
         if n > 0:
             sellable[item] = n
     expected_rev = 0
@@ -268,6 +357,7 @@ def _plan(obs, S, deadline):
             if k > 0:
                 orders.append(["BUY_PRODUCT", "WHEAT", int(k)])
                 budget -= k * (wheat_q + 3)
+                st["cogs_today"] += k * wheat_q  # expB-302 lambda_opp ledger
 
     def hire(count):
         nonlocal budget
@@ -364,6 +454,7 @@ def _plan(obs, S, deadline):
             if k > 0 and len(orders) < 10:
                 orders.append(["BUY_SEED", crop, int(k)])
                 budget -= k * pc.CROPS[crop]["seed"]
+                st["cogs_today"] += k * pc.CROPS[crop]["seed"]  # expB-302 ledger
 
     # ---- M5b hire-depth controller (expB-221; spec M5 rule, live inputs) ----
     # hands = clamp(min(queue_need, cash_cap), 6, 14): queue_need converts the
@@ -418,6 +509,7 @@ def _plan(obs, S, deadline):
             if k > 0:
                 orders.append(["BUY_PRODUCT", "WHEAT", int(k)])
                 budget -= k * (wq + 3)
+                st["cogs_today"] += k * wq  # expB-302 lambda_opp ledger
         hire(min(4, hires_needed))
         buy_seeds()
     else:
@@ -450,7 +542,25 @@ def _plan(obs, S, deadline):
     else:
         tasks += animal_tasks(animals, wheat_stock, P, hour, day >= last_day - 1)
 
-        if P["m6_fert"] == "shadow":
+        if P["m6_fert"] == "opp":  # expB-302 transfer price, decided above
+            def fert_rule(crop, t):
+                if not (fert_internal and crop == "WHEAT"
+                        and 1 <= day - t["planted_day"] <= 2
+                        and t.get("fertilized_until_day", -1) < day
+                        and shed.get("FERTILIZER", 0) > 0):
+                    return False
+                # Dispatch priority from engine truth, not from tuning. A
+                # FERTILIZE inside the bonus window turns each of the tile's
+                # three bonus waters from +1 into +2 yield, so it is worth
+                # exactly 2x the bonus WATER it sits next to in the queue —
+                # and `plant_tasks` already bands bonus watering at 3.5. 3.4
+                # places it immediately above the task it dominates 2:1 and
+                # strictly below every keep-alive band (0.25-1.5) and melon
+                # watering (2.4). Left at the legacy band 7 the rule is
+                # unreachable: measured on seed 0, 48 firings produced 0
+                # dispatched FERTILIZE actions and a byte-identical episode.
+                return 3.4
+        elif P["m6_fert"] == "shadow":
             def fert_rule(crop, t):
                 if crop != "WHEAT":
                     return False
@@ -704,7 +814,11 @@ def _plan(obs, S, deadline):
 
     # ---- M5a productive-action ledger ---------------------------------------
     for a in actions:
-        if isinstance(a, list) and a and a[0] not in MOVES and a[0] != "PASS":
+        if not (isinstance(a, list) and a):
+            continue
+        if a[0] == "PASS":
+            st["idle_today"] += 1  # expB-302: binding-ness of the action budget
+        elif a[0] not in MOVES:
             st["prod_today"] += 1
     st["last_orders"] = orders
 
@@ -744,6 +858,9 @@ FEEDCHAIN_DEFAULTS = {
     # expB-206 (32 pairs, corrected build): shadow rule 45.3% [33.7-57.4] vs
     # always-sell — the pre-registered <2pp falsification branch fired, the
     # rule is deleted per spec ("always sell fertilizer").
+    # expB-302: "opp" = internal transfer price for fertilizer —
+    # 2 x marginal_buy_cost(WHEAT, shortfall) > marginal_revenue(FERT, 1) +
+    # lambda_opp. Default off = shipped 725fcf7 behaviour (always sell).
     "m6_fert": "sell",
     "actions_per_animal": 4.0,  # feed + collect + care + amortised harvest
     # expB-219 (stock-pool saturation): structural melon replant window
@@ -782,7 +899,10 @@ def make_feedchain_agent(params=None):
                        "last_orders": [], "prod_today": 0, "unit_turns_today": 0,
                        "prod_days": [], "melon_seen": set(), "melon_harvest_units": [],
                        "gross_today": 0.0, "gross_days": [], "day_open": -1,
-                       "clamp_bound_today": False, "m5b_log": []},
+                       "clamp_bound_today": False, "m5b_log": [],
+                       # expB-302 lambda_opp ledgers
+                       "cogs_today": 0.0, "contrib_days": [], "idle_today": 0,
+                       "idle_days": []},
                 "router": FeedRouter(),
                 "model": MarketModel()}
 
