@@ -86,9 +86,26 @@ def mirror_check(seeds, workers, steps=720):
     rows = [g for g in res["rows"] if {g["p0"], g["p1"]} == {a["id"], b["id"]}]
     score = sum(float(g["result0"]) if g["p0"] == a["id"] else 1.0 - float(g["result0"])
                 for g in rows)
-    equal = sum(1 for g in rows if abs(float(g["money0"]) - float(g["money1"])) < 1e-9)
+    # The sharp check is NOT money0 == money1 inside a game: the two seats are not
+    # symmetric (weed spawn is keyed on farm index), so identical policies legitimately
+    # bank different amounts in one game. What must hold is that swapping the seats
+    # reproduces the same numbers -- seat 0's bank in (A,B) must equal seat 0's bank in
+    # (B,A), for the same seed.
+    by_seed = {}
+    for g in rows:
+        by_seed.setdefault(int(g["seed"]), []).append(g)
+    swap_equal, swap_pairs = 0, 0
+    for seed, gs in by_seed.items():
+        if len(gs) != 2:
+            continue
+        swap_pairs += 1
+        g0, g1 = gs
+        if (abs(float(g0["money0"]) - float(g1["money0"])) < 1e-9
+                and abs(float(g0["money1"]) - float(g1["money1"])) < 1e-9):
+            swap_equal += 1
     return {"n": len(rows), "win_rate": round(score / max(1, len(rows)), 4),
-            "banks_identical": equal, "exactly_50": abs(score / max(1, len(rows)) - 0.5) < 1e-9,
+            "seat_swap_pairs": swap_pairs, "seat_swap_identical": swap_equal,
+            "exactly_50": abs(score / max(1, len(rows)) - 0.5) < 1e-9,
             "ids": [a["id"], b["id"]]}
 
 
@@ -147,7 +164,8 @@ def main(argv=None):
         "win_rate_within_3pp": abs(hs["win_rate"] - ps["win_rate"]) <= 0.03,
         "no_pit_crashes": sum(r.get("crash", 0) for r in p_rows) == 0,
         "no_pit_timeouts": sum(r.get("timeout", 0) for r in p_rows) == 0,
-        "mirror_exactly_50": mirror["exactly_50"] and mirror["banks_identical"] == mirror["n"],
+        "mirror_exactly_50": (mirror["exactly_50"]
+                              and mirror["seat_swap_identical"] == mirror["seat_swap_pairs"]),
     }
     out = {"agents": ids, "mirror": mirror, "seeds": [seeds[0], seeds[-1]], "episodes": len(p_rows),
            "harness": hs, "pit": ps, "paired": cmp, "verdict": verdict,
