@@ -206,3 +206,22 @@ def test_plant_tasks_does_not_re_fertilize_inside_an_active_window():
     # applied on the age-9 day: fertilized_until_day covers the age-11 event
     tile = _tile(11, fert_until=20)
     assert "FERTILIZE" not in _ops(_tasks(tile, fert=always))
+
+
+# ------------------------------------------- expB-303 shipped acreage invariant
+
+def test_shipped_entry_carries_the_strawberry_acreage():
+    """The submission entry must construct the gated expB-303 build.
+
+    `strawberry_tiles` is a fixed constant and therefore a logged §0 violation
+    (issue #16): the section-0-clean "mr" rule lost to fixed-16 by 13pp head to
+    head, so the constant ships until expB-304 derives the acreage from
+    dispatch-queue pricing. FEEDCHAIN_DEFAULTS stay at 0 so
+    `millrace:feedchain` and melonrace@725fcf7 remain byte-identical control
+    lineages.
+    """
+    src = (REPO_ROOT / "agents" / "team_b" / "millrace" / "main.py").read_text(encoding="utf-8")
+    assert '"strawberry_tiles": 16' in src
+    from millrace.feedchain import FEEDCHAIN_DEFAULTS
+    assert FEEDCHAIN_DEFAULTS["strawberry_tiles"] == 0
+    assert FEEDCHAIN_DEFAULTS["strawberry_rule"] == "fixed"
