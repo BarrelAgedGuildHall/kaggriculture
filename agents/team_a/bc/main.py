@@ -24,11 +24,22 @@ except ImportError:  # not on sys.path (direct exec from an unusual cwd)
             break
     import policy as _policy
 
-_POLICY = None
 # 0 = pure clone, 1 = + endgame drop/liquidate, 2 = + keep-alive invariants,
 # 3 = + rule-based selling. 3 is the shipped default (exp-005); lower levels exist so
 # the contribution of each layer stays measurable.
 _SAFE = int(os.environ.get("BC_SAFETY", "3"))
+
+# Build the policy at IMPORT time, not on the first act. Loading three ensemble members costs
+# ~300 ms; done lazily that lands entirely inside turn 0 and was the only thing pushing the
+# worst measured turn over the arena's 400 ms ceiling (p99 stays ~20 ms). Both the real
+# kaggle-environments loader and arena/agent_child.py import the module before they start
+# timing turns, so paying it here is both cheaper and a more honest measurement of the
+# per-turn decision cost. Failure is deferred to the first call rather than killing the
+# import, so a weights problem still surfaces as a playable fallback instead of a crash.
+try:
+    _POLICY = _policy.load_default(safety=_SAFE)
+except Exception:
+    _POLICY = None
 
 
 def agent(obs, config=None):
