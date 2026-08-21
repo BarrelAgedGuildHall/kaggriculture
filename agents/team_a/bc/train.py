@@ -81,6 +81,13 @@ def train_net(name, xtr, ytr, mtr, xva, yva, mva, heads, weights, args, seed):
     rng = np.random.default_rng(seed)
     steps_per_epoch = max(1, n // args.batch)
     print(f"[{name}] {n} train rows, dim {xtr.shape[1]}, {steps_per_epoch} steps/epoch")
+    # jun177 selects the best *validation* epoch rather than the last one, and its own
+    # 2-epoch probe showed the later epoch regressing. Primary metric is the op head's macro
+    # (class-balanced) accuracy -- plain top-1 is dominated by PASS and the four moves, so it
+    # cannot distinguish a real policy from one that only learned to walk. Ties break on
+    # top-1. The chosen epoch is recorded in the model card.
+    best = (-1.0, -1.0)
+    best_state, best_epoch = None, 0
     for ep in range(args.epochs):
         perm = rng.permutation(n)
         t0 = time.perf_counter()
@@ -103,9 +110,22 @@ def train_net(name, xtr, ytr, mtr, xva, yva, mva, heads, weights, args, seed):
             cnt += 1
         va = evaluate(net, xva, yva, mva, heads, mu, sd) if len(xva) else {}
         msg = " ".join(f"{k}={va[k][0]:.3f}/{va[k][1]:.3f}" for k in heads) if va else ""
+        marker = ""
+        if va:
+            key = "op" if "op" in va else next(iter(va))
+            score = (va[key][1], va[key][0])  # (macro, top1)
+            if score > best:
+                best = score
+                best_epoch = ep + 1
+                best_state = {k: np.array(v, copy=True) for k, v in net.state().items()}
+                marker = " *"
         print(f"  [{name}] epoch {ep+1}/{args.epochs} loss={tot/max(1,cnt):.4f} "
-              f"val(top1/macro) {msg}  ({time.perf_counter()-t0:.0f}s)", flush=True)
-    return net, mu, sd
+              f"val(top1/macro) {msg}  ({time.perf_counter()-t0:.0f}s){marker}", flush=True)
+    if best_state is not None:
+        net = MLP.from_state(best_state, heads)
+        print(f"  [{name}] selected epoch {best_epoch} "
+              f"(val macro={best[0]:.4f} top1={best[1]:.4f})", flush=True)
+    return net, mu, sd, best_epoch
 
 
 
@@ -277,8 +297,8 @@ def main(argv=None) -> int:
     mx, mxv = d["train_mkt_x"], d["val_mkt_x"]
 
     t0 = time.perf_counter()
-    unet, umu, usd = train_net("unit", ux, uy, um, uxv, uyv, umv,
-                               UNIT_HEADS, UNIT_W, args, args.seed)
+    unet, umu, usd, unit_epoch = train_net("unit", ux, uy, um, uxv, uyv, umv,
+                                           UNIT_HEADS, UNIT_W, args, args.seed)
     mnet, mmu, msd, thresholds, mreport = train_market(
         mx, d["train_mkt_multi"], d["train_mkt_qty"], d["train_mkt_hire"].astype(np.int32),
         mxv, d["val_mkt_multi"], d["val_mkt_qty"], d["val_mkt_hire"].astype(np.int32),
@@ -301,6 +321,7 @@ def main(argv=None) -> int:
         "hidden": args.hidden, "mkt_hidden": args.mkt_hidden,
         "epochs": args.epochs, "batch": args.batch, "lr": args.lr, "wd": args.wd,
         "seed": args.seed,
+        "unit_selected_epoch": unit_epoch,
         "rows_train_unit": int(len(ux)), "rows_val_unit": int(len(uxv)),
         "rows_train_mkt": int(len(mx)), "rows_val_mkt": int(len(mxv)),
         "episodes_train": meta["episodes_train"], "episodes_val": meta["episodes_val"],
