@@ -69,6 +69,17 @@ def load_agent(spec: str):
     return mod.agent
 
 
+def arity_wrap(fn, config):
+    """Match the kaggle loader: a 2-arg agent callable receives (obs, config)."""
+    try:
+        n = fn.__code__.co_argcount
+    except AttributeError:
+        return fn
+    if n >= 2:
+        return lambda obs: fn(obs, config)
+    return fn
+
+
 def curve_value(K, market_inv, item, n):
     """Marginal revenue of selling n units of item into the current market."""
     inv = market_inv.get(item, 10000)
@@ -148,7 +159,8 @@ def run(agent_a: str, agent_b: str, seed: int, steps: int, trace_path: str | Non
     K._process_market = patched_process
     try:
         env = ke.make("kaggriculture", configuration={"episodeSteps": steps, "seed": seed}, debug=False)
-        agents = [load_agent(agent_a), load_agent(agent_b)]
+        agents = [arity_wrap(load_agent(agent_a), env.configuration),
+                  arity_wrap(load_agent(agent_b), env.configuration)]
         env.reset()
 
         turns_per_day = 24
