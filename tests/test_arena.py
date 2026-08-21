@@ -528,6 +528,44 @@ def test_lease_requires_owner_and_purpose():
     assert leases.active() == []
 
 
+# The two papercuts the first real users hit (2026-08-21), fixed in serve.py:
+#  - `acquire` returns the id under "id", so callers echo "id" back at renew/release, which
+#    documented only "lease_id";
+#  - a client that read `leases` at one level of /api/status and found nothing concluded the
+#    ladder was free while resume was in fact being refused.
+
+def test_lease_api_accepts_either_id_key():
+    from arena import hub, leases, serve
+    rec = serve.control("lease", {"op": "acquire", "owner": "ops", "purpose": "ingestion",
+                                  "ttl_s": 600})["lease"]
+    try:
+        renewed = serve.control("lease", {"op": "renew", "id": rec["id"], "ttl_s": 600})["lease"]
+        assert renewed["id"] == rec["id"], "the key `acquire` hands back must work on the way in"
+        with pytest.raises(ValueError, match="lease_id"):
+            serve.control("lease", {"op": "release"})
+        out = serve.control("lease", {"op": "release", "id": rec["id"]})
+        assert out["lease"]["id"] == rec["id"] and out["leases"] == []
+    finally:
+        for l in leases.active():
+            leases.release(l["id"])
+        hub.set_paused(False)
+
+
+def test_status_reports_leases_at_both_levels():
+    from arena import hub, leases, serve
+    assert serve.api_status()["lease_held"] is False
+    lease = hub.acquire_lease("modeler", "exp-012b screen", ttl_s=600)
+    try:
+        st = serve.api_status()
+        assert st["lease_held"] is True
+        assert [l["id"] for l in st["leases"]] == [lease["id"]], "top level carries the leases"
+        assert [l["id"] for l in st["hub"]["leases"]] == [lease["id"]], "so does hub state"
+        assert serve.api_leases()["lease_held"] is True
+    finally:
+        hub.release_lease(lease["id"], resume=True)
+    assert serve.api_status()["lease_held"] is False
+
+
 def test_registry_flags_bench_and_retire():
     a = registry.register_file(TRIVIAL, "flaggy", "B")
     assert registry.is_active(registry.resolve("flaggy"))

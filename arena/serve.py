@@ -14,12 +14,16 @@ GET  /api/games[?limit&agent&run&flagged=1]         most recent first
 GET  /api/agents /api/runs /api/status /api/hub     registry, live+recent runs, engine info, hub state
 GET  /api/leaderboard.md                            the markdown export
 GET  /api/leases                                    live pause leases (see arena/leases.py)
+     /api/status carries them too, at BOTH levels: top-level "leases"/"lease_held" and
+     "hub"."leases" -- reading only one level is how an operator concludes the ladder is
+     free while `resume` is being refused.
 POST /api/control/pause | resume                    durable pause flag (survives restarts)
      resume is refused with 409 + the lease list while any pause lease is live;
      {"force":true,"actor":"who"} overrides and breaks (releases) those leases, logged.
 POST /api/control/lease  {"op":"acquire","owner":"engineer-b","purpose":"expB-303 gates","ttl_s":3600}
                          {"op":"renew","lease_id":"..."} | {"op":"release","lease_id":"...","resume":false}
                          {"op":"list"}
+     renew/release take "lease_id"; "id" (the key `acquire` returns it under) is accepted too.
 POST /api/control/config      {"workers":14,"games_per_pairing":4,"max_opponents":5}
 POST /api/control/bench       {"agent":"v0a","undo":false}      out of the ladder, still rated
 POST /api/control/retire      {"agent":"v0a","undo":false}      out of ladder AND rating fit
@@ -120,13 +124,29 @@ def api_status() -> dict:
         con = store.connect()
         n_games = con.execute("SELECT COUNT(*) FROM games").fetchone()[0]
         con.close()
+    live = leases.active()
     return {"engine": eng.engine_version(), "engine_sha": eng.engine_sha(), "arena_sha": eng.arena_git_sha(),
             "arena_dir": str(ARENA_DIR), "n_games": n_games, "live_runs": len(api_runs()["live"]),
+            # leases are reported at the top level as well as inside `hub` on purpose: a client
+            # reading the wrong level used to see nothing and conclude the ladder was free while
+            # `resume` was in fact being refused. `lease_held` is the one-glance answer.
+            "leases": live, "lease_held": bool(live),
             "hub": hubmod.HUB.status(), "time": time.strftime("%Y-%m-%dT%H:%M:%S")}
 
 
 def api_leases() -> dict:
-    return {"leases": leases.active(), "paused": hubmod.is_paused()}
+    live = leases.active()
+    return {"leases": live, "lease_held": bool(live), "paused": hubmod.is_paused()}
+
+
+def _lease_id(body: dict) -> str:
+    """Accept either key: `acquire` returns the record as `id`, so callers naturally send `id`
+    back, while the documented request key is `lease_id`. Taking both removes a papercut that
+    cost a real run its first attempt."""
+    lid = body.get("lease_id") or body.get("id")
+    if not lid:
+        raise ValueError("renew/release need the lease id as \"lease_id\" (\"id\" is accepted too)")
+    return lid
 
 
 def control(action: str, body: dict) -> dict:
@@ -146,9 +166,9 @@ def control(action: str, body: dict) -> dict:
                                        pause=body.get("pause", True) is not False)
             return {"lease": rec, "hub": hubmod.HUB.status(), **api_leases()}
         if op == "renew":
-            return {"lease": leases.renew(body["lease_id"], body.get("ttl_s")), **api_leases()}
+            return {"lease": leases.renew(_lease_id(body), body.get("ttl_s")), **api_leases()}
         if op == "release":
-            rec = hubmod.release_lease(body["lease_id"], resume=bool(body.get("resume")))
+            rec = hubmod.release_lease(_lease_id(body), resume=bool(body.get("resume")))
             return {"lease": rec, **api_leases()}
         raise ValueError(f"unknown lease op {op!r} (acquire|renew|release|list)")
     if action == "config":

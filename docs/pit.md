@@ -98,6 +98,23 @@ Rules that make it work:
   else's lease from a button would be the same footgun again, so it is CLI/API only.
 - Who runs when is a scheduling convention, not code: see `docs/pit-host-windows.md`.
 
+Two things that caught the first real users (both now handled in code, kept here because the
+first instinct is to distrust the lease, not the reading):
+
+- **`renew`/`release` take `lease_id`.** `acquire` returns the record with the id under `id`, so
+  echoing the record straight back used to fail. Both keys are accepted now; the CLI takes it
+  positionally (`arena lease release <lease-id>`), which never had the problem.
+- **A `leases: []` reading is not proof that the ladder is free.** It is proof about *that*
+  field, at *that* level, from *that* process — and a hub that has not been restarted since the
+  lease code was deployed does not have the field at all, so a client's `?? []` default invents
+  an empty list. **The refusal is the authority**: if `POST /api/control/resume` answers `409`
+  with a lease list, a lease is held, whatever any status field says. `/api/status` now reports
+  `leases` and a `lease_held` boolean at the top level *and* under `hub`, so reading either level
+  works; `GET /api/leases` is the direct answer, and `lease-log.jsonl` is the record after the
+  fact. If the two ever disagree, suspect a stale hub process (`systemctl --user restart pit`)
+  or two arena dirs (`/api/status` → `arena_dir` vs the `ARENA_DIR` your CLI prints from
+  `arena info`) before suspecting the lease.
+
 `register` requires `git_ref` + a `path` under the repo's `agents/` tree (the hub fetches the
 ref from origin — needs git access on the hub machine) and the new agent starts **benched**:
 someone must explicitly activate it before the ladder will play it. Teams' flow: commit the
