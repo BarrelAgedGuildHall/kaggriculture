@@ -102,6 +102,15 @@ def _plan(obs, S, deadline):
         st["unit_turns_today"] = 0
         st["day"] = day
         st["sold_today"] = {}
+        # ---- M5b ledgers: close yesterday's gross + clamp/hands diagnostics -
+        if st["day_open"] >= 0:
+            st["gross_days"].append(st["gross_today"])
+            st["gross_days"] = st["gross_days"][-2:]
+            st["m5b_log"].append({"day": st["day_open"], "want": st.get("want_hands", -1),
+                                  "clamp_bound": st["clamp_bound_today"]})
+        st["gross_today"] = 0.0
+        st["clamp_bound_today"] = False
+        st["day_open"] = day
 
     units = [tuple(me["farmer"])] + [tuple(h) for h in me["hands"]]
     invs = [dict(priv["inventories"][i]) if i < len(priv["inventories"]) else {} for i in range(len(units))]
@@ -130,6 +139,14 @@ def _plan(obs, S, deadline):
     crop_counts = {}
     for _, t in plants:
         crop_counts[t["crop"]] = crop_counts.get(t["crop"], 0) + 1
+    # realised melon yield ledger (expB-220): a ready melon's yield_units IS
+    # what the harvest will bank — record each planting once, when first ready
+    for (x, y), t in plants:
+        if t["crop"] == "MELON" and day - t["planted_day"] >= pc.CROPS["MELON"]["first"]:
+            key = (x, y, t["planted_day"])
+            if key not in st["melon_seen"]:
+                st["melon_seen"].add(key)
+                st["melon_harvest_units"].append(t.get("yield_units", 0))
     wheat_stock = shed.get("WHEAT", 0) + sum(iv.get("WHEAT", 0) for iv in invs)
 
     herd = n_animals + sum(shed.get(a, 0) + carried_animals[a] for a in pc.ANIMALS)
@@ -182,6 +199,7 @@ def _plan(obs, S, deadline):
         orders.append(["SELL", item, n])
         st["sold_today"][item] = st["sold_today"].get(item, 0) + n
         expected_rev += prices.get(item, 0) * n
+        st["gross_today"] += model.marginal_revenue(item, n)  # M5b income ledger
 
     budget = money - P["cash_reserve"] + int(0.8 * expected_rev)
     capex_ok = day < P["capex_stop_day"] and not endgame
@@ -213,6 +231,8 @@ def _plan(obs, S, deadline):
             want.append(("GOOSE", goose_cap - n_geese - shed_animals["GOOSE"]))
         pend_cap = 12 if day == 0 else 6
         cap_left = herd_cap - herd
+        if want and cap_left <= 0:
+            st["clamp_bound_today"] = True  # M5b confound check: clamp binds
         for animal, k in want:
             if pending >= pend_cap or cap_left <= 0:
                 break
@@ -281,6 +301,59 @@ def _plan(obs, S, deadline):
                 orders.append(["BUY_LAND"])
                 budget -= cost
 
+    # ---- expB-220: melon acreage from marginal revenue per action ------------
+    # Ship the RULE, not the sweep's number (proposal section 5 Option 1 step 2;
+    # spec section 0: no absolute-dollar/absolute-day constant gates a decision).
+    # Keep planting/replanting melon while the projected marginal revenue per
+    # productive action of the NEXT tile-cycle exceeds lambda (the measured
+    # $-cost of a productive action, M5a). Everything in the comparison is a
+    # runtime measurement: MR walks M1's observed (inv, price) table from live
+    # inventory; yield/cycle is the episode's own realised harvest average
+    # (structural max_yield prior before the first harvest); actions/cycle is
+    # structural (1 PLANT + first_yield_day WATERs + 1 HARVEST).
+    if P["melon_rule"] == "mr":
+        mel = pc.CROPS["MELON"]
+        harvests = st["melon_harvest_units"]
+        y_est = (sum(harvests) / len(harvests)) if harvests else float(mel.get("max_yield", 6) - 1)
+        y_est = max(1.0, y_est)
+        acts_per_cycle = 2.0 + mel["first"]  # PLANT + daily WATER to first yield + HARVEST
+        n_cur = crop_counts.get("MELON", 0)
+
+        # Stock-pool race semantics (proposal 1.5): the walk uses OUR
+        # increments over the LIVE inventory only. A symmetric-opponent
+        # discount was tried first and measured 21.9% vs the fixed-20 arm
+        # (expB-220): pricing the opponent's projected supply into the margin
+        # makes the rule retreat from a contested stock pool — the
+        # ration-not-race error. The live-inventory walk still stops the rule
+        # at a genuinely dead pool (MR collapses once the glut is real).
+        def mr_tile(k):
+            return (model.marginal_revenue("MELON", (k + 1) * y_est)
+                    - model.marginal_revenue("MELON", k * y_est))
+
+        want_melon = n_cur
+        # grow: value the next tile's cycle on top of the current tiles' cycles
+        while want_melon < n_cur + 10:
+            if mr_tile(want_melon) / acts_per_cycle <= lam:
+                break
+            want_melon += 1
+        # shrink: stop replanting tiles whose marginal cycle no longer clears lambda
+        while want_melon > 0:
+            if mr_tile(want_melon - 1) / acts_per_cycle > lam:
+                break
+            want_melon -= 1
+    else:
+        want_melon = P["melon_tiles"]
+    st["want_melon"] = want_melon
+
+    # melon_replant (expB-219): the replant window is structural — a melon
+    # planted on day d first yields at d + first_yield_day, so seeds are
+    # bought (and tiles planted) while day + first <= last_day, i.e. while a
+    # new plant can still be harvested this season (the endgame sweep
+    # harvests at age == first on the last day). No absolute-day constant:
+    # the bound moves with season_days and the CROPS table.
+    melon_window = (day + pc.CROPS["MELON"]["first"] <= last_day) if P["melon_replant"] \
+        else (day <= 18)  # legacy incumbent gate
+
     def buy_seeds():
         nonlocal budget
         if not capex_ok:
@@ -288,7 +361,7 @@ def _plan(obs, S, deadline):
         need = {
             "WHEAT": 0 if seeds.get("WHEAT", 0) > 8 else max(0, want_wheat - crop_counts.get("WHEAT", 0) - seeds.get("WHEAT", 0)),
             "CARROT": max(0, pc._want_carrots(P, prices, day) - crop_counts.get("CARROT", 0) - seeds.get("CARROT", 0)),
-            "MELON": max(0, (P["melon_tiles"] if day <= 18 else 0) - crop_counts.get("MELON", 0) - seeds.get("MELON", 0)),
+            "MELON": max(0, (want_melon if melon_window else 0) - crop_counts.get("MELON", 0) - seeds.get("MELON", 0)),
         }
         for crop, k in need.items():
             k = min(k, 10, max(0, budget) // pc.CROPS[crop]["seed"])
@@ -296,7 +369,39 @@ def _plan(obs, S, deadline):
                 orders.append(["BUY_SEED", crop, int(k)])
                 budget -= k * pc.CROPS[crop]["seed"]
 
-    want_hands = P["hands_target"] + (4 if (endgame and P["smart_endgame"]) else 0)
+    # ---- M5b hire-depth controller (expB-221; spec M5 rule, live inputs) ----
+    # hands = clamp(min(queue_need, cash_cap), 6, 14): queue_need converts the
+    # day's serviceable work into unit-days at the MEASURED productive rate;
+    # cash_cap is the deepest fib ladder the income rule affords (beta x
+    # trailing-day gross, else gamma x cash) — every input is a runtime
+    # measurement or a structural engine constant, no dollar thresholds.
+    if P["m5b_hire"]:
+        pending_place = sum(shed.get(a, 0) + carried_animals[a] for a in pc.ANIMALS)
+        # the day's task queue = standing service (herd + crops) PLUS growth
+        # work: builds/placements (~3 actions each: build, place, same-day
+        # feed) and the planting backlog (~2 each: plant + same-day water).
+        # The first cut counted standing assets only and under-hired the ramp
+        # to the clamp floor (expB-221 screen 3.1%: 6-7 hands on days 0-8).
+        plant_backlog = (max(0, want_wheat - crop_counts.get("WHEAT", 0))
+                         + max(0, pc._want_carrots(P, prices, day) - crop_counts.get("CARROT", 0))
+                         + max(0, want_melon - crop_counts.get("MELON", 0)))
+        queue_est = (herd * P["actions_per_animal"]
+                     + 1.3 * (crop_counts.get("WHEAT", 0) + crop_counts.get("CARROT", 0)
+                              + crop_counts.get("MELON", 0))
+                     + 3.0 * pending_place + 2.0 * plant_backlog)
+        queue_need = max(0, math.ceil(queue_est / max(1.0, prod_rate)) - 1)
+        trailing = st["gross_days"][-1] if st["gross_days"] else st["gross_today"]
+        hire_budget = max(P["m5b_beta"] * trailing, P["m5b_gamma"] * money)
+        n_aff, spent = 0, 0
+        while n_aff < 14 and spent + pc._fib(n_aff) <= hire_budget:
+            spent += pc._fib(n_aff)
+            n_aff += 1
+        want_hands = max(6, min(14, min(queue_need, n_aff)))
+        if endgame and P["smart_endgame"]:
+            want_hands = min(14, want_hands + 4)
+    else:
+        want_hands = P["hands_target"] + (4 if (endgame and P["smart_endgame"]) else 0)
+    st["want_hands"] = want_hands
     hires_needed = max(0, want_hands - me["hires_today"])
     if day == 0 and hour == 0:
         # feed kitty: reserve one day of feed for ~8 animals BEFORE the animal
@@ -321,7 +426,11 @@ def _plan(obs, S, deadline):
         buy_seeds()
     else:
         buy_feed(keepalive_only=True)
-        if hour <= 1 and hires_needed:
+        # M5b hires incrementally through the day as the queue grows (hands
+        # vanish nightly; a mid-day hire still buys the remaining hours at the
+        # same fib cost, and cash_cap/queue_need already price the depth).
+        # The legacy arm keeps the hour<=1 gate.
+        if hires_needed and (hour <= 1 or (P["m5b_hire"] and hour < 20)):
             hire(hires_needed)
         buy_land()
         buy_animals()
@@ -389,7 +498,9 @@ def _plan(obs, S, deadline):
             # so a plant that cannot be watered tonight weeds out (3 of 9
             # weed-kills in expB-213 v9 were age-0 late plantings)
             plan = []
-            plan += ["MELON"] * max(0, P["melon_tiles"] - crop_counts.get("MELON", 0))
+            melon_plantable = melon_window or not P["melon_replant"]
+            plan += ["MELON"] * (max(0, want_melon - crop_counts.get("MELON", 0))
+                                 if melon_plantable else 0)
             plan += ["WHEAT"] * max(0, want_wheat - crop_counts.get("WHEAT", 0))
             plan += ["CARROT"] * max(0, pc._want_carrots(P, prices, day) - crop_counts.get("CARROT", 0))
             avail_seeds = dict(seeds)
@@ -620,6 +731,19 @@ FEEDCHAIN_DEFAULTS = {
     # rule is deleted per spec ("always sell fertilizer").
     "m6_fert": "sell",
     "actions_per_animal": 4.0,  # feed + collect + care + amortised harvest
+    # expB-219 (stock-pool saturation): structural melon replant window
+    # (plant while day + first_yield <= last_day) instead of the legacy
+    # day<=18 seed gate; also blocks dead plantings (a melon planted after
+    # the window can never yield). Default off = shipped e8a76b6 behaviour.
+    "melon_replant": False,
+    # expB-220: "mr" sizes melon acreage by marginal revenue per productive
+    # action vs lambda (no tile-count constant); "fixed" uses melon_tiles.
+    "melon_rule": "fixed",
+    # expB-221 (M5b): hire depth from the income/queue rule instead of the
+    # fixed hands_target. beta/gamma per spec M5 (expB-209 fits them).
+    "m5b_hire": False,
+    "m5b_beta": 0.10,
+    "m5b_gamma": 0.03,
 }
 
 
@@ -641,7 +765,9 @@ def make_feedchain_agent(params=None):
         return {"P": P,
                 "st": {"sold_today": {}, "day": -1, "planted_melon_days": {},
                        "last_orders": [], "prod_today": 0, "unit_turns_today": 0,
-                       "prod_days": []},
+                       "prod_days": [], "melon_seen": set(), "melon_harvest_units": [],
+                       "gross_today": 0.0, "gross_days": [], "day_open": -1,
+                       "clamp_bound_today": False, "m5b_log": []},
                 "router": FeedRouter(),
                 "model": MarketModel()}
 
