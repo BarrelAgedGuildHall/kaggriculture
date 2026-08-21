@@ -138,3 +138,32 @@ def test_override_mask_zeroes_the_gradient_of_overridden_factors(fixture):
     dead["exec_hire"] = np.zeros_like(b["exec_hire"])
     grads, stats = trainer.loss_grads(dead, adv, logp_old, anchor_d)
     assert grads is None and stats.get("skipped") == 1
+
+
+def test_advantage_sign_moves_the_policy_the_right_way(fixture):
+    """First item on the spec's "money did not move" checklist, pinned as a test.
+
+    A positive advantage must make the sampled action MORE likely and a negative one less.
+    Getting this backwards produces a run that trains hard and reports a clean negative,
+    which we would then read as a fact about the game rather than a bug in the loss.
+    """
+    trainer, b, adv, logp_old, _ = fixture
+
+    def after_one_step(sign):
+        m = P.Member(str(WEIGHTS_DIR / "rebuild-m0.npz"))
+        t = PPO.MarketPPO(_f64(m.mkt), trainer.mmu, trainer.msd, trainer.th_logit,
+                          lr=1e-2, entropy_coef=0.0, kl_beta=0.0,
+                          temperature=trainer.temperature)
+        old = list(t.old_logprobs(b, PPO.clone_mlp(t.mkt)))
+        t.step(b, sign * np.ones(len(b["x"])), old, None)
+        new = list(t.old_logprobs(b, t.mkt))
+        return old, new
+
+    for sign in (+1.0, -1.0):
+        old, new = after_one_step(sign)
+        mask_f = (b["order_mask"] > 0) & (b["exec_fire"] > 0)
+        mask_h = b["exec_hire"] > 0
+        d_fire = float(((new[0] - old[0]) * mask_f).sum() / max(1, mask_f.sum()))
+        d_hire = float(((new[2] - old[2]) * mask_h).sum() / max(1, mask_h.sum()))
+        assert np.sign(d_fire) == sign, f"order head moved the wrong way at advantage {sign}"
+        assert np.sign(d_hire) == sign, f"hire head moved the wrong way at advantage {sign}"
