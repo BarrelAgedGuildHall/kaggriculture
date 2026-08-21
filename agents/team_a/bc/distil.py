@@ -159,6 +159,26 @@ def lr_at(args, ep, total):
     return args.lr * float(f)
 
 
+def sharpen(p, a):
+    """Blend the mixture's own argmax one-hot into its soft target.
+
+    The gate is ARGMAX agreement with the mixture, but plain KL optimises the whole
+    distribution -- and the mixture is very sharp (the order head measures 0.040 nats), so
+    KL is dominated by the top class while the residual disagreement sits on near-ties that
+    the loss barely charges for. Mixing in the argmax one-hot spends the remaining capacity
+    exactly where the gate is scored. a=0 recovers pure distillation.
+
+    Note this targets the MIXTURE's argmax, not the corpus's action (`--alpha-hard`): the
+    student is being asked to reproduce the ensemble, not to re-clone the teachers.
+    """
+    if a <= 0.0:
+        return p
+    oh = np.zeros_like(p)
+    idx = p.argmax(-1)
+    np.put_along_axis(oh, idx[..., None], 1.0, axis=-1)
+    return (1.0 - a) * p + a * oh
+
+
 def soft_ce(p_student, p_teacher):
     """KL(teacher || student) up to the teacher's constant entropy, and its gradient."""
     loss = -(p_teacher * np.log(np.maximum(p_student, 1e-12))).sum(-1)
@@ -208,6 +228,8 @@ def train_unit(members, x, mask, hard, args, val=None):
             idx = perm[s * args.batch:(s + 1) * args.batch]
             xb, mb = x[idx], mask[idx]
             tp = teacher_unit(members, xb, mb, batch=len(idx))
+            if args.alpha_mix > 0.0:
+                tp = {k: sharpen(v, args.alpha_mix) for k, v in tp.items()}
             out, cache = net.forward((xb - mu) / sd, cache=True)
             b = len(idx)
             g, loss = {}, 0.0
@@ -261,6 +283,9 @@ def train_mkt(members, x, args, val=None, th=None):
             idx = perm[s * args.batch:(s + 1) * args.batch]
             xb = x[idx]
             tp = teacher_mkt(members, xb, batch=len(idx))
+            if args.alpha_mix > 0.0:
+                tp = dict(tp, qty=sharpen(tp["qty"], args.alpha_mix),
+                          hire=sharpen(tp["hire"], args.alpha_mix))
             out, cache = net.forward((xb - mu) / sd, cache=True)
             b = len(idx)
             g, loss = {}, 0.0
@@ -386,6 +411,9 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=707)
     ap.add_argument("--alpha-hard", type=float, default=0.0,
                     help="spec fallback: blend the corpus hard labels into the op head")
+    ap.add_argument("--alpha-mix", type=float, default=0.0,
+                    help="blend the MIXTURE's argmax one-hot into its soft target (0-1); "
+                         "spends capacity where the argmax-agreement gate is scored")
     ap.add_argument("--lr-final", type=float, default=0.05,
                     help="cosine-decay the LR to this fraction of peak (0 = constant)")
     ap.add_argument("--eval-every", type=int, default=1,
@@ -443,7 +471,7 @@ def main(argv=None):
         "unit_dim": int(ux.shape[1]), "market_dim": int(mx.shape[1]),
         "hidden": args.hidden, "mkt_hidden": args.mkt_hidden,
         "epochs": args.epochs, "mkt_epochs": args.mkt_epochs, "batch": args.batch,
-        "lr": args.lr, "wd": args.wd, "seed": args.seed, "alpha_hard": args.alpha_hard,
+        "lr": args.lr, "wd": args.wd, "seed": args.seed, "alpha_hard": args.alpha_hard, "alpha_mix": args.alpha_mix,
         "rows_train_unit": int(len(ux)), "rows_train_mkt": int(len(mx)),
         "rows_val_unit": int(len(val["unit_x"])), "rows_val_mkt": int(len(val["mkt_x"])),
         "agreement": agree, "gate_pass": bool(gate), "worst_head": round(float(worst), 4),
