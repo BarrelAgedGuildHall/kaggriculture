@@ -257,6 +257,13 @@ def train_unit(members, x, mask, hard, args, val=None):
                 loss += UNIT_W[k] * float((lk * wk).sum() / denom)
             opt.step(net.params(), net.backward(cache, g))
             tot += loss
+        # exp-012b was killed at epoch 45/60 with nothing on disk: the unit net is the
+        # expensive half (~80 s/epoch locally) and had no checkpoint. Snapshot it.
+        if args.ckpt_every and (ep + 1) % args.ckpt_every == 0:
+            ck = Path(str(args.out) + ".unit.npz")
+            ck.parent.mkdir(parents=True, exist_ok=True)
+            np.savez_compressed(ck, **{("u_" + k): v for k, v in net.state().items()},
+                                u_mu=mu, u_sd=sd, epoch=np.asarray([ep + 1]))
         msg = ""
         if val is not None and args.eval_every and (ep + 1) % args.eval_every == 0:
             p = _probe_unit(members, net, mu, sd, val)
@@ -416,6 +423,8 @@ def main(argv=None):
                          "spends capacity where the argmax-agreement gate is scored")
     ap.add_argument("--lr-final", type=float, default=0.05,
                     help="cosine-decay the LR to this fraction of peak (0 = constant)")
+    ap.add_argument("--ckpt-every", type=int, default=5,
+                    help="snapshot the unit net every N epochs (0 = off)")
     ap.add_argument("--eval-every", type=int, default=1,
                     help="agreement probe on a val slice every N unit epochs (0 = off)")
     args = ap.parse_args(argv)
