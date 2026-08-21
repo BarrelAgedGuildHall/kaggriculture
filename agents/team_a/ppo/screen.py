@@ -91,8 +91,12 @@ def paired_delta(cand_rows, ref_rows, boot=20000, seed=0):
             "wins_pairwise": int((d > 0).sum()), "losses_pairwise": int((d < 0).sum())}
 
 
+def _register_dir(path, name, team="B", notes=""):
+    return registry.register_file(Path(path), name, team, notes=notes)
+
+
 def run(checkpoint, n=128, seed_base=1000, workers=14, steps=720, name="TeamA-ppo-exp011",
-        mirror=True):
+        mirror=True, melonrace_dir=None):
     seeds = list(range(seed_base, seed_base + max(1, n // 2)))
     spec = f"{seeds[0]}-{seeds[-1]}"
     m0 = WEIGHTS_DIR / "rebuild-m0.npz"
@@ -125,6 +129,34 @@ def run(checkpoint, n=128, seed_base=1000, workers=14, steps=720, name="TeamA-pp
     out["cand_vs_base"] = _summary(cand_vs_base)
     out["pi0_vs_base"] = _summary(pi0_vs_base)
     out["paired_money_delta_vs_base"] = paired_delta(cand_vs_base, pi0_vs_base)
+
+    # the same pairing read as a margin: on the boards where the two met directly, did we
+    # out-earn pi0? (money vs a common opponent is the acceptance number; this corroborates.)
+    h2h_rows = _rows(h2h, cand["id"], pi0["id"])
+    out["paired_margin_vs_pi0"] = paired_delta(
+        [{"seed": r["seed"], "seat": r["seat"], "us": r["us"]} for r in h2h_rows],
+        [{"seed": r["seed"], "seat": r["seat"], "us": r["them"]} for r in h2h_rows])
+
+    # Champion[B] melonrace: the contested-market stressor. Bank retention = our money
+    # against it divided by our money against the A-lineage base (spec section 6.2); it is what
+    # catches a policy that gains money by cooperating rather than by farming better.
+    if melonrace_dir and Path(melonrace_dir).exists():
+        mel = _register_dir(melonrace_dir, "TeamB-Millrace-melonrace", "B",
+                            notes="Champion[B], staged for the exp-011 metric triple")
+        cm = _rows(run_match([cand["id"], mel["id"]], mode="confirm", n=2 * len(seeds),
+                             seeds=spec, workers=workers, steps=steps, quiet=True),
+                   cand["id"], mel["id"])
+        pm = _rows(run_match([pi0["id"], mel["id"]], mode="confirm", n=2 * len(seeds),
+                             seeds=spec, workers=workers, steps=steps, quiet=True),
+                   pi0["id"], mel["id"])
+        out["cand_vs_melonrace"] = _summary(cm)
+        out["pi0_vs_melonrace"] = _summary(pm)
+        out["paired_money_delta_vs_melonrace"] = paired_delta(cm, pm)
+        out["bank_retention"] = {
+            "cand": round(out["cand_vs_melonrace"]["money_mean"]
+                          / max(1e-9, out["cand_vs_base"]["money_mean"]), 4),
+            "pi0": round(out["pi0_vs_melonrace"]["money_mean"]
+                         / max(1e-9, out["pi0_vs_base"]["money_mean"]), 4)}
 
     if mirror:
         twin = registry.register_file(S.stage_mirror([checkpoint], "teamA-ppo-cand-mirror"),
@@ -165,9 +197,11 @@ def main(argv=None):
     ap.add_argument("--steps", type=int, default=720)
     ap.add_argument("--name", default="TeamA-ppo-exp011")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--melonrace-dir", default=None,
+                    help="path to a TeamB-Millrace-melonrace agent snapshot (metric triple)")
     args = ap.parse_args(argv)
     res = run(args.checkpoint, n=args.n, seed_base=args.seed_base, workers=args.workers,
-              steps=args.steps, name=args.name)
+              steps=args.steps, name=args.name, melonrace_dir=args.melonrace_dir)
     print(json.dumps(res, indent=2))
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
