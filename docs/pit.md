@@ -18,6 +18,8 @@ service (the node's fast NVMe disk — never a network share):
 | `progress/` | one JSON per run, live progress for the dashboard |
 | `runs/` | per-run sqlite deltas pulled back from remote `--node` matches |
 | `paused` | flag file: the hub ladder idles while it exists (survives restarts) |
+| `leases.json` | live **pause leases** — while any exists, resume is refused (see "Pause leases") |
+| `lease-log.jsonl` | append-only audit of every acquire / renew / release / expiry / force-break |
 | `hub.json` | hub config: `workers`, `games_per_pairing`, `max_opponents` |
 | `leaderboard.md` / `.json` | the last `arena leaderboard` export |
 
@@ -51,6 +53,50 @@ curl -X POST http://HOST:8765/api/control/retire   -d '{"agent":"v0a"}'         
 curl -X POST http://HOST:8765/api/control/champion -d '{"team":"A","agent":"v1"}'
 curl -X POST http://HOST:8765/api/control/register -d '{"name":"v1","team":"A","git_ref":"feature/exp-004","path":"agents/team_a/v1.py"}'
 ```
+
+### Pause leases (mutual exclusion for manual runs)
+
+**Pausing is not enough on a shared host.** `paused` is a flag file and `resume` deletes it, so
+on 2026-08-21 the ladder was resumed by another actor in the middle of a live timing battery and
+contaminated its arms. A **lease** makes the pause owned: while any lease is live, every resume
+path (API, dashboard button, CLI, an import of `arena.hub`) refuses with the lease list.
+
+```bash
+# before a timing arm / gate battery / any measured manual run on the Pit host
+uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gate battery" --ttl 3600
+# ... from a desktop, against the hub over the tailnet:
+uv run python -m arena lease acquire --owner modeler --purpose "exp-N1 traces" \
+    --hub http://barrelagedworkflows-1.tail547ecd.ts.net:8765
+uv run python -m arena lease list
+uv run python -m arena lease renew  <lease-id> --ttl 3600     # nothing auto-renews
+uv run python -m arena lease release <lease-id> --resume      # --resume restarts the ladder
+```
+
+or over HTTP:
+
+```bash
+curl -X POST $PIT/api/control/lease -d '{"op":"acquire","owner":"engineer-b","purpose":"expB-303 gates","ttl_s":3600}'
+curl      $PIT/api/leases
+curl -X POST $PIT/api/control/lease -d '{"op":"renew","lease_id":"..."}'
+curl -X POST $PIT/api/control/lease -d '{"op":"release","lease_id":"...","resume":true}'
+```
+
+Rules that make it work:
+
+- **Acquire pauses**; the ladder still finishes the round it is in, so wait for
+  `/api/hub` → `phase: "paused"` before you start measuring. Re-check it at the **end** of every
+  arm too (standing rule: an arm across a pause flip is discarded).
+- **TTL, not forever.** Default 1 h, max 6 h; a crashed run's lease lapses instead of wedging the
+  ladder. Renew explicitly while you are still measuring — nothing renews itself.
+- **Release when done** (`--resume` to restart the ladder in the same step). Leases are not
+  exclusive of each other: if both teams hold one, the ladder stays down until both release.
+- **Overrides are possible but named and logged**: `POST /api/control/resume
+  {"force":true,"actor":"ceo"}` breaks (releases) the leases it overrides and writes a
+  `force-break` row to `lease-log.jsonl`. Use it only for a stale lease whose owner is gone —
+  and tell the owner, because their run's timing is now suspect.
+- The dashboard shows live leases read-only (header pill + ladder panel). Releasing someone
+  else's lease from a button would be the same footgun again, so it is CLI/API only.
+- Who runs when is a scheduling convention, not code: see `docs/pit-host-windows.md`.
 
 `register` requires `git_ref` + a `path` under the repo's `agents/` tree (the hub fetches the
 ref from origin — needs git access on the hub machine) and the new agent starts **benched**:

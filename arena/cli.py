@@ -180,6 +180,75 @@ def cmd_serve(args) -> int:
     return serve(args.host, args.port, args.verbose, hub=args.hub)
 
 
+def _hub_call(url: str, path: str, body: dict | None = None) -> dict:
+    """Talk to a remote hub's JSON API (so a desktop operator can lease the Pit host)."""
+    import json as _json
+    import urllib.error
+    import urllib.request
+    u = url.rstrip("/") + path
+    req = urllib.request.Request(u, method="POST" if body is not None else "GET",
+                                 data=_json.dumps(body).encode() if body is not None else None,
+                                 headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return _json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        detail = _json.loads(e.read() or b"{}").get("error", str(e))
+        raise SystemExit(f"{u} -> {e.code}: {detail}")
+
+
+def _print_leases(leaseset: list[dict]) -> None:
+    if not leaseset:
+        _p("no pause lease held (the ladder may be resumed)")
+        return
+    _p(f"{'lease id':<40} {'owner':<14} {'left':>6} {'held':>6}  purpose")
+    for l in leaseset:
+        _p(f"{l['id']:<40} {l['owner']:<14} {l['expires_in_s'] // 60:>5}m {l['held_for_s'] // 60:>5}m  {l['purpose']}")
+
+
+def cmd_lease(args) -> int:
+    """Pause leases: mutual exclusion between a manual run and the hub ladder (arena/leases.py)."""
+    from . import leases
+    op = args.op
+    if op == "acquire" and args.ttl is None:
+        args.ttl = leases.DEFAULT_TTL_S
+    if args.hub:                                   # remote hub over HTTP
+        if op == "list":
+            out = _hub_call(args.hub, "/api/leases")
+        else:
+            body = {"op": op}
+            if op == "acquire":
+                body.update(owner=args.owner, purpose=args.purpose, ttl_s=args.ttl, pause=not args.no_pause)
+            elif op == "renew":
+                body.update(lease_id=args.lease_id, ttl_s=args.ttl)
+            else:
+                body.update(lease_id=args.lease_id, resume=args.resume)
+            out = _hub_call(args.hub, "/api/control/lease", body)
+        if out.get("lease"):
+            _p(f"{op}: {out['lease']['id']}")
+        _print_leases(out.get("leases", []))
+        _p(f"ladder paused: {out.get('paused')}")
+        return 0
+    from . import hub as hubmod
+    if op == "acquire":
+        rec = hubmod.acquire_lease(args.owner, args.purpose, ttl_s=args.ttl, pause=not args.no_pause)
+        _p(f"lease {rec['id']} held by {rec['owner']} for {rec['ttl_s'] // 60} min: {rec['purpose']}")
+        _p("the ladder will not resume until it is released or lapses; renew with "
+           f"`arena lease renew {rec['id']}`")
+        st = hubmod.HUB.status()
+        _p(f"ladder paused: {hubmod.is_paused()} (hub phase {st['phase']!r}; wait for 'paused' before measuring)")
+    elif op == "renew":
+        rec = leases.renew(args.lease_id, args.ttl)
+        _p(f"lease {rec['id']} renewed ({rec['expires_in_s'] // 60} min left, renewals {rec['renewals']})")
+    elif op == "release":
+        rec = hubmod.release_lease(args.lease_id, resume=args.resume)
+        _p(f"lease {rec['id']} released after {rec['held_for_s'] // 60} min; ladder paused: {hubmod.is_paused()}")
+    else:
+        _print_leases(leases.active())
+        _p(f"ladder paused: {hubmod.is_paused()}")
+    return 0
+
+
 def cmd_info(args) -> int:
     _p(f"arena dir : {ARENA_DIR}")
     _p(f"store     : {DB_PATH} ({'exists' if DB_PATH.exists() else 'missing'})")
@@ -288,6 +357,29 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--hub", action="store_true", help="also run the continuous ladder matchmaker")
     s.add_argument("--verbose", action="store_true", help="log every request")
     s.set_defaults(fn=cmd_serve)
+
+    s = sub.add_parser("lease", help="pause leases: hold the ladder while a manual run measures")
+    ls = s.add_subparsers(dest="op", required=True)
+    g = ls.add_parser("acquire", help="pause the ladder and hold it under a named lease")
+    g.add_argument("--owner", required=True, help="who is running it, e.g. engineer-b")
+    g.add_argument("--purpose", required=True, help="what is measured, e.g. 'expB-303 gate battery'")
+    g.add_argument("--ttl", type=int, default=None, help=f"seconds (default {3600}, max {6 * 3600}); renew to extend")
+    g.add_argument("--no-pause", action="store_true", help="take the lease without pausing (already paused)")
+    g.add_argument("--hub", help="operate on a remote hub, e.g. http://HOST:8765")
+    g.set_defaults(fn=cmd_lease)
+    g = ls.add_parser("list", help="show live leases")
+    g.add_argument("--hub")
+    g.set_defaults(fn=cmd_lease)
+    g = ls.add_parser("renew", help="extend a live lease from now (nothing auto-renews)")
+    g.add_argument("lease_id")
+    g.add_argument("--ttl", type=int, default=None)
+    g.add_argument("--hub")
+    g.set_defaults(fn=cmd_lease)
+    g = ls.add_parser("release", help="release a lease; --resume also restarts the ladder if none remain")
+    g.add_argument("lease_id")
+    g.add_argument("--resume", action="store_true")
+    g.add_argument("--hub")
+    g.set_defaults(fn=cmd_lease)
 
     s = sub.add_parser("info", help="paths, engine, workers")
     s.set_defaults(fn=cmd_info)

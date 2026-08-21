@@ -13,7 +13,13 @@ GET  /api/leaderboard[?engine=&include_retired=1]   BT/Elo table + by-class win 
 GET  /api/games[?limit&agent&run&flagged=1]         most recent first
 GET  /api/agents /api/runs /api/status /api/hub     registry, live+recent runs, engine info, hub state
 GET  /api/leaderboard.md                            the markdown export
+GET  /api/leases                                    live pause leases (see arena/leases.py)
 POST /api/control/pause | resume                    durable pause flag (survives restarts)
+     resume is refused with 409 + the lease list while any pause lease is live;
+     {"force":true,"actor":"who"} overrides and breaks (releases) those leases, logged.
+POST /api/control/lease  {"op":"acquire","owner":"engineer-b","purpose":"expB-303 gates","ttl_s":3600}
+                         {"op":"renew","lease_id":"..."} | {"op":"release","lease_id":"...","resume":false}
+                         {"op":"list"}
 POST /api/control/config      {"workers":14,"games_per_pairing":4,"max_opponents":5}
 POST /api/control/bench       {"agent":"v0a","undo":false}      out of the ladder, still rated
 POST /api/control/retire      {"agent":"v0a","undo":false}      out of ladder AND rating fit
@@ -37,7 +43,7 @@ from urllib.parse import parse_qs, urlparse
 
 from . import engine as eng
 from . import hub as hubmod
-from . import leaderboard, registry, store
+from . import leaderboard, leases, registry, store
 from .paths import ARENA_DIR, DB_PATH, PROGRESS_DIR
 
 _LB_CACHE: dict = {"key": None, "at": 0.0, "data": None}
@@ -119,11 +125,32 @@ def api_status() -> dict:
             "hub": hubmod.HUB.status(), "time": time.strftime("%Y-%m-%dT%H:%M:%S")}
 
 
+def api_leases() -> dict:
+    return {"leases": leases.active(), "paused": hubmod.is_paused()}
+
+
 def control(action: str, body: dict) -> dict:
     if action == "pause":
-        return {"paused": hubmod.set_paused(True)}
+        return {"paused": hubmod.set_paused(True), **api_leases()}
     if action == "resume":
-        return {"paused": hubmod.set_paused(False)}
+        # raises LeaseHeld -> 409 unless force + actor (see arena/leases.py)
+        paused = hubmod.set_paused(False, force=bool(body.get("force")), actor=body.get("actor", ""))
+        return {"paused": paused, **api_leases()}
+    if action == "lease":
+        op = body.get("op", "list")
+        if op == "list":
+            return api_leases()
+        if op == "acquire":
+            rec = hubmod.acquire_lease(body.get("owner", ""), body.get("purpose", ""),
+                                       ttl_s=int(body.get("ttl_s") or leases.DEFAULT_TTL_S),
+                                       pause=body.get("pause", True) is not False)
+            return {"lease": rec, "hub": hubmod.HUB.status(), **api_leases()}
+        if op == "renew":
+            return {"lease": leases.renew(body["lease_id"], body.get("ttl_s")), **api_leases()}
+        if op == "release":
+            rec = hubmod.release_lease(body["lease_id"], resume=bool(body.get("resume")))
+            return {"lease": rec, **api_leases()}
+        raise ValueError(f"unknown lease op {op!r} (acquire|renew|release|list)")
     if action == "config":
         return {"config": hubmod.set_config(**body)}
     if action in ("bench", "retire"):
@@ -198,7 +225,7 @@ a{color:var(--a)}footer{padding:8px 20px;color:var(--dim);font-size:12px}
 #toast{position:fixed;bottom:14px;right:14px;background:var(--panel);border:1px solid var(--acc);border-radius:6px;padding:8px 14px;display:none;z-index:9}
 .linklike{cursor:pointer;text-decoration:underline dotted}
 </style></head><body>
-<header><h1>THE PIT</h1><span id="hubpill" class="pill">…</span>
+<header><h1>THE PIT</h1><span id="hubpill" class="pill">…</span><span id="leasepill" class="pill" style="display:none"></span>
  <button id="btnPause" class="warn">pause</button><button id="btnResume">resume</button>
  <label class="small">workers <input id="cfgWorkers" type="number" min="0" max="32"></label>
  <label class="small">games/pairing <input id="cfgGames" type="number" min="2" max="32" step="2"></label>
@@ -240,6 +267,8 @@ function lbTable(lb){const ch=new Set(Object.values(lb.champions||{}));let h='<t
 function h2hTable(lb){const ids=lb.table.map(r=>r.agent);if(!ids.length)return '<span class="small">no games yet</span>';let h='<table><tr><th class="l"></th>'+ids.map(a=>`<th title="${esc(a)}">${esc(short(a.split('@')[0]))}</th>`).join('')+'</tr>';
  ids.forEach(a=>{h+=`<tr><td class="l" title="${esc(a)}">${esc(short(a))}</td>`;ids.forEach(b=>{if(a===b){h+='<td class="h2h">—</td>';return;}const c=(lb.h2h[a]||{})[b];h+=c?`<td class="h2h ${c.ci_lo>0.5?'ok':c.ci_hi<0.5?'bad':''}">${(100*c.rate).toFixed(0)}% [${(100*c.ci_lo).toFixed(0)}–${(100*c.ci_hi).toFixed(0)}] n=${c.n}</td>`:'<td class="h2h">·</td>';});h+='</tr>';});return h+'</table>';}
 function runsBlock(rs,hub){let h='';
+ if(hub&&(hub.leases||[]).length){h+='<div class="small warn">pause lease held — resume is refused until it is released or lapses:</div>';
+  hub.leases.forEach(l=>{h+=`<div class="small warn">· <b>${esc(l.owner)}</b> — ${esc(l.purpose)} · ${Math.round(l.expires_in_s/60)} min left · held ${Math.round(l.held_for_s/60)} min · <span class="mono">${esc(l.id)}</span> <span class="res">(release: <span class="mono">arena lease release ${esc(l.id)}</span>)</span></div>`;});}
  if(hub){const r=hub.round;h+=`<div class="small">hub: <b class="${hub.paused?'warn':hub.running?'ok':'res'}">${hub.paused?'PAUSED':(hub.running?hub.phase:'not running (dashboard-only)')}</b> · rounds ${hub.rounds_played} · cfg ${hub.config.workers||'auto'}w / ${hub.config.games_per_pairing}g / ${hub.config.max_opponents}opp${hub.last_error?` · <span class="bad">${esc(hub.last_error)}</span>`:''}</div>`;
   if(r)h+=`<div class="small">round ${esc(r.run_id)}: anchor <b>${esc(short(r.anchor))}</b> (${r.anchor_games} ladder games) vs ${r.opponents.map(short).map(esc).join(', ')} · seeds ${esc(r.seeds)}</div>`;}
  if(!rs.live.length)h+='<div class="small">no match playing right now</div>';
@@ -279,6 +308,8 @@ async function tick(){try{const [lb,rs,ag,st]=await Promise.all([j('/api/leaderb
  const hub=st.hub,pill=$('hubpill');
  pill.textContent=hub.paused?'LADDER PAUSED':hub.running?('LADDER '+hub.phase.toUpperCase()):(rs.live.length?'MATCH RUNNING':'IDLE');
  pill.className='pill '+(hub.paused?'paused':(hub.running&&hub.phase==='playing')||rs.live.length?'live':'');
+ const lz=hub.leases||[],lp=$('leasepill');lp.style.display=lz.length?'':'none';lp.className='pill warn';
+ lp.textContent=lz.length?('LEASED · '+lz.map(l=>`${l.owner}: ${l.purpose} (${Math.round(l.expires_in_s/60)}m)`).join(' · ')):'';
  if(!cfgTouched){$('cfgWorkers').value=hub.config.workers;$('cfgGames').value=hub.config.games_per_pairing;$('cfgOpp').value=hub.config.max_opponents;}
  $('engine').textContent=`engine ${st.engine} · arena ${st.arena_sha} · ${st.n_games} games`;
  $('champs').textContent='champions: '+(Object.entries(lb.champions||{}).map(([t,c])=>`${t}=${short(c)}`).join('  ')||'none');
@@ -328,6 +359,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(api_status())
             if u.path == "/api/hub":
                 return self._json(hubmod.HUB.status())
+            if u.path == "/api/leases":
+                return self._json(api_leases())
             if u.path == "/api/leaderboard.md":
                 lb = api_leaderboard(q.get("engine"), False)
                 return self._send(HTTPStatus.OK, leaderboard.render_markdown(lb).encode("utf-8"),
@@ -344,6 +377,8 @@ class Handler(BaseHTTPRequestHandler):
             if u.path.startswith("/api/control/"):
                 return self._json(control(u.path.rsplit("/", 1)[1], body))
             return self._json({"error": "not found"}, HTTPStatus.NOT_FOUND)
+        except leases.LeaseHeld as exc:
+            return self._json({"error": str(exc), "leases": exc.leases}, HTTPStatus.CONFLICT)
         except (KeyError, ValueError, FileNotFoundError) as exc:
             return self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
         except Exception as exc:
