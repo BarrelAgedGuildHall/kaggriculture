@@ -29,7 +29,11 @@ Engine: kaggle-environments 1.32.7.
 # is never imported as a package module (tools/tests use millrace.feedchain).
 from feedchain import make_feedchain_agent
 
-_AGENT = make_feedchain_agent()
+# expB-219/220 (stock-pool saturation): the shipped build carries the melon
+# race rule — structural replant window + MR-per-action stopping rule (no
+# tile-count constant). FEEDCHAIN_DEFAULTS stay at the e8a76b6 behaviour so
+# `millrace:feedchain` remains the frozen A/B control lineage.
+_AGENT = make_feedchain_agent({"melon_replant": True, "melon_rule": "mr"})
 
 
 def agent(obs):

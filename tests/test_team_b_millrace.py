@@ -379,3 +379,77 @@ def test_kaggle_loader_flat_exec_millrace_entry():
 
 def test_kaggle_loader_flat_exec_routed_entry():
     _flat_exec_agent(ROUTED_DIR)
+
+
+# ------------------------------------------------- expB-219/220 melon race rule
+
+def test_shipped_entry_carries_melon_race_rule():
+    # the submission entry constructs the expB-220 build; FEEDCHAIN_DEFAULTS
+    # stay at the e8a76b6 behaviour (frozen A/B control lineage)
+    src = (MILLRACE_DIR / "main.py").read_text(encoding="utf-8")
+    assert '"melon_replant": True' in src and '"melon_rule": "mr"' in src
+    from millrace.feedchain import FEEDCHAIN_DEFAULTS
+    assert FEEDCHAIN_DEFAULTS["melon_replant"] is False
+    assert FEEDCHAIN_DEFAULTS["melon_rule"] == "fixed"
+
+
+def test_melon_mr_rule_prices_tiles_from_market():
+    # a rich observed melon quote must open acreage; the rule output is a
+    # runtime quantity, never the melon_tiles constant
+    from millrace.feedchain import make_feedchain_agent
+    ag = make_feedchain_agent({"melon_replant": True, "melon_rule": "mr"})
+    obs = _obs(seeds={"WHEAT": 1, "CARROT": 0, "MELON": 2})
+    obs["market"] = {"prices": {"EGG": 30, "MELON": 240, "WHEAT": 25},
+                    "inventory": {"EGG": 100, "MELON": 5, "WHEAT": 50}}
+    out = ag(obs)
+    assert isinstance(out, dict) and "market" in out
+    st = ag.state["st"]
+    assert st["want_melon"] > 6  # rich curve: beyond the frozen control's 6
+
+
+def test_melon_mr_rule_closes_on_dead_pool():
+    # a floored melon quote must close acreage growth (replant stops when the
+    # marginal cycle prices below lambda)
+    from millrace.feedchain import make_feedchain_agent
+    ag = make_feedchain_agent({"melon_replant": True, "melon_rule": "mr"})
+    # realistic crew: lambda = fib(11)/prod_rate ~ $14/action, not the ~$0.3
+    # of a 2-hand toy farm (the rule is a ratio, so the test must price both
+    # sides realistically)
+    obs = _obs(n_hands=10, seeds={"WHEAT": 1, "CARROT": 0, "MELON": 2})
+    obs["market"] = {"prices": {"EGG": 30, "MELON": 1, "WHEAT": 25},
+                    "inventory": {"EGG": 100, "MELON": 400, "WHEAT": 50}}
+    ag(obs)
+    assert ag.state["st"]["want_melon"] == 0
+
+
+def test_melon_yield_ledger_records_at_harvest_not_eligibility():
+    # expB-222 (PR #14 audit finding 1): an eligible-but-unharvested melon
+    # must NOT enter the realised-yield ledger (60% of melon weed-kills in
+    # the expB-220 gate run hit at age >= first — logging at eligibility
+    # booked phantom revenue for tiles that banked $0). The ledger fills only
+    # on the turn a HARVEST order is actually issued for the tile.
+    from millrace.feedchain import make_feedchain_agent
+
+    def melon_tile(planted_day, yield_units):
+        return {"kind": "PLANT", "crop": "MELON", "planted_day": planted_day,
+                "yield_units": yield_units, "watered_today": True,
+                "consecutive_unwatered": 0}
+
+    # eligible melon (age == first) away from every unit: no HARVEST this
+    # turn, so nothing may be recorded (the pre-fix ledger logged 4 here)
+    ag = make_feedchain_agent()
+    obs = _obs()
+    obs["day"] = 11
+    obs["farms"][0]["tiles"][3][3] = melon_tile(planted_day=1, yield_units=4)
+    ag(obs)
+    assert ag.state["st"]["melon_harvest_units"] == []
+
+    # the same tile under a hand: HARVEST issues this turn and the ledger
+    # records exactly once (both co-located hands may issue; dedup by key)
+    ag2 = make_feedchain_agent()
+    obs2 = _obs()
+    obs2["day"] = 11
+    obs2["farms"][0]["tiles"][1][1] = melon_tile(planted_day=1, yield_units=4)
+    out2 = ag2(obs2)
+    assert ["HARVEST"] in out2["hands"]
+    assert ag2.state["st"]["melon_harvest_units"] == [4]
