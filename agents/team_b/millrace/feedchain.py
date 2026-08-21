@@ -139,14 +139,10 @@ def _plan(obs, S, deadline):
     crop_counts = {}
     for _, t in plants:
         crop_counts[t["crop"]] = crop_counts.get(t["crop"], 0) + 1
-    # realised melon yield ledger (expB-220): a ready melon's yield_units IS
-    # what the harvest will bank — record each planting once, when first ready
-    for (x, y), t in plants:
-        if t["crop"] == "MELON" and day - t["planted_day"] >= pc.CROPS["MELON"]["first"]:
-            key = (x, y, t["planted_day"])
-            if key not in st["melon_seen"]:
-                st["melon_seen"].add(key)
-                st["melon_harvest_units"].append(t.get("yield_units", 0))
+    # (realised melon yield ledger moved to harvest issuance — see the hook at
+    # the end of _plan. Logging at first eligibility here recorded phantom
+    # yield: PR#14 audit traced 18/30 melon weed-kills at age >= first, i.e.
+    # after their yield had been booked "realised" for tiles that banked $0.)
     wheat_stock = shed.get("WHEAT", 0) + sum(iv.get("WHEAT", 0) for iv in invs)
 
     herd = n_animals + sum(shed.get(a, 0) + carried_animals[a] for a in pc.ANIMALS)
@@ -711,6 +707,25 @@ def _plan(obs, S, deadline):
         if isinstance(a, list) and a and a[0] not in MOVES and a[0] != "PASS":
             st["prod_today"] += 1
     st["last_orders"] = orders
+
+    # ---- realised melon yield ledger (expB-220, corrected expB-222) ---------
+    # Record a melon's yield_units at the turn a HARVEST order is actually
+    # issued for its tile (HARVEST acts on the issuing unit's own tile, so
+    # every issuance — on-tile loop, router task, endgame — lands here), NOT
+    # at first eligibility: the PR#14 audit showed 60% of melon weed-kills
+    # happen after age >= first (phantom "realised" revenue for tiles that
+    # bank $0) and survivors keep accruing yield until maxday (undercount).
+    # At issuance the tile is alive and ready, so yield_units IS what banks.
+    for i, a in enumerate(actions):
+        if isinstance(a, list) and a and a[0] == "HARVEST" and i < len(units):
+            ux, uy = units[i]
+            t = tiles[uy][ux]
+            if isinstance(t, dict) and t.get("kind") == "PLANT" \
+                    and t.get("crop") == "MELON":
+                key = (ux, uy, t["planted_day"])
+                if key not in st["melon_seen"]:
+                    st["melon_seen"].add(key)
+                    st["melon_harvest_units"].append(t.get("yield_units", 0))
 
     return {"farmer": actions[0], "hands": actions[1:], "market": orders}
 

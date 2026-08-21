@@ -420,3 +420,36 @@ def test_melon_mr_rule_closes_on_dead_pool():
                     "inventory": {"EGG": 100, "MELON": 400, "WHEAT": 50}}
     ag(obs)
     assert ag.state["st"]["want_melon"] == 0
+
+
+def test_melon_yield_ledger_records_at_harvest_not_eligibility():
+    # expB-222 (PR #14 audit finding 1): an eligible-but-unharvested melon
+    # must NOT enter the realised-yield ledger (60% of melon weed-kills in
+    # the expB-220 gate run hit at age >= first — logging at eligibility
+    # booked phantom revenue for tiles that banked $0). The ledger fills only
+    # on the turn a HARVEST order is actually issued for the tile.
+    from millrace.feedchain import make_feedchain_agent
+
+    def melon_tile(planted_day, yield_units):
+        return {"kind": "PLANT", "crop": "MELON", "planted_day": planted_day,
+                "yield_units": yield_units, "watered_today": True,
+                "consecutive_unwatered": 0}
+
+    # eligible melon (age == first) away from every unit: no HARVEST this
+    # turn, so nothing may be recorded (the pre-fix ledger logged 4 here)
+    ag = make_feedchain_agent()
+    obs = _obs()
+    obs["day"] = 11
+    obs["farms"][0]["tiles"][3][3] = melon_tile(planted_day=1, yield_units=4)
+    ag(obs)
+    assert ag.state["st"]["melon_harvest_units"] == []
+
+    # the same tile under a hand: HARVEST issues this turn and the ledger
+    # records exactly once (both co-located hands may issue; dedup by key)
+    ag2 = make_feedchain_agent()
+    obs2 = _obs()
+    obs2["day"] = 11
+    obs2["farms"][0]["tiles"][1][1] = melon_tile(planted_day=1, yield_units=4)
+    out2 = ag2(obs2)
+    assert ["HARVEST"] in out2["hands"]
+    assert ag2.state["st"]["melon_harvest_units"] == [4]
