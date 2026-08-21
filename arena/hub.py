@@ -64,7 +64,8 @@ def set_paused(paused: bool, *, force: bool = False, actor: str = "") -> bool:
     """
     ensure_dirs()
     if paused:
-        PAUSE_FLAG.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
+        if not PAUSE_FLAG.exists():     # keep the original timestamp: "paused since" is evidence
+            PAUSE_FLAG.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
     else:
         held = leases.active()
         if held and not force:

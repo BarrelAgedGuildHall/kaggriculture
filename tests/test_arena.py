@@ -436,6 +436,10 @@ def test_hub_plan_round_prefers_least_played_active():
     # pausing is a durable flag file
     assert hub.set_paused(True) is True
     assert hub.is_paused()
+    stamp = hub.PAUSE_FLAG.read_text(encoding="utf-8")
+    assert hub.set_paused(True) is True
+    assert hub.PAUSE_FLAG.read_text(encoding="utf-8") == stamp, \
+        "re-pausing keeps the original 'paused since' stamp (it is evidence for a contaminated arm)"
     assert hub.set_paused(False) is False
     cfg = hub.set_config(workers=3, games_per_pairing=6)
     assert cfg["workers"] == 3 and cfg["games_per_pairing"] == 6
