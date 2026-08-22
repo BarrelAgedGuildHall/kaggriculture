@@ -192,6 +192,76 @@ def slice_batch(b, idx):
     return {k: v[idx] for k, v in b.items()}
 
 
+# --------------------------------------------------------------------- `--dump-batch` (C-4)
+# What a dumped batch is: ONE iteration's rollouts, frozen at the moment the critic sees them
+# and before any epoch has updated on them. That "before" is the whole point -- a batch pulled
+# out after the update loop is a different object from the one `critic.update` was trained on,
+# and a critic study run against it is answering a slightly different question than the one it
+# thinks it is.
+#
+# The contract is `critic.value(x)` / `critic.update(x, target, target_lines=, aux=)`, so `x`,
+# `target` (the LOO-baselined, REWARD_SCALE-normalised return, per ROW), `line_targets` and the
+# aux label blocks are the load-bearing arrays. The actions and old log-probs ride along because
+# a batch without them cannot reproduce the policy loss, and the per-episode columns because
+# without `(seed, seat, opponent)` the leave-one-out baseline cannot be recomputed or checked.
+BATCH_FORMAT = 1
+ACTION_KEYS = ("fire", "qty_idx", "hire_idx", "exec_fire", "exec_qty", "exec_hire")
+LOGP_KEYS = ("logp_fire", "logp_qty", "logp_hire")
+
+
+def write_batch(path, b, ep_of_row, target_row, line_target_row, aux_row, results,
+                meta=None, values=None, advantage=None):
+    """Freeze one rollout batch to `path` (.npz). Returns the manifest that describes it."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    out = {
+        "x": np.asarray(b["x"], dtype=np.float32),
+        "order_mask": np.asarray(b["order_mask"], dtype=np.float32),
+        "target": np.asarray(target_row, dtype=np.float64),
+        "ep_of_row": np.asarray(ep_of_row, dtype=np.int32),
+    }
+    for k in ACTION_KEYS + LOGP_KEYS:
+        if k in b:
+            out[k] = np.asarray(b[k])
+    if values is not None:
+        out["value"] = np.asarray(values, dtype=np.float64)
+    if advantage is not None:
+        out["advantage_raw"] = np.asarray(advantage, dtype=np.float64)   # BEFORE normalisation
+    if line_target_row is not None:
+        out["line_targets"] = np.asarray(line_target_row, dtype=np.float64)
+    for k, v in (aux_row or {}).items():
+        out["aux_" + k] = np.asarray(v, dtype=np.float32)
+    # per-episode columns: what the row targets were built from, so the baseline is checkable
+    out["ep_R"] = np.array([r["R"] for r in results], dtype=np.float64)
+    out["ep_R_opp"] = np.array([r["R_opp"] for r in results], dtype=np.float64)
+    out["ep_seed"] = np.array([r["seed"] for r in results], dtype=np.int64)
+    out["ep_seat"] = np.array([r["seat"] for r in results], dtype=np.int8)
+    out["ep_opponent"] = np.array([str(r["opponent_id"]) for r in results])
+    manifest = {
+        "batch_format": BATCH_FORMAT, "reward_scale": REWARD_SCALE,
+        "n_rows": int(len(out["x"])), "n_episodes": int(len(results)),
+        "line_names": list(LINES.LINES) if line_target_row is not None else [],
+        "aux_names": sorted((aux_row or {}).keys()),
+        "arrays": {k: {"shape": list(np.shape(v)), "dtype": str(np.asarray(v).dtype)}
+                   for k, v in out.items()},
+        **(meta or {}),
+    }
+    out["manifest"] = np.array(json.dumps(manifest, sort_keys=True))
+    np.savez_compressed(path, **out)
+    path.with_suffix(".json").write_text(json.dumps(manifest, indent=1, sort_keys=True),
+                                         encoding="utf-8")
+    return manifest
+
+
+def read_batch(path):
+    """Load a dumped batch: `(arrays, manifest)`. The mirror of `write_batch`, so a consumer
+    never has to know how the manifest was smuggled into the npz."""
+    d = np.load(str(path), allow_pickle=False)
+    arrays = {k: d[k] for k in d.files if k != "manifest"}
+    manifest = json.loads(str(d["manifest"])) if "manifest" in d.files else {}
+    return arrays, manifest
+
+
 def chunked_old_logprobs(trainer, b, frozen, chunk=8192):
     """pi_old over the whole batch, in chunks -- p_qty is (B, 20, 18) float64 and a full
     184k-row batch would allocate ~5 GB."""
@@ -268,9 +338,16 @@ class Run:
                  seed_base=TRAIN_SEED_BASE, steps=720, critic_hidden=256,
                  phase="P0", unit_subsample=0.25, alpha_aux=0.0, aux_rows=(),
                  pfsp=False, snapshot_every=5, max_ckpt=10, unit_temperature=1.0,
-                 alpha=0.0, critic_kind="scalar", critic_aux=(), critic_alpha_aux=0.1):
+                 alpha=0.0, critic_kind="scalar", critic_aux=(), critic_alpha_aux=0.1,
+                 dump_dir=None, dump_iters=(0,)):
         self.out = Path(out_dir)
         (self.out / "ckpt").mkdir(parents=True, exist_ok=True)
+        # `--dump-batch`: where to freeze rollout batches, and which iterations to freeze.
+        # Deliberately NOT every iteration by default -- one batch's `x` alone is ~150 MB.
+        self.dump_dir = Path(dump_dir) if dump_dir else None
+        self.dump_iters = set(int(i) for i in dump_iters)
+        if self.dump_dir is not None:
+            self.dump_dir.mkdir(parents=True, exist_ok=True)
         self.base_npz = str(base_npz or (WEIGHTS_DIR / "rebuild-m0.npz"))
         self.member = P.Member(self.base_npz)
         self.phase = phase
@@ -349,6 +426,33 @@ class Run:
     def save_actor(self, path):
         return save_member(self.base_npz, self.trainer.mkt, path,
                            unit=(self.unit_trainer.unit if self.unit_trainer else None))
+
+    def dump_batch(self, it, b, ep_of_row, target_row, line_target_row, aux_row, results,
+                   values=None, advantage=None):
+        """`--dump-batch`: this iteration's rollout batch, with the arm's identity on it.
+
+        The metadata is not decoration. Numbers do not carry across a reward change (R-4.3) or
+        a critic kind, so a batch file that does not say `alpha`, `critic`, `phase`,
+        `temperature` and which weights it was rolled out from is a pile of arrays nobody can
+        safely compare with anything.
+        """
+        meta = {
+            "iteration": int(it), "out_dir": str(self.out), "phase": self.phase,
+            "alpha": self.alpha, "critic": self.critic.kind, "critic_aux": list(self.critic_aux),
+            "temperature": self.temperature(it), "unit_temperature": self.unit_temperature,
+            "seed_base": self.seed_base, "steps": self.steps, "opponents": list(self.opponents),
+            "replicates": self.replicates, "seeds_per_iter": self.seeds_per_iter,
+            "base_npz": self.base_npz, "actor_npz": self.actor_npz,
+            "written_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        }
+        path = self.dump_dir / f"batch-iter{int(it):03d}.npz"
+        manifest = write_batch(path, b, ep_of_row, target_row, line_target_row, aux_row, results,
+                               meta=meta, values=values, advantage=advantage)
+        print(json.dumps({"dumped_batch": str(path),
+                          "mb": round(path.stat().st_size / 1e6, 1),
+                          "n_rows": manifest["n_rows"], "n_episodes": manifest["n_episodes"]}),
+              flush=True)
+        return path
 
     # -- opponent sampling ----------------------------------------------------
     FLOORS = {"base": 0.15, "pi0": 0.05}
@@ -512,6 +616,12 @@ class Run:
         # iteration 0 reads a freshly initialised critic and is flagged rather than quoted.
         ev_heldout = CRITIC.value_explained_var(self.critic, b["x"], target_row)
         adv = target_row - v
+        # `--dump-batch` (C-4): freeze this iteration's rollout batch to disk BEFORE any update
+        # touches it, so what is on disk is exactly the critic's input contract at the moment
+        # `critic.value`/`critic.update` see it -- not a batch some later epoch has moved.
+        if self.dump_dir is not None and it in self.dump_iters:
+            self.dump_batch(it, b, ep_of_row, target_row, line_target_row, aux_row, results,
+                            values=v, advantage=adv)
         adv_mu, adv_sd = adv.mean(), max(1e-6, adv.std())
         adv = (adv - adv_mu) / adv_sd
         u_adv = adv[u_mkt_row] if ub is not None else None
