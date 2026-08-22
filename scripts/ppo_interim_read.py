@@ -110,9 +110,15 @@ def k7_prime(cand_rows, ref_rows):
     n = len(keys)
 
     # The SE the addendum's MDE table is built from: the SD of the probe's own paired margins,
-    # over root-n. Pooled across the two arms because both are measurements of the same matchup
-    # on the same boards, and A-3.2 requires it be computed here rather than looked up.
-    sigma = float(np.std(np.concatenate([dc, dp]), ddof=1))
+    # over root-n, computed here rather than looked up (A-3.2's standing rule).
+    #
+    # POOLED WITHIN-ARM, not pooled over the raw values. The two arms have different means by
+    # construction -- the difference between them is the very thing being tested -- so pooling
+    # raw `d` measures the within-arm spread PLUS the between-arm shift and inflates sigma by
+    # exactly the effect. On R-6.1's own numbers that reads 16,182 instead of 16,000: small here,
+    # but it is an effect-size-dependent bias in the denominator of the trigger, which is the one
+    # place a bias must never be.
+    sigma = float(np.sqrt((np.var(dc, ddof=1) + np.var(dp, ddof=1)) / 2.0))
     se = sigma / np.sqrt(n)
     decline = float(dp.mean() - dc.mean())          # positive == margin got worse
     # The doubly-paired form is strictly more powerful (the board-common component of the margin
