@@ -26,6 +26,8 @@ sheet = n.sheet()                   # on demand      (p50 ~0.3 ms)
 sheet.nav, sheet.phi                # cash + marks, and the non-cash potential
 n.phi_rel()                         # (nav-cash)_us - (nav-cash)_them
 sheet.as_dict()                     # JSON-safe, versioned: the S-3 telemetry row
+                                    # (the Pit records these per episode -- docs/pit.md,
+                                    #  "NAV telemetry"; `arena nav --calibrate`)
 ```
 
 The mark variant and λ are **always explicit**:

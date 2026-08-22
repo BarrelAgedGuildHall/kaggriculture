@@ -143,6 +143,10 @@ uv run python -m arena relabel old@4c859c9 new@12a5398        # rename an id acr
                                                               # rows in one transaction (game ids are recomputed);
                                                               # --dry-run first. Use when the LABEL was wrong --
                                                               # re-registering instead would orphan the rows.
+uv run python -m arena nav --mode ladder --calibrate           # S-3: per-episode NAV trajectories the ladder
+                                                              # records (off for gates/screens; --nav-telemetry
+                                                              # on `match` to record a run). --trajectory prints
+                                                              # every mark, --json dumps them for analysis.
 uv run python -m arena push v1 --hub http://HOST:8765               # upload ONE agent snapshot to a hub:
                                                               # content-hash verified end to end, ONE registry
                                                               # key merged, champions/roster untouched, arrives
@@ -181,10 +185,14 @@ Auto-refreshes every 3 s. With `--hub` the same process runs the **continuous la
 least-played active agent anchors a star match vs its most rating-similar active opponents on
 fresh paired seeds, forever; without it the dashboard just watches CLI runs. JSON API for the
 teams/Registrar: `/api/leaderboard`, `/api/games?limit=50&agent=<id>&flagged=1`, `/api/agents`,
-`/api/runs`, `/api/status`, `/api/hub`, `/api/leases`, `/api/leaderboard.md`, and
-`POST /api/control/*` (pause/resume/lease/config/bench/retire/champion/register — register only
-takes `git_ref` + a `path` under `agents/`, and the agent starts benched; see docs/pit.md
-"Security"). **Pause leases**: a manual run holds the ladder under a named lease (owner, purpose,
+`/api/runs`, `/api/status`, `/api/hub`, `/api/leases`, `/api/nav`, `/api/leaderboard.md`, and
+`POST /api/control/*` (pause/resume/lease/config/bench/retire/champion/register/**push** — register
+only takes `git_ref` + a `path` under `agents/`, `push` uploads ONE content-verified snapshot and
+merges ONE registry key, and both start the agent benched; see docs/pit.md "Security").
+**NAV telemetry (S-3)**: the ladder records per-episode NAV trajectories for a sample of its games
+(`hub.json: nav_telemetry`, percent) — off for gates and screens, and computed after the episode
+so it cannot move a measured turn time. `arena nav [--trajectory|--calibrate|--json]`, docs/pit.md
+"NAV telemetry". **Pause leases**: a manual run holds the ladder under a named lease (owner, purpose,
 TTL, explicit renew) and every resume path refuses while it is live — `docs/pit.md` "Pause
 leases", and `docs/pit-host-windows.md` for who runs when on the shared host. Service deployment
 on workflows-box + tailnet URL: **docs/pit.md**.

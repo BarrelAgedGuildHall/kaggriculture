@@ -12,6 +12,7 @@ arena_api.py / arena_worker.py, much simplified.
 GET  /api/leaderboard[?engine=&include_retired=1]   BT/Elo table + by-class win rates + h2h + champions
 GET  /api/games[?limit&agent&run&flagged=1]         most recent first
 GET  /api/agents /api/runs /api/status /api/hub     registry, live+recent runs, engine info, hub state
+GET  /api/nav[?game&agent&run&mode&seat&points=0&limit]   S-3 NAV trajectories per episode+seat
 GET  /api/leaderboard.md                            the markdown export
 GET  /api/leases                                    live pause leases (see arena/leases.py)
      /api/status carries them too, at BOTH levels: top-level "leases"/"lease_held" and
@@ -97,6 +98,25 @@ def api_games(limit: int = 50, agent: str | None = None, run: str | None = None,
     return rows
 
 
+def api_nav(game: str | None = None, agent: str | None = None, run: str | None = None,
+            mode: str | None = None, seat: int | None = None, points: bool = True,
+            limit: int = 50) -> dict:
+    """S-3 NAV trajectories (arena/navlog.py). `points=0` returns the terminal marks and the
+    realised outcome without the trajectory blob, which is what a calibration scan wants."""
+    if not DB_PATH.exists():
+        return {"rows": [], "n": 0}
+    con = store.connect()
+    rows = store.nav_rows(con, game_id=game, agent=agent, run_id=run, mode=mode, seat=seat,
+                          with_points=points, limit=limit)
+    total = con.execute("SELECT COUNT(*) FROM nav_traj").fetchone()[0]
+    con.close()
+    for r in rows:
+        if "points" in r:
+            r["points"] = json.loads(r["points"] or "[]")
+        r["diagnostics"] = json.loads(r.get("diagnostics") or "{}")
+    return {"rows": rows, "n": len(rows), "total": total}
+
+
 def api_agents() -> dict:
     reg = registry.ensure_residents()
     agents = registry.list_agents(reg)
@@ -161,7 +181,8 @@ CONTROL_KEYS: dict[str, set[str]] = {
     "pause": set(),
     "resume": {"force", "actor"},
     "lease": {"op", "owner", "purpose", "ttl_s", "pause", "lease_id", "id", "resume"},
-    "config": {"workers", "games_per_pairing", "max_opponents", "allow_unsafe_register"},
+    "config": {"workers", "games_per_pairing", "max_opponents", "allow_unsafe_register",
+               "nav_telemetry", "nav_sample_every"},
     "bench": {"agent", "undo"},
     "retire": {"agent", "undo"},
     "activate": {"agent"},
@@ -431,6 +452,11 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/games":
                 return self._json(api_games(int(q.get("limit", 50)), q.get("agent"), q.get("run"),
                                             q.get("flagged") in ("1", "true")))
+            if u.path == "/api/nav":
+                return self._json(api_nav(q.get("game"), q.get("agent"), q.get("run"), q.get("mode"),
+                                          int(q["seat"]) if q.get("seat") else None,
+                                          q.get("points", "1") not in ("0", "false"),
+                                          int(q.get("limit", 50))))
             if u.path == "/api/agents":
                 return self._json(api_agents())
             if u.path == "/api/runs":

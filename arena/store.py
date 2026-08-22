@@ -42,6 +42,23 @@ SUPERSEDED_COLS = ["superseded_at", "superseded_by_run", "game_id", "run_id", "m
                    "crash0", "crash1", "timeout0", "timeout1", "p99_0", "p99_1", "max_0", "max_1",
                    "created_at"]
 
+# S-3 NAV telemetry (arena/navlog.py): one row per (game, seat), the sampled trajectory in
+# `points` as JSON. Separate from `games` on purpose -- it is optional, it is written for a
+# sample of games only, and a store that never recorded any is simply a store with an empty
+# table. The realised outcome (`money`, `result`) is copied onto the row so a calibration query
+# is one SELECT rather than a join a reader has to remember to write.
+NAV_COLUMNS = [
+    ("game_id", "TEXT"), ("seat", "INTEGER"), ("agent", "TEXT"), ("run_id", "TEXT"), ("mode", "TEXT"),
+    ("seed", "INTEGER"), ("engine", "TEXT"), ("arena_sha", "TEXT"), ("host", "TEXT"),
+    ("money", "REAL"), ("result", "REAL"),
+    ("nav_schema", "INTEGER"), ("nav_source", "TEXT"), ("variant", "TEXT"),
+    ("lam_opp", "REAL"), ("lam_wage", "REAL"), ("lam_name", "TEXT"), ("sample_every", "INTEGER"),
+    ("n_points", "INTEGER"), ("final_step", "INTEGER"), ("final_cash", "REAL"), ("final_nav", "REAL"),
+    ("final_phi", "REAL"), ("provisional", "INTEGER"), ("tripwire", "TEXT"), ("diagnostics", "TEXT"),
+    ("points", "TEXT"), ("error", "TEXT"), ("created_at", "TEXT"),
+]
+NAV_COLNAMES = [c for c, _ in NAV_COLUMNS]
+
 
 def connect(path: Path | None = None) -> sqlite3.Connection:
     path = Path(path) if path else DB_PATH
@@ -62,6 +79,10 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
         f"{c} {'INTEGER' if c.startswith(('seed', 'crash', 'timeout')) else 'REAL' if c.startswith(('money', 'result', 'p99', 'max')) else 'TEXT'}"
         for c in SUPERSEDED_COLS) + ")")
     con.execute("CREATE INDEX IF NOT EXISTS idx_superseded_run ON superseded(run_id)")
+    navcols = ", ".join(f"{c} {t}" for c, t in NAV_COLUMNS)
+    con.execute(f"CREATE TABLE IF NOT EXISTS nav_traj ({navcols}, PRIMARY KEY (game_id, seat))")
+    con.execute("CREATE INDEX IF NOT EXISTS idx_nav_agent ON nav_traj(agent)")
+    con.execute("CREATE INDEX IF NOT EXISTS idx_nav_run ON nav_traj(run_id)")
     con.commit()
     return con
 
@@ -102,6 +123,37 @@ def upsert_rows(con: sqlite3.Connection, rows: list[dict]) -> int:
     )
     con.commit()
     return len(rows)
+
+
+def upsert_nav(con: sqlite3.Connection, rows: list[dict]) -> int:
+    """Store NAV trajectories, keyed by (game_id, seat) -- so a re-run of a game replaces its
+    trajectory exactly as it replaces its game row, and a remote delta merges."""
+    if not rows:
+        return 0
+    ph = ", ".join("?" for _ in NAV_COLNAMES)
+    con.executemany(
+        f"INSERT OR REPLACE INTO nav_traj ({', '.join(NAV_COLNAMES)}) VALUES ({ph})",
+        [tuple(r.get(c) for c in NAV_COLNAMES) for r in rows],
+    )
+    con.commit()
+    return len(rows)
+
+
+def nav_rows(con: sqlite3.Connection, game_id: str | None = None, agent: str | None = None,
+             run_id: str | None = None, mode: str | None = None, seat: int | None = None,
+             with_points: bool = True, limit: int = 200) -> list[dict]:
+    """NAV trajectories, most recent first. `with_points=False` leaves out the JSON blob, which
+    is most of the bytes -- use it when you want the terminal marks and the outcome only."""
+    cols = ", ".join(c for c in NAV_COLNAMES if with_points or c != "points")
+    where, params = [], []
+    for col, val in (("game_id", game_id), ("agent", agent), ("run_id", run_id), ("mode", mode)):
+        if val:
+            where.append(f"{col} = ?"); params.append(val)
+    if seat is not None:
+        where.append("seat = ?"); params.append(int(seat))
+    sql = (f"SELECT {cols} FROM nav_traj" + (" WHERE " + " AND ".join(where) if where else "")
+           + " ORDER BY created_at DESC, game_id, seat LIMIT ?")
+    return [dict(r) for r in con.execute(sql, (*params, limit))]
 
 
 def superseded_rows(con: sqlite3.Connection, run_id: str | None = None) -> list[dict]:
@@ -196,6 +248,10 @@ def import_db(con: sqlite3.Connection, other: Path) -> int:
     try:
         for r in src.execute("SELECT * FROM runs"):
             record_run(con, dict(r))
+    except sqlite3.Error:
+        pass
+    try:    # a store written before S-3 has no nav_traj table, which is not an error
+        upsert_nav(con, [dict(r) for r in src.execute("SELECT * FROM nav_traj")])
     except sqlite3.Error:
         pass
     src.close()
