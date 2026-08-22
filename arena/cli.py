@@ -337,6 +337,20 @@ def cmd_retire(args) -> int:
     return 0
 
 
+def cmd_relabel(args) -> int:
+    res = registry.relabel(args.agent, args.new_id, Path(args.db) if args.db else None,
+                           dry_run=args.dry_run)
+    if res["dry_run"]:
+        _p(f"[dry-run] {res['old']} -> {res['new']}: {res['games']} game rows would move"
+           + (f", champion[{', '.join(res['champions'])}] would follow" if res["champions"] else ""))
+        return 0
+    _p(f"relabelled {res['old']} -> {res['new']}: {res['games']} game rows, {res['runs']} run rows"
+       + (f", champion[{', '.join(res['champions'])}] followed" if res["champions"] else ""))
+    _p("game ids were recomputed (they hash the player names), so re-running these pairings "
+       "still upserts instead of duplicating.")
+    return 0
+
+
 def cmd_import(args) -> int:
     from . import store
     con = store.connect(Path(args.db) if args.db else None)
@@ -561,6 +575,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("agent")
     s.add_argument("--undo", action="store_true")
     s.set_defaults(fn=cmd_retire)
+
+    s = sub.add_parser("relabel", help="rename an agent id across the registry AND its game rows (one transaction)")
+    s.add_argument("agent", help="the agent to rename (name@sha, or a name)")
+    s.add_argument("new_id", help="the new id, name@sha")
+    s.add_argument("--db")
+    s.add_argument("--dry-run", action="store_true", help="report what would move and change nothing")
+    s.set_defaults(fn=cmd_relabel)
 
     s = sub.add_parser("import", help="merge games from other arena sqlite/CSV files (by game_id)")
     s.add_argument("files", nargs="+")

@@ -15,6 +15,8 @@ Kaggler's entry for the Kaggle **Kaggriculture** simulation competition
 | `scripts/fetch_replays.py` | Download official replays / the episodes index with the Kaggle CLI. |
 | `scripts/make_submission.py` | Build `dist/main.py` (or `dist/submission.tar.gz`) and verify it plays standalone in a fresh venv. |
 | `scripts/engine_watch.py` | Exit 1 if PyPI has a newer `kaggle-environments` than our pin (daily cron / CI). |
+| `nav/` | **The shared economic substrate (S-1)** — balance sheet, runtime-fitted price curves, demand book, opponent book, λ. Both teams import it; it decides nothing. Runtime half is stdlib-only and vendored into submissions. See `docs/nav.md`. |
+| `scripts/nav_tripwire.py` | One command: do nav's runtime-fitted curves still match the engine? Run it after every engine bump. |
 | `arena/` | **The internal arena** — registry, paired-seed scheduler, SQLite store, BT/Elo leaderboard, gates, remote runs. See "Arena" below. |
 | `tools/` | **Shared measurement tooling** — both teams read the same books. `pnl_census.py` (per-line income statement + terminal balance sheet, `docs/tools/pnl-census.md`), `agent_spec.py` (one agent-spec grammar). |
 | `docs/engine/` | Copies of the engine's `README.md` (rules), `AGENTS.md` (API), `kaggriculture.json` (config) and `VERSION.md` (pinned version + sha256 + parity evidence). |
@@ -149,6 +151,10 @@ uv run python -m arena verify --baseline record --note "..."  # accept this stor
                                                               # `arena verify` reports only what is new or worse
                                                               # (--baseline ignore for the raw, unfiltered check)
 uv run python -m arena retire v0                              # drop from the rating fit (rows kept); --undo
+uv run python -m arena relabel old@4c859c9 new@12a5398        # rename an id across the registry AND its game
+                                                              # rows in one transaction (game ids are recomputed);
+                                                              # --dry-run first. Use when the LABEL was wrong --
+                                                              # re-registering instead would orphan the rows.
 uv run python -m arena export --out data/arena/games.csv
 ```
 
@@ -220,13 +226,40 @@ round-robin, and filter the leaderboard with `--engine <version>`.
 
 Prior art: `docs/arena-prior-art.md`.
 
+## The balance sheet (`nav`)
+
+One shared library that answers *what is this farm worth* and *what is exactly inferable*,
+for both seats. It contains no policy: every judgement stays in the agent. Full guide:
+[`docs/nav.md`](docs/nav.md).
+
+```python
+import nav
+n = nav.Nav()
+n.observe(obs)                      # every turn (p50 ~0.03 ms)
+sheet = n.sheet()                   # cash + marked lines (p50 ~0.3 ms); variant and lambda explicit
+n.phi_rel()                         # (nav-cash)_us - (nav-cash)_them, from public state
+```
+
+Price curves are **fitted at runtime** from observed `(inventory, price)` pairs — nothing is
+hard-coded — so an engine rebalance changes the numbers, not the code. That is only credible
+because it is checked:
+
+```bash
+uv run python scripts/nav_tripwire.py     # exit 1 => do not trust a balance-sheet number
+```
+
 ## Submission
 
 ```bash
 uv run python scripts/make_submission.py --verify   # builds dist/, plays an episode from a fresh venv
+uv run python scripts/make_submission.py --verify --vendor nav --agent-dir agents/team_b/routed
 # then, deliberately and only after the Auditor's review:
 uv run kaggle competitions submit kaggriculture -f dist/main.py -m "<experiment id>"
 ```
+
+`--vendor nav` copies the library into the bundle (the engine's loader only puts the agent's
+own directory on `sys.path`). **A nav bump re-ids every agent that vendors it and invalidates
+its gates — never bump it mid-experiment or during a promotion window** (`docs/nav.md`).
 
 ## Conventions
 
