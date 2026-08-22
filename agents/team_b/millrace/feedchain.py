@@ -504,6 +504,14 @@ def _plan(obs, S, deadline):
     # inventory; yield/cycle is the episode's own realised harvest average
     # (structural max_yield prior before the first harvest); actions/cycle is
     # structural (1 PLANT + first_yield_day WATERs + 1 HARVEST).
+    # expB-303b: which hurdle the acreage rules clear. The melon rule was
+    # written against `lam` (the M5a fib WAGE, ~$18) and the strawberry rule
+    # against the noisy 3-day `lam_opp`. Under a priced queue the correct hurdle
+    # for "should this tile-cycle exist" is the same number the dispatcher uses
+    # to decide "should this unit-turn be spent" — otherwise the planner commits
+    # acreage the dispatcher will refuse to service, which is what expB-304a's
+    # weed tripwire measured. "wage" keeps the shipped behaviour.
+    hurdle = lam_cut if (P["acreage_hurdle"] == "opp" and priced_dispatch) else lam
     if P["melon_rule"] == "mr":
         mel = pc.CROPS["MELON"]
         harvests = st["melon_harvest_units"]
@@ -526,12 +534,12 @@ def _plan(obs, S, deadline):
         want_melon = n_cur
         # grow: value the next tile's cycle on top of the current tiles' cycles
         while want_melon < n_cur + 10:
-            if mr_tile(want_melon) / acts_per_cycle <= lam:
+            if mr_tile(want_melon) / acts_per_cycle <= hurdle:
                 break
             want_melon += 1
         # shrink: stop replanting tiles whose marginal cycle no longer clears lambda
         while want_melon > 0:
-            if mr_tile(want_melon - 1) / acts_per_cycle > lam:
+            if mr_tile(want_melon - 1) / acts_per_cycle > hurdle:
                 break
             want_melon -= 1
     else:
@@ -546,6 +554,7 @@ def _plan(obs, S, deadline):
     # tile-cycle clears lambda_opp, exactly the expB-220 melon machinery with
     # the ongoing-crop action count.
     n_straw = crop_counts.get("STRAWBERRY", 0)
+    hurdle_s = lam_cut if (P["acreage_hurdle"] == "opp" and priced_dispatch) else lam_opp
     if P["strawberry_rule"] == "mr":
         # actions per tile-cycle, structural: 1 PLANT + one WATER per day it is
         # alive + one HARVEST per production event + one FERTILIZE per two
@@ -567,11 +576,11 @@ def _plan(obs, S, deadline):
         # because the unbounded ask front-loads planting and starves the
         # service queue. Kept at the melon bound.
         while want_straw < n_straw + 10:
-            if s_tile(want_straw) / s_acts <= lam_opp:
+            if s_tile(want_straw) / s_acts <= hurdle_s:
                 break
             want_straw += 1
         while want_straw > 0:
-            if s_tile(want_straw - 1) / s_acts > lam_opp:
+            if s_tile(want_straw - 1) / s_acts > hurdle_s:
                 break
             want_straw -= 1
     else:
@@ -661,7 +670,11 @@ def _plan(obs, S, deadline):
                 orders.append(["BUY_PRODUCT", "WHEAT", int(k)])
                 budget -= k * (wq + 3)
                 st["cogs_today"] += k * wq  # expB-302 lambda_opp ledger
-        hire(min(4, hires_needed))
+        # expB-305 arm (i): a hand hired at hour h delivers 24 - h turns for the
+        # same fib price, so the whole day's depth is cheapest at hour 0. The
+        # day-0 cap of 4 exists because the opening $3,000 has to buy animals
+        # first; the arm tests whether that ordering is still right.
+        hire(hires_needed if P["hire_day0_full"] else min(4, hires_needed))
         buy_seeds()
     else:
         buy_feed(keepalive_only=True)
@@ -1051,7 +1064,13 @@ def _plan(obs, S, deadline):
         # expB-304a: the keys whose value is irrecoverable if skipped today, and
         # the cut below which a unit-turn is worth more idle than spent.
         "urgent": urgent,
-        "lam": (lam_cut if P["lam_cut"] else 0.0) if priced else 0.0,
+        # expB-305 arm (ii): the dispatch cut IS the MOVE gate (travel is priced
+        # into every task's contribution per unit-turn). True = the measured
+        # opportunity cost; "wage" = M5a's fib wage, which ruling-02 section 3.1
+        # argues is ~3x too permissive; False = order by price, refuse only
+        # negative work.
+        "lam": ((lam if P["lam_cut"] == "wage" else lam_cut) if P["lam_cut"]
+                else 0.0) if priced else 0.0,
     }
     router.plan(day, units, busy, actions, tasks, ctx)
 
@@ -1167,6 +1186,12 @@ FEEDCHAIN_DEFAULTS = {
     # Decomposition arm: the cut is the half of the pricer that can destroy
     # value if the estimator is biased, the ordering is the half that cannot.
     "lam_cut": True,
+    # expB-303b: "wage" = the shipped hurdles (melon vs the M5a fib wage,
+    # strawberry vs the 3-day lambda_opp); "opp" = both clear the SAME cut the
+    # dispatcher uses. Only meaningful with dispatch="priced".
+    "acreage_hurdle": "wage",
+    # expB-305 arm (i): hire the full daily depth at hour 0 on day 0 as well.
+    "hire_day0_full": False,
 }
 
 
