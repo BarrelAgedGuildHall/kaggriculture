@@ -267,3 +267,29 @@ class MarketModel:
             if price > 1:
                 cur += 1
         return total
+
+    def marginal_buy_cost(self, p, n, skip=0):
+        """Cost of buying `n` units of a BUYABLE product now — the sell-side
+        mirror of `marginal_revenue`, and the number a make-or-buy decision
+        needs.
+
+        Engine (`_process_market`, 1.32.7): a BUY_PRODUCT unit is quoted at
+        `market_price(item, inventory - 1)`, i.e. at the POST-buy inventory,
+        and each unit bought decrements market inventory — so the price walks
+        UP as you buy, the exact opposite of the sell walk.
+
+        `skip` lets a caller price the *marginal* units of a larger purchase:
+        with `skip=k` the walk starts k units in, which is what "the cost of
+        the last two units of today's residual feed shortfall" means. There is
+        no floor on the way up (the floor only binds at $1 going down).
+        """
+        inv = (self.last_inv or {}).get(p)
+        if inv is None:
+            q = max(1.0, float(self.quote(p)))
+            return q * int(n)
+        total = 0.0
+        cur = inv - int(skip)
+        for _ in range(int(n)):
+            total += max(1.0, self.price_at(p, cur - 1))
+            cur -= 1
+        return total

@@ -19,8 +19,24 @@ M4 (service.py):
     only claim idle units.
 
 M5a: lambda = fib(hands + 1) / productive_actions_per_unit_day, measured from
-  our own emitted non-move actions (no-op rate is 0.0%, so emitted ~= executed)
-  over a 3-day rolling window; consumed by the M6 fertilize rule.
+  our own emitted non-move actions over a 3-day rolling window; consumed by the
+  M6 fertilize rule. (The original note here claimed a 0.0% no-op rate, so that
+  emitted ~= executed. expB-301 measured 559 no-op unit-turns per season —
+  22.6% of would-be productive actions — so `prod_rate` OVERSTATES executed
+  work by about that much and every lambda derived from it is correspondingly
+  low. Recorded, not fixed: it is a second variable.)
+
+expB-302 (flag "m6_fert" = "opp"): fertilizer make-or-buy at a measured
+  internal transfer price, plus lambda_opp — the opportunity cost of a
+  unit-turn from the agent's own closed books, as opposed to M5a's fib WAGE.
+  Default off; the arm was VOID (see the experiment log).
+
+expB-303 (flags "strawberry_tiles" / "strawberry_rule"): STRAWBERRY acreage.
+  The first `ongoing` crop the agent grows — HARVEST does not clear the tile,
+  production fires on a cadence past max_yield_day, yield_units is a CAP so the
+  tile must be emptied between events, and two unwatered days weed it out at
+  ANY age. `service.plant_tasks` handles that lifecycle; `tests/
+  test_team_b_strawberry.py` pins every one of those facts against the engine.
 
 M6 (flag "m6_wheat", default on):
   - wheat tile target sized from feed demand: ceil(herd / 0.8 yield-per-tile-
@@ -48,12 +64,14 @@ try:  # package context (repo tools/tests: agents/team_b on sys.path)
     from .chassis import make_chassis
     from .layout import SitePlan
     from .market import MarketModel
+    from .pricer import Pricer, PricedRouter
     from .service import FeedRouter, animal_tasks, plant_tasks
 except ImportError:  # Kaggle/arena loader: main.py exec'd flat, dir on sys.path
     import probe_core as pc
     from chassis import make_chassis
     from layout import SitePlan
     from market import MarketModel
+    from pricer import Pricer, PricedRouter
     from service import FeedRouter, animal_tasks, plant_tasks
 
 BATCH = {"WHEAT": 8, "FERTILIZER": 4, "GOOSE": 3, "COW": 3, "SHEEP": 3}
@@ -91,15 +109,50 @@ def _plan(obs, S, deadline):
     prices = market["prices"]
     last_day = P["season_days"] - 1
     endgame = day >= last_day
+    priced_dispatch = P["dispatch"] == "priced"
 
     if st["day"] != day:
+        # ---- expB-304a: close the day's lambda telemetry --------------------
+        # Both series, averaged over the turns they were actually USED (a
+        # sample taken at hour 0 reads lambda_wage ~ 0.1 because the hands have
+        # not been re-hired yet). ruling-02 section 2.7 makes this mandatory.
+        if st["lam_n"] > 0:
+            st["lam_log"].append({
+                "day": st["day"],
+                "lam_wage": st["lam_sum"] / st["lam_n"],
+                "lam_opp": st["lam_opp_sum"] / st["lam_n"],
+                "lam_cut": st["lam_cut_sum"] / st["lam_n"],
+                "pinned": st["lam_pinned"] >= st["lam_n"],
+            })
+        st["lam_sum"] = st["lam_opp_sum"] = st["lam_cut_sum"] = 0.0
+        st["lam_n"] = st["lam_pinned"] = 0
         # ---- M5a: close the day's productive-action ledger ------------------
         if st["unit_turns_today"] > 0:
             per_unit_day = st["prod_today"] / (st["unit_turns_today"] / 24.0)
             st["prod_days"].append(per_unit_day)
             st["prod_days"] = st["prod_days"][-3:]
+            # ---- expB-302: close the day's lambda_opp ledger -----------------
+            # contribution = the day's marginal-revenue-priced sales minus the
+            # day's purchased inputs (feed + seed; animals and land are capex
+            # and belong to the hurdle rate, not to the margin of an action).
+            if st["prod_today"] > 0:
+                st["contrib_days"].append(
+                    (st["gross_today"] - st["cogs_today"]) / st["prod_today"])
+                st["contrib_days"] = st["contrib_days"][-3:]
+            # expB-304a: season-to-date TOTALS, not a mean of daily ratios --
+            # the daily ratio is undefined-ish on a low-volume day and one big
+            # feed purchase can make it negative, which is what makes the
+            # 3-day estimator swing 0.08 -> 55.9.
+            st["contrib_num"] += st["gross_today"] - st["cogs_today"]
+            st["contrib_den"] += st["prod_today"]
+            st["idle_num"] += st["idle_today"]
+            st["idle_den"] += st["unit_turns_today"]
+            st["idle_days"].append(st["idle_today"] / st["unit_turns_today"])
+            st["idle_days"] = st["idle_days"][-3:]
         st["prod_today"] = 0
         st["unit_turns_today"] = 0
+        st["cogs_today"] = 0.0
+        st["idle_today"] = 0
         st["day"] = day
         st["sold_today"] = {}
         # ---- M5b ledgers: close yesterday's gross + clamp/hands diagnostics -
@@ -118,7 +171,7 @@ def _plan(obs, S, deadline):
     st["unit_turns_today"] += len(units)
 
     # ---- census (probe lineage) ---------------------------------------------
-    animals, plants, empties, empty_structs = [], [], [], []
+    animals, plants, empties, empty_structs, weeds = [], [], [], [], []
     for y in range(board):
         for x in range(board):
             t = tiles[y][x]
@@ -131,6 +184,13 @@ def _plan(obs, S, deadline):
                     empty_structs.append(((x, y), t["kind"]))
                 elif t.get("kind") == "PLANT":
                     plants.append(((x, y), t))
+                elif t.get("kind") == "WEED":
+                    # expB-304a / ruling-02 R1: a weeded tile is RECOVERABLE —
+                    # `DIG` sets any non-animal tile to None and `PLANT` requires
+                    # `tile is None`. The champion never issued DIG and never
+                    # even censused these tiles, so they sat fallow for the rest
+                    # of the season.
+                    weeds.append((x, y))
     site = SitePlan(empties, board)
     n_animals = len(animals)
     n_geese = sum(1 for _, t in animals if t["animal"] == "GOOSE")
@@ -158,6 +218,133 @@ def _plan(obs, S, deadline):
     st["lambda"] = lam
     st["wheat_shadow"] = wheat_shadow
 
+    # ---- expB-302: lambda_opp, the OPPORTUNITY cost of one unit-turn --------
+    # `lam` above is a WAGE: what the marginal hand costs. It is the right
+    # basis for the hiring decision and the wrong one for an allocation gate,
+    # because unit-turns — not dollars — are the binding resource (expB-301:
+    # $51.8 of revenue per productive action against a $8.7 wage, so every
+    # `> lam` gate in this agent is ~6x too permissive).
+    #
+    # lambda_opp = contribution margin per productive action of the marginal
+    # executed task. Measuring that per task needs the M2 row table (expB-304);
+    # until then it is approximated from the agent's own closed books over a
+    # 3-day window: the AVERAGE contribution per productive action, scaled by
+    # how hard the action budget is actually binding. Idle units mean the
+    # marginal task is worth ~nothing, so lambda_opp collapses toward the wage
+    # — which is the correct behaviour on days 0-3 and after the last
+    # profitable purchase day. Both terms are runtime-measured ratios; no
+    # absolute-dollar or absolute-day constant enters (spec section 0).
+    if st["contrib_days"] and st["idle_days"]:
+        avg_contrib = sum(st["contrib_days"]) / len(st["contrib_days"])
+        idle_frac = sum(st["idle_days"]) / len(st["idle_days"])
+        lam_opp = max(lam, (1.0 - min(1.0, idle_frac)) * avg_contrib)
+    else:
+        lam_opp = lam
+    st["lambda_opp"] = lam_opp
+
+    # ---- expB-304a: the dispatch cut ----------------------------------------
+    # `lam_opp` above is the expB-302 estimator: a 3-day mean of contribution
+    # per productive action, floored at the WAGE. Measured on the champion it
+    # swings 0.08 -> 55.9 within a season and sits ON the wage floor on 4 of 30
+    # days, because one big feed purchase can make a single day's contribution
+    # negative. That is tolerable for a once-a-day make-or-buy question and
+    # useless as a per-action cut, which is the first thing ruling-02 section
+    # 2.7 warned about.
+    #
+    # Same quantity, measured with less variance and no new economics: the
+    # MEDIAN of every completed day's contribution per productive action
+    # (parameter-free window: the season so far), scaled by how hard the action
+    # budget is actually binding, and floored at ZERO rather than at the wage —
+    # a wage floor makes the cut assert a value it has not measured. Zero on
+    # day 0 means "dispatch everything", which is correct before any day has
+    # closed. The idle term is the stabiliser: cutting work raises idle, which
+    # lowers the cut, which re-admits work.
+    if priced_dispatch and st["contrib_den"] > 0:
+        _c = st["contrib_num"] / st["contrib_den"]
+        _i = (st["idle_num"] / st["idle_den"]) if st["idle_den"] > 0 else 0.0
+        lam_cut = max(0.0, _c * (1.0 - min(1.0, _i)))
+    else:
+        lam_cut = 0.0
+    st["lambda_cut"] = lam_cut
+    st["lam_sum"] += lam
+    st["lam_opp_sum"] += lam_opp
+    st["lam_cut_sum"] += lam_cut
+    st["lam_n"] += 1
+    if lam_opp <= lam + 1e-9:
+        st["lam_pinned"] += 1
+
+    # ---- expB-302: fertilizer make-or-buy, decided once per turn ------------
+    # Engine truth (`_apply_unit_action` WATER + FERTILIZE, 1.32.7): wheat's
+    # watering bonus fires at ages 2..4 (window_start = (max_yield_day+1)//2 =
+    # 2); yield starts at 1 and each watered day adds 1, or 2 while
+    # `fertilized_until_day >= day`. One FERTILIZE covers day, day+1, day+2, so
+    # applying it at age 1 or 2 covers the whole bonus window and takes the
+    # tile from 4 units to 6 (1+2+2+2 = 7, capped at max_yield 6) — exactly +2
+    # units for one action and one fertilizer unit. Age 0 covers only ages 0-2
+    # and is worth +1, so it is excluded; the legacy "shadow"/"probe" rules
+    # fired at `age <= 2` and bought that half-price application.
+    #
+    # Make-or-buy: use the unit internally iff the wheat it saves us buying is
+    # worth more than selling the unit plus the unit-turn it costs —
+    #   2 x marginal_buy_cost(WHEAT, residual shortfall)
+    #        >  marginal_revenue(FERTILIZER, 1) + lambda_opp
+    # Every term is measured by M1 at live prices; no constant enters.
+    # NOT a re-run of expB-206: that rule compared the fertilizer *quote* plus
+    # the *wage* against `2 x wheat_shadow`, where wheat_shadow was
+    # `marginal_revenue(EGG, 2)` — the egg shadow price since refuted by
+    # expB-218 — and it never priced the wheat we would actually have to BUY.
+    fert_targets = 0
+    fert_internal = False
+    if P["m6_fert"] == "opp":
+        for _, t in plants:
+            if (t["crop"] == "WHEAT" and 1 <= day - t["planted_day"] <= 2
+                    and t.get("fertilized_until_day", -1) < day):
+                fert_targets += 1
+        # Residual shortfall is a HORIZON quantity, not a same-day one: the herd
+        # eats 1 wheat/animal/day for every day left, and we grow far less than
+        # that (expB-301: 42 units grown against 502 bought), so we are a
+        # structural net buyer and the two units this fertilizer creates
+        # displace the NEXT two units we would buy — priced at today's quote,
+        # not at the far end of a season-sized walk. Gating on today's stock
+        # instead silences the rule for 24 of 30 days, because the sell layer
+        # already holds a 2.5 x herd wheat reserve (measured on seed 0 before
+        # this correction: 14 firings, arm byte-identical to the champion).
+        residual = herd * max(0, last_day - day) - wheat_stock
+        if fert_targets and residual > 0:
+            gain = model.marginal_buy_cost("WHEAT", 2)
+            cost = model.marginal_revenue("FERTILIZER", 1) + lam_opp
+            fert_internal = gain > cost
+            st["fert_calls"] = st.get("fert_calls", 0) + 1
+            st["fert_gain"] = gain
+            st["fert_cost"] = cost
+            if fert_internal:
+                st["fert_fires"] = st.get("fert_fires", 0) + 1
+
+    # ---- expB-303: fertilizer onto STRAWBERRY, same transfer-price form -----
+    # Engine (`_daily_refresh_plants`): an ongoing crop's production event adds
+    # 2 units instead of 1 when the tile was watered that day and fertilized,
+    # and one application covers day..day+2 = two events at interval 2. So a
+    # fertilizer unit spent on a strawberry eve buys +2 STRAWBERRY units. Use
+    # it internally iff those 2 units beat selling the fertilizer plus the
+    # unit-turn — the identical make-or-buy test as the wheat branch, priced
+    # against a different alternative use. Independent of `m6_fert`, which is
+    # the wheat question.
+    straw_eves = 0
+    straw_fert = False
+    _sc = pc.CROPS["STRAWBERRY"]
+    _straw_last_eve = _sc["first"] - 1 + _sc["interval"] * (_sc["max_yield"] - 1)
+    for _, t in plants:
+        if t["crop"] != "STRAWBERRY":
+            continue
+        a = day - t["planted_day"]
+        if (_sc["first"] - 1 <= a <= _straw_last_eve
+                and (a - (_sc["first"] - 1)) % _sc["interval"] == 0
+                and t.get("fertilized_until_day", -1) < day):
+            straw_eves += 1
+    if straw_eves:
+        straw_fert = (model.marginal_revenue("STRAWBERRY", 2)
+                      > model.marginal_revenue("FERTILIZER", 1) + lam_opp)
+
     # ---- M4 herd capacity clamp ----------------------------------------------
     # An animal-day costs ~4 productive actions (feed + collect + care +
     # amortised harvest); the probe grew the herd toward goose_target 55 while
@@ -167,7 +354,8 @@ def _plan(obs, S, deadline):
     # raise capacity by hiring — until then the herd must fit the crew.)
     crew = 1 + max(len(me["hands"]), P["hands_target"])
     crop_load = 1.3 * (crop_counts.get("WHEAT", 0) + crop_counts.get("CARROT", 0)
-                       + crop_counts.get("MELON", 0))
+                       + crop_counts.get("MELON", 0)
+                       + crop_counts.get("STRAWBERRY", 0))
     herd_cap = max(12, int((prod_rate * crew - crop_load) / P["actions_per_animal"]))
 
     # ---- M6 wheat tile target ------------------------------------------------
@@ -188,6 +376,14 @@ def _plan(obs, S, deadline):
             continue
         if item == "WHEAT":
             n = max(0, n - reserve_wheat)
+        if item == "FERTILIZER" and straw_fert and not endgame:
+            n = max(0, n - straw_eves)
+        if item == "FERTILIZER" and fert_internal and not endgame:
+            # expB-302: hold back exactly the units the transfer price says
+            # belong on wheat tiles. Without this the sell-on-sight layer
+            # empties the shed every turn and the FERTILIZE task can never be
+            # supplied — the rule would be measured as a no-op.
+            n = max(0, n - fert_targets)
         if n > 0:
             sellable[item] = n
     expected_rev = 0
@@ -268,6 +464,7 @@ def _plan(obs, S, deadline):
             if k > 0:
                 orders.append(["BUY_PRODUCT", "WHEAT", int(k)])
                 budget -= k * (wheat_q + 3)
+                st["cogs_today"] += k * wheat_q  # expB-302 lambda_opp ledger
 
     def hire(count):
         nonlocal budget
@@ -307,6 +504,14 @@ def _plan(obs, S, deadline):
     # inventory; yield/cycle is the episode's own realised harvest average
     # (structural max_yield prior before the first harvest); actions/cycle is
     # structural (1 PLANT + first_yield_day WATERs + 1 HARVEST).
+    # expB-303b: which hurdle the acreage rules clear. The melon rule was
+    # written against `lam` (the M5a fib WAGE, ~$18) and the strawberry rule
+    # against the noisy 3-day `lam_opp`. Under a priced queue the correct hurdle
+    # for "should this tile-cycle exist" is the same number the dispatcher uses
+    # to decide "should this unit-turn be spent" — otherwise the planner commits
+    # acreage the dispatcher will refuse to service, which is what expB-304a's
+    # weed tripwire measured. "wage" keeps the shipped behaviour.
+    hurdle = lam_cut if (P["acreage_hurdle"] == "opp" and priced_dispatch) else lam
     if P["melon_rule"] == "mr":
         mel = pc.CROPS["MELON"]
         harvests = st["melon_harvest_units"]
@@ -329,17 +534,61 @@ def _plan(obs, S, deadline):
         want_melon = n_cur
         # grow: value the next tile's cycle on top of the current tiles' cycles
         while want_melon < n_cur + 10:
-            if mr_tile(want_melon) / acts_per_cycle <= lam:
+            if mr_tile(want_melon) / acts_per_cycle <= hurdle:
                 break
             want_melon += 1
         # shrink: stop replanting tiles whose marginal cycle no longer clears lambda
         while want_melon > 0:
-            if mr_tile(want_melon - 1) / acts_per_cycle > lam:
+            if mr_tile(want_melon - 1) / acts_per_cycle > hurdle:
                 break
             want_melon -= 1
     else:
         want_melon = P["melon_tiles"]
     st["want_melon"] = want_melon
+
+    # ---- expB-303: strawberry acreage ---------------------------------------
+    # STRAWBERRY is the only under-supplied high-value FLOW pool on the board
+    # (expB-301: Champion[A] realises $231.8/unit on 74 units; we hold zero).
+    # "fixed" is the acreage sweep's arm; "mr" ships the rule — keep planting
+    # while the projected marginal revenue per productive action of the NEXT
+    # tile-cycle clears lambda_opp, exactly the expB-220 melon machinery with
+    # the ongoing-crop action count.
+    n_straw = crop_counts.get("STRAWBERRY", 0)
+    hurdle_s = lam_cut if (P["acreage_hurdle"] == "opp" and priced_dispatch) else lam_opp
+    if P["strawberry_rule"] == "mr":
+        # actions per tile-cycle, structural: 1 PLANT + one WATER per day it is
+        # alive + one HARVEST per production event + one FERTILIZE per two
+        # events (each application covers day..day+2 = two events).
+        s_acts = (1.0 + (_straw_last_eve + 1) + _sc["max_yield"]
+                  + _sc["max_yield"] // _sc["interval"])
+        seen = st["straw_harvest_units"]
+        y_est = (sum(seen) / len(seen)) if seen else float(_sc["max_yield"] * 2)
+        y_est = max(1.0, y_est)
+
+        def s_tile(k):
+            return (model.marginal_revenue("STRAWBERRY", (k + 1) * y_est)
+                    - model.marginal_revenue("STRAWBERRY", k * y_est))
+
+        want_straw = n_straw
+        # Growth bound copied from expB-220's melon rule. Widening it to the
+        # structural site budget (`len(empties)`) was tried and REFUTED:
+        # 57.8% [49.2-66.0] vs the champion against the capped rule's 67.2%,
+        # because the unbounded ask front-loads planting and starves the
+        # service queue. Kept at the melon bound.
+        while want_straw < n_straw + 10:
+            if s_tile(want_straw) / s_acts <= hurdle_s:
+                break
+            want_straw += 1
+        while want_straw > 0:
+            if s_tile(want_straw - 1) / s_acts > hurdle_s:
+                break
+            want_straw -= 1
+    else:
+        want_straw = P["strawberry_tiles"]
+    # structural replant window: a strawberry planted on day d first yields at
+    # d + first_yield_day, so it is plantable while that still lands in season.
+    straw_window = day + _sc["first"] <= last_day
+    st["want_straw"] = want_straw
 
     # melon_replant (expB-219): the replant window is structural — a melon
     # planted on day d first yields at d + first_yield_day, so seeds are
@@ -358,12 +607,14 @@ def _plan(obs, S, deadline):
             "WHEAT": 0 if seeds.get("WHEAT", 0) > 8 else max(0, want_wheat - crop_counts.get("WHEAT", 0) - seeds.get("WHEAT", 0)),
             "CARROT": max(0, pc._want_carrots(P, prices, day) - crop_counts.get("CARROT", 0) - seeds.get("CARROT", 0)),
             "MELON": max(0, (want_melon if melon_window else 0) - crop_counts.get("MELON", 0) - seeds.get("MELON", 0)),
+            "STRAWBERRY": max(0, (want_straw if straw_window else 0) - n_straw - seeds.get("STRAWBERRY", 0)),
         }
         for crop, k in need.items():
             k = min(k, 10, max(0, budget) // pc.CROPS[crop]["seed"])
             if k > 0 and len(orders) < 10:
                 orders.append(["BUY_SEED", crop, int(k)])
                 budget -= k * pc.CROPS[crop]["seed"]
+                st["cogs_today"] += k * pc.CROPS[crop]["seed"]  # expB-302 ledger
 
     # ---- M5b hire-depth controller (expB-221; spec M5 rule, live inputs) ----
     # hands = clamp(min(queue_need, cash_cap), 6, 14): queue_need converts the
@@ -418,7 +669,12 @@ def _plan(obs, S, deadline):
             if k > 0:
                 orders.append(["BUY_PRODUCT", "WHEAT", int(k)])
                 budget -= k * (wq + 3)
-        hire(min(4, hires_needed))
+                st["cogs_today"] += k * wq  # expB-302 lambda_opp ledger
+        # expB-305 arm (i): a hand hired at hour h delivers 24 - h turns for the
+        # same fib price, so the whole day's depth is cheapest at hour 0. The
+        # day-0 cap of 4 exists because the opening $3,000 has to buy animals
+        # first; the arm tests whether that ordering is still right.
+        hire(hires_needed if P["hire_day0_full"] else min(4, hires_needed))
         buy_seeds()
     else:
         buy_feed(keepalive_only=True)
@@ -436,6 +692,13 @@ def _plan(obs, S, deadline):
 
     # ---- unit tasks: M4 service scheduler ------------------------------------
     tasks = []
+    # expB-304a: the dispatch pricer. `urgent` holds the keys whose value is
+    # irrecoverable if the task is skipped today; it replaces the `prio <= 2.5`
+    # band test and is the only thing exempt from the lambda_opp cut.
+    priced = priced_dispatch
+    urgent = set()
+    pricer = Pricer(model, pc.CROPS, day, hour, last_day, lam_cut, P["care"]) \
+        if priced else None
 
     if endgame and P["smart_endgame"]:
         for (x, y), t in animals:
@@ -448,10 +711,38 @@ def _plan(obs, S, deadline):
             if t.get("yield_units", 0) > 0 and age >= pc.CROPS.get(t["crop"], {"first": 2})["first"]:
                 tasks.append((0, (x, y), ["HARVEST"], ("H", x, y)))
     else:
-        tasks += animal_tasks(animals, wheat_stock, P, hour, day >= last_day - 1)
+        if priced:
+            tasks += pricer.animal_tasks(animals, wheat_stock, urgent)
+        else:
+            tasks += animal_tasks(animals, wheat_stock, P, hour, day >= last_day - 1)
 
-        if P["m6_fert"] == "shadow":
+        def _straw_fert(t):
+            return 3.4 if (straw_fert and shed.get("FERTILIZER", 0) > 0) else False
+
+        if P["m6_fert"] == "opp":  # expB-302 transfer price, decided above
             def fert_rule(crop, t):
+                if crop == "STRAWBERRY":
+                    return _straw_fert(t)
+                if not (fert_internal and crop == "WHEAT"
+                        and 1 <= day - t["planted_day"] <= 2
+                        and t.get("fertilized_until_day", -1) < day
+                        and shed.get("FERTILIZER", 0) > 0):
+                    return False
+                # Dispatch priority from engine truth, not from tuning. A
+                # FERTILIZE inside the bonus window turns each of the tile's
+                # three bonus waters from +1 into +2 yield, so it is worth
+                # exactly 2x the bonus WATER it sits next to in the queue —
+                # and `plant_tasks` already bands bonus watering at 3.5. 3.4
+                # places it immediately above the task it dominates 2:1 and
+                # strictly below every keep-alive band (0.25-1.5) and melon
+                # watering (2.4). Left at the legacy band 7 the rule is
+                # unreachable: measured on seed 0, 48 firings produced 0
+                # dispatched FERTILIZE actions and a byte-identical episode.
+                return 3.4
+        elif P["m6_fert"] == "shadow":
+            def fert_rule(crop, t):
+                if crop == "STRAWBERRY":
+                    return _straw_fert(t)
                 if crop != "WHEAT":
                     return False
                 age = day - t["planted_day"]
@@ -459,26 +750,54 @@ def _plan(obs, S, deadline):
                         and prices.get("FERTILIZER", 100) + lam < 2 * wheat_shadow)
         elif P["m6_fert"] == "sell":
             def fert_rule(crop, t):
-                return False
+                # "sell" is the WHEAT ruling (expB-206); strawberry is priced
+                # on its own alternative use and is unaffected by it.
+                return _straw_fert(t) if crop == "STRAWBERRY" else False
         else:  # "probe" legacy
             fert_rule = None
-        tasks += plant_tasks(plants, day, last_day, P, pc.CROPS, fert_rule)
+        if priced:
+            # the priced FERTILIZE row carries its own value, so the rule only
+            # has to answer "is this tile eligible" — a float return is ignored
+            _pf = fert_rule
+            tasks += pricer.plant_tasks(
+                plants, urgent,
+                (lambda crop, t: bool(_pf(crop, t))) if _pf is not None else None)
+        else:
+            tasks += plant_tasks(plants, day, last_day, P, pc.CROPS, fert_rule)
 
         avail_geese = shed.get("GOOSE", 0) + carried_animals["GOOSE"]
         avail_pasture = (shed.get("COW", 0) + carried_animals["COW"]
                          + shed.get("SHEEP", 0) + carried_animals["SHEEP"])
         coop_needs = max(0, avail_geese - sum(1 for _, k in empty_structs if k == "COOP"))
         past_needs = max(0, avail_pasture - sum(1 for _, k in empty_structs if k == "PASTURE"))
+        def _build_prio(animal):
+            # the structure is worth what the animal waiting for it will still
+            # produce, less the PLACE action it commits (the animal's purchase
+            # price is sunk and is not charged to the dispatch decision)
+            if not priced:
+                return 2
+            return -max(0.0, pricer.animal_stream(animal, day) - lam_cut)
+
+        build_value = 0.0   # value a DIG unlocks by freeing a site for a build
+        sited = 0
         for _ in range(coop_needs):
             p = site.take_animal_site()
             if p is None:
                 break
-            tasks.append((2, p, ["BUILD_COOP"], ("B", p[0], p[1])))
+            sited += 1
+            tasks.append((_build_prio("GOOSE"), p, ["BUILD_COOP"], ("B", p[0], p[1])))
+        _pasture_animal = "COW" if (shed.get("COW", 0) + carried_animals["COW"]) > 0 else "SHEEP"
         for _ in range(past_needs):
             p = site.take_animal_site()
             if p is None:
                 break
-            tasks.append((2, p, ["BUILD_PASTURE"], ("B", p[0], p[1])))
+            sited += 1
+            tasks.append((_build_prio(_pasture_animal), p, ["BUILD_PASTURE"],
+                          ("B", p[0], p[1])))
+        if priced and sited < coop_needs + past_needs:
+            # animals in hand with nowhere to go: a dug tile becomes a site
+            _a = "GOOSE" if sited < coop_needs else _pasture_animal
+            build_value = max(0.0, pricer.animal_stream(_a, day) - 2 * lam_cut)
         # no placements at hour 23: an animal placed on the day's final turn
         # cannot be fed the same day and starts life with consecutive_unfed 1
         if hour < 23:
@@ -488,15 +807,17 @@ def _plan(obs, S, deadline):
                 else:
                     animal = "COW" if (shed.get("COW", 0) + carried_animals["COW"]) > 0 else "SHEEP"
                 if shed.get(animal, 0) + carried_animals[animal] > 0:
-                    tasks.append((0, (x, y), ["PLACE", animal], ("P", x, y)))
+                    prio = -pricer.animal_stream(animal, day) if priced else 0
+                    tasks.append((prio, (x, y), ["PLACE", animal], ("P", x, y)))
+        plan = []
         if capex_ok and hour < 20:
             # no planting after hour 19: the planting day counts as unwatered,
             # so a plant that cannot be watered tonight weeds out (3 of 9
             # weed-kills in expB-213 v9 were age-0 late plantings)
-            plan = []
             melon_plantable = melon_window or not P["melon_replant"]
             plan += ["MELON"] * (max(0, want_melon - crop_counts.get("MELON", 0))
                                  if melon_plantable else 0)
+            plan += ["STRAWBERRY"] * (max(0, want_straw - n_straw) if straw_window else 0)
             plan += ["WHEAT"] * max(0, want_wheat - crop_counts.get("WHEAT", 0))
             plan += ["CARROT"] * max(0, pc._want_carrots(P, prices, day) - crop_counts.get("CARROT", 0))
             avail_seeds = dict(seeds)
@@ -515,7 +836,20 @@ def _plan(obs, S, deadline):
                 if p is None:
                     break
                 avail_seeds[crop] -= 1
-                tasks.append((8, p, ["PLANT", crop], ("PL", p[0], p[1])))
+                prio = -pricer.fresh_plant_value(crop) if priced else 8
+                tasks.append((prio, p, ["PLANT", crop], ("PL", p[0], p[1])))
+
+        # ---- expB-304a / ruling-02 R1: DIG the weeds back into service -------
+        # A weeded tile costs one action to recover and the champion never spent
+        # it, so 89 tile-days a season sat dead. DIG is priced by what the tile
+        # unlocks — the best plant we still want, or a site for an animal in
+        # hand — so it competes with everything else instead of needing a band.
+        if priced and P["dig"] and weeds:
+            plant_value = 0.0
+            if capex_ok:
+                for crop in ({c for c in plan} if plan else ()):
+                    plant_value = max(plant_value, pricer.fresh_plant_value(crop))
+            tasks += pricer.dig_tasks(weeds, plant_value, build_value)
 
     tasks.sort(key=lambda t: t[0])
 
@@ -644,35 +978,73 @@ def _plan(obs, S, deadline):
                 continue
             uq = ("N" if y < board // 2 else "S") + ("W" if x < board // 2 else "E")
             feed_first = uq in unfed_quads and invs[i].get("WHEAT", 0) > 0
-            act = None
+            # Ordered candidates for the tile under this unit's feet, in the
+            # elif-chain order this loop has always used. `dedupe_ontile` then
+            # takes the first one NOBODY has claimed yet instead of blindly
+            # taking the head: two units standing on the same tile (common
+            # around the shed and the cluster anchors) were both emitting the
+            # same action, and the second one was a no-op. Measured on seed 0:
+            # 528 such unit-turns a season — already_fed 94, already_cared 74,
+            # already_watered 70, fertilizer already collected 157, nothing left
+            # to harvest 133 — i.e. every single no-op the census reports.
+            cands = []
             if "animal" in t:
                 cap = 4 if t["animal"] == "GOOSE" else 6
                 if not t["fed_today"] and invs[i].get("WHEAT", 0) > 0:
-                    act = ["FEED"]
-                elif t.get("fertilizer_available"):
+                    cands.append((("F", x, y), ["FEED"]))
+                if t.get("fertilizer_available"):
                     # collected even in feed-first mode: one action, and a
                     # skipped collection is lost permanently at the refresh
-                    act = ["COLLECT_FERTILIZER"]
-                elif feed_first:
-                    pass  # this carrier's wheat is needed elsewhere first
-                elif t.get("yield_units", 0) >= cap - 2:
-                    act = ["HARVEST"]
-                elif P["care"] and not t["cared_today"] and t["fed_today"]:
-                    act = ["CARE"]  # care on an unfed animal is worth zero
+                    cands.append((("CF", x, y), ["COLLECT_FERTILIZER"]))
+                if not feed_first:  # this carrier's wheat is needed elsewhere first
+                    if t.get("yield_units", 0) >= cap - 2:
+                        cands.append((("H", x, y), ["HARVEST"]))
+                    if P["care"] and not t["cared_today"] and t["fed_today"]:
+                        # care on an unfed animal is worth zero
+                        cands.append((("C", x, y), ["CARE"]))
             elif t.get("kind") == "PLANT":
                 crop = t["crop"]
                 cd = pc.CROPS.get(crop)
                 age = day - t["planted_day"]
                 r_age = cd["first"] if crop == "MELON" else cd["maxday"] if cd else 99
                 dying = t["consecutive_unwatered"] >= 1 and not t["watered_today"]
-                if cd and not t["watered_today"] and age < cd["maxday"] and (dying or not feed_first):
-                    act = ["WATER"]  # keep-alive watering trumps feed-first
-                elif cd and age >= r_age and t.get("yield_units", 0) > 0 and (dying or not feed_first):
-                    act = ["HARVEST"]
+                # ruling-02 R3: for an `ongoing` crop the service span is the
+                # LAST PRODUCTION EVE, not max_yield_day. STRAWBERRY has
+                # first == maxday == 10 and produces on ages 9/11/13/15, so
+                # `age < cd["maxday"]` stopped this loop watering the tile from
+                # age 10 while it still had three events to run — and it kept
+                # HARVESTing it instead. Two unwatered days weed the tile out at
+                # ANY age: that is the age-12.9 strawberry weed mode (272 of 444
+                # kills).
+                if cd and cd.get("ongoing") and P["ongoing_water_span"]:
+                    _iv = max(1, int(cd.get("interval", 1)))
+                    water_span = cd["first"] - 1 + _iv * (int(cd.get("max_yield", 1)) - 1)
+                    water_ok = age <= water_span
+                else:
+                    water_ok = bool(cd) and age < cd["maxday"]
+                _ready = bool(cd) and (age >= r_age) and t.get("yield_units", 0) > 0
+                # a ready non-ongoing tile is about to be harvested, and HARVEST
+                # clears it: watering it in the same turn is an engine-rejected
+                # action (see pricer.plant_tasks)
+                _spent = (P["dedupe_ontile"] and _ready and not dying
+                          and bool(cd) and not cd.get("ongoing")
+                          and age >= cd["maxday"])
+                if cd and not t["watered_today"] and water_ok and not _spent                         and (dying or not feed_first):
+                    cands.append((("W", x, y), ["WATER"]))  # keep-alive trumps feed-first
+                if _ready and (dying or not feed_first):
+                    cands.append((("H", x, y), ["HARVEST"]))
+            act = key = None
+            if P["dedupe_ontile"]:
+                for k, a in cands:
+                    if k not in claimed:
+                        key, act = k, a
+                        break
+            elif cands:
+                key, act = cands[0]
             if act:
                 actions[i] = act
                 busy[i] = True
-                claimed.add((act[0][0] if act[0] != "COLLECT_FERTILIZER" else "CF", x, y))
+                claimed.add(key)
 
         # ordinary unfed animals claim idle wheat carriers standing next door
         for i, pos in enumerate(units):
@@ -689,6 +1061,16 @@ def _plan(obs, S, deadline):
         "requirement": _requirement,
         "batch": BATCH,
         "claimed": claimed,
+        # expB-304a: the keys whose value is irrecoverable if skipped today, and
+        # the cut below which a unit-turn is worth more idle than spent.
+        "urgent": urgent,
+        # expB-305 arm (ii): the dispatch cut IS the MOVE gate (travel is priced
+        # into every task's contribution per unit-turn). True = the measured
+        # opportunity cost; "wage" = M5a's fib wage, which ruling-02 section 3.1
+        # argues is ~3x too permissive; False = order by price, refuse only
+        # negative work.
+        "lam": ((lam if P["lam_cut"] == "wage" else lam_cut) if P["lam_cut"]
+                else 0.0) if priced else 0.0,
     }
     router.plan(day, units, busy, actions, tasks, ctx)
 
@@ -704,7 +1086,11 @@ def _plan(obs, S, deadline):
 
     # ---- M5a productive-action ledger ---------------------------------------
     for a in actions:
-        if isinstance(a, list) and a and a[0] not in MOVES and a[0] != "PASS":
+        if not (isinstance(a, list) and a):
+            continue
+        if a[0] == "PASS":
+            st["idle_today"] += 1  # expB-302: binding-ness of the action budget
+        elif a[0] not in MOVES:
             st["prod_today"] += 1
     st["last_orders"] = orders
 
@@ -726,6 +1112,16 @@ def _plan(obs, S, deadline):
                 if key not in st["melon_seen"]:
                     st["melon_seen"].add(key)
                     st["melon_harvest_units"].append(t.get("yield_units", 0))
+            # STRAWBERRY is ongoing: one tile is harvested max_yield times, so
+            # the ledger accumulates PER TILE and the running total is the
+            # conservative estimate of that tile-cycle's yield (it can only
+            # grow). Recorded at harvest issuance, per the expB-222 ruling.
+            elif isinstance(t, dict) and t.get("kind") == "PLANT" \
+                    and t.get("crop") == "STRAWBERRY":
+                key = (ux, uy, t["planted_day"])
+                st["straw_tiles"][key] = (st["straw_tiles"].get(key, 0)
+                                          + t.get("yield_units", 0))
+                st["straw_harvest_units"] = list(st["straw_tiles"].values())
 
     return {"farmer": actions[0], "hands": actions[1:], "market": orders}
 
@@ -744,6 +1140,9 @@ FEEDCHAIN_DEFAULTS = {
     # expB-206 (32 pairs, corrected build): shadow rule 45.3% [33.7-57.4] vs
     # always-sell — the pre-registered <2pp falsification branch fired, the
     # rule is deleted per spec ("always sell fertilizer").
+    # expB-302: "opp" = internal transfer price for fertilizer —
+    # 2 x marginal_buy_cost(WHEAT, shortfall) > marginal_revenue(FERT, 1) +
+    # lambda_opp. Default off = shipped 725fcf7 behaviour (always sell).
     "m6_fert": "sell",
     "actions_per_animal": 4.0,  # feed + collect + care + amortised harvest
     # expB-219 (stock-pool saturation): structural melon replant window
@@ -756,9 +1155,43 @@ FEEDCHAIN_DEFAULTS = {
     "melon_rule": "fixed",
     # expB-221 (M5b): hire depth from the income/queue rule instead of the
     # fixed hands_target. beta/gamma per spec M5 (expB-209 fits them).
+    # expB-303: STRAWBERRY acreage. "fixed" = the sweep's arm (0 = shipped
+    # 725fcf7 behaviour, the crop is never planted); "mr" sizes it by marginal
+    # revenue per productive action against lambda_opp, no tile-count constant.
+    "strawberry_tiles": 0,
+    "strawberry_rule": "fixed",
     "m5b_hire": False,
     "m5b_beta": 0.10,
     "m5b_gamma": 0.03,
+    # ---- expB-304a: the dispatch pricer (ruling-02 sections 2.3-2.5) ---------
+    # "bands"  = the hand-set 0.25..8 priority constants (shipped h9d854a3d8c);
+    # "priced" = every candidate action carries its marginal contribution from
+    #            M1 live prices and the queue executes in descending
+    #            contribution per unit-turn down to the lambda_opp cut.
+    "dispatch": "bands",
+    # DIG a weeded tile back into service (R1). Rides inside the pricer: a
+    # weeded tile is a candidate action worth what it unlocks, which is exactly
+    # the object the pricer prices, and standalone it is unpowered ($1.0k
+    # against a $7.1k paired SD).
+    "dig": False,
+    # Claim-leak fix: the on-tile loop never checked `claimed`, so two units on
+    # one tile both emitted the same action. Every no-op the census reports.
+    "dedupe_ontile": False,
+    # R3: service an `ongoing` crop to its LAST PRODUCTION EVE, not to
+    # max_yield_day (the age-12.9 strawberry weed mode).
+    "ongoing_water_span": False,
+    # The lambda_opp cut itself. True = refuse a task whose contribution per
+    # unit-turn (travel included) is below the season-to-date contribution per
+    # productive action; False = order by price but refuse only NEGATIVE work.
+    # Decomposition arm: the cut is the half of the pricer that can destroy
+    # value if the estimator is biased, the ordering is the half that cannot.
+    "lam_cut": True,
+    # expB-303b: "wage" = the shipped hurdles (melon vs the M5a fib wage,
+    # strawberry vs the 3-day lambda_opp); "opp" = both clear the SAME cut the
+    # dispatcher uses. Only meaningful with dispatch="priced".
+    "acreage_hurdle": "wage",
+    # expB-305 arm (i): hire the full daily depth at hour 0 on day 0 as well.
+    "hire_day0_full": False,
 }
 
 
@@ -782,8 +1215,24 @@ def make_feedchain_agent(params=None):
                        "last_orders": [], "prod_today": 0, "unit_turns_today": 0,
                        "prod_days": [], "melon_seen": set(), "melon_harvest_units": [],
                        "gross_today": 0.0, "gross_days": [], "day_open": -1,
-                       "clamp_bound_today": False, "m5b_log": []},
-                "router": FeedRouter(),
+                       "clamp_bound_today": False, "m5b_log": [],
+                       # expB-302 lambda_opp ledgers
+                       "cogs_today": 0.0, "contrib_days": [], "idle_today": 0,
+                       "idle_days": [],
+                       # expB-303 strawberry ledgers
+                       "straw_tiles": {}, "straw_harvest_units": [],
+                       # expB-304a: full-season lambda windows + telemetry
+                       "contrib_num": 0.0, "contrib_den": 0.0,
+                       "idle_num": 0.0, "idle_den": 0.0,
+                       "lam_sum": 0.0, "lam_opp_sum": 0.0, "lam_cut_sum": 0.0,
+                       "lam_n": 0, "lam_pinned": 0,
+                       # expB-304a: both lambda series, one row per day
+                       # (ruling-02 section 2.7 makes this mandatory: a
+                       # lambda_opp pinned at the lambda_wage floor means the
+                       # pricer is silently a wage gate and the arm is VOID)
+                       "lam_log": []},
+                "router": (PricedRouter() if P["dispatch"] == "priced"
+                           else FeedRouter()),
                 "model": MarketModel()}
 
     return make_chassis(_plan, state_factory)

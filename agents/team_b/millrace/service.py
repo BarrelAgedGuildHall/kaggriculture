@@ -96,24 +96,48 @@ def plant_tasks(plants, day, last_day, P, crops, fertilize_fn=None):
             continue
         age = day - t["planted_day"]
         lapsed = t["consecutive_unwatered"] >= 1 and not t["watered_today"]
-        if not t["watered_today"] and age < cd["maxday"]:
+        ongoing = bool(cd.get("ongoing"))
+        # expB-303: an `ongoing` crop keeps producing on a cadence long after
+        # `max_yield_day`, and two unwatered days weed it out at ANY age — so
+        # the service span is the LAST production eve, not max_yield_day.
+        # Engine (`_daily_refresh_plants`, 1.32.7): the k-th of `max_yield`
+        # events resolves at the end of the day whose age is
+        # `first - 1 + interval * k`, k = 0 .. max_yield - 1.
+        interval = max(1, int(cd.get("interval", 1)))
+        last_eve = (cd["first"] - 1 + interval * (int(cd.get("max_yield", 1)) - 1)
+                    if ongoing else cd["maxday"] - 1)
+        # tonight this tile produces (and so is worth watering + fertilizing)
+        prod_eve = (ongoing and age >= cd["first"] - 1 and age <= last_eve
+                    and (age - (cd["first"] - 1)) % interval == 0)
+        if not t["watered_today"] and age <= last_eve:
             # melon routine watering sits inside the urgent band: the highest
             # capital tile on the board, 10-12 daily waters, and a single lapse
             # puts it one miss from death (M4 gate run: corner melons died at
             # age 8-11 with 3-5 units of yield on board)
             if crop == "MELON":
                 routine = 2.4  # highest-capital tile, 10-12 daily waters
-            elif not cd.get("ongoing", False) and (cd["maxday"] + 1) // 2 <= age:
+            elif prod_eve and t.get("fertilized_until_day", -1) >= day:
+                routine = 3.4  # the fertilizer bonus is forfeited unwatered
+            elif not ongoing and (cd["maxday"] + 1) // 2 <= age:
                 routine = 3.5  # bonus window: each water is +1 yield
             else:
                 routine = 5
             prio = URGENT_WATER if t["consecutive_unwatered"] >= 1 else routine
             tasks.append((prio, (x, y), ["WATER"], ("W", x, y)))
-        ready_age = cd["first"] if crop == "MELON" else cd["maxday"]
+        ready_age = cd["first"] if (crop == "MELON" or ongoing) else cd["maxday"]
         ready = age >= ready_age or (day >= last_day - 1 and age >= cd["first"])
         if ready and t.get("yield_units", 0) > 0:
             # a mature unwatered tile weeds out TONIGHT: harvest-or-lose
-            prio = HARVEST_OR_LOSE if lapsed else 4
+            if lapsed:
+                prio = HARVEST_OR_LOSE
+            elif prod_eve:
+                # `yield_units` is capped at max_yield, so a tile that is not
+                # emptied before tonight's event silently throws the whole
+                # event away — worth more than any routine work, and cheaper
+                # than losing the tile, so it sits just under melon watering.
+                prio = 2.6
+            else:
+                prio = 4
             tasks.append((prio, (x, y), ["HARVEST"], ("H", x, y)))
         elif age >= cd["maxday"] and lapsed and not t["watered_today"]:
             # mature but yieldless (already stripped): keep alive only if the
@@ -121,8 +145,15 @@ def plant_tasks(plants, day, last_day, P, crops, fertilize_fn=None):
             pass
         do_fert = (fertilize_fn(crop, t) if fertilize_fn is not None
                    else (P["fertilize_wheat"] and crop == "WHEAT" and age <= 2))
-        if do_fert and t.get("fertilized_until_day", -1) < day:
-            tasks.append((7, (x, y), ["FERTILIZE"], ("FZ", x, y)))
+        # An ongoing crop is only worth fertilizing on a production eve: one
+        # application covers day..day+2 and the events are `interval` apart, so
+        # firing on the eves alone buys every event with max_yield/2 units.
+        if do_fert and t.get("fertilized_until_day", -1) < day and (not ongoing or prod_eve):
+            # `fertilize_fn` may return a float to set the task's own priority
+            # (expB-302); a plain True keeps the legacy band-7 placement.
+            prio = do_fert if (isinstance(do_fert, float) or isinstance(do_fert, int)
+                               and not isinstance(do_fert, bool)) else 7
+            tasks.append((prio, (x, y), ["FERTILIZE"], ("FZ", x, y)))
     return tasks
 
 
@@ -144,6 +175,12 @@ class FeedRouter(Router):
 
     `plan` is a copy of Router.plan with the pick call swapped — the base
     stays frozen because the expB-201 champion arm binds to it."""
+
+    def _is_urgent(self, prio, key, ctx):
+        """Is this task irrecoverable if skipped? The band answer (kept for the
+        control lineage) is the keep-alive band; `pricer.PricedRouter` overrides
+        it with an explicit engine-truth key set."""
+        return prio <= URGENT_PRIO
 
     def plan(self, day, units, busy, actions, tasks, ctx):
         quads = ctx["quads"]
@@ -173,7 +210,7 @@ class FeedRouter(Router):
             if busy[i]:
                 continue
             lock = self.locks.get(i)
-            if lock is not None and lock["prio"] > URGENT_PRIO:
+            if lock is not None and not self._is_urgent(lock["prio"], lock["key"], ctx):
                 urgent = self._pick_for(i, pos, open_tasks, self.home.get(i), ctx, urgent_only=True)
                 if urgent is not None:
                     claimed.discard(lock["key"])

@@ -335,6 +335,10 @@ def test_feedrouter_borrows_urgent_cross_cluster():
 MILLRACE_DIR = REPO_ROOT / "agents" / "team_b" / "millrace"
 ROUTED_DIR = REPO_ROOT / "agents" / "team_b" / "routed"
 
+# sha256 over the frozen expB-201 snapshot's five modules, concatenated in
+# sorted-name order (recorded 2026-08-21, expB-303).
+FROZEN_ROUTED_SHA256 = "3bff9927e965a7778ec8ad0f7a2e6f68784d7a7ab25c97258c9d04f8efccb1a2"
+
 
 def test_vendored_probe_core_is_byte_identical():
     canonical = (REPO_ROOT / "agents" / "team_b" / "probes" / "probe_core.py").read_bytes()
@@ -345,8 +349,28 @@ def test_frozen_routed_snapshot_matches_millrace_modules():
     # The expB-201 Pit snapshot is byte-identical to its millrace counterparts.
     # If millrace/* diverge later (post-freeze refactors), drop this test and
     # leave agents/team_b/routed/ untouched -- it is a frozen champion.
-    for name in ("chassis.py", "layout.py", "routing.py", "routed_probe.py", "probe_core.py"):
+    #
+    # DIVERGED 2026-08-21 (expB-303): `probe_core.py` gained a STRAWBERRY row in
+    # CROPS, which the frozen expB-201 arm must not see. It is dropped from the
+    # identity list and pinned by hash below instead, exactly as this test's
+    # own note prescribes.
+    for name in ("chassis.py", "layout.py", "routing.py", "routed_probe.py"):
         assert (ROUTED_DIR / name).read_bytes() == (MILLRACE_DIR / name).read_bytes(), name
+
+
+def test_frozen_routed_snapshot_is_never_edited():
+    """The expB-201 arm is a frozen A/B control: its bytes are the experiment.
+
+    Pinned by digest rather than by comparison so that a millrace refactor can
+    never silently redefine what the control was."""
+    import hashlib
+    digest = hashlib.sha256()
+    for name in sorted(("chassis.py", "layout.py", "routing.py",
+                        "routed_probe.py", "probe_core.py")):
+        digest.update((ROUTED_DIR / name).read_bytes())
+    assert digest.hexdigest() == FROZEN_ROUTED_SHA256, (
+        "agents/team_b/routed/ is the frozen expB-201 control and must not be "
+        "edited; got " + digest.hexdigest())
 
 
 def _flat_exec_agent(agent_dir):

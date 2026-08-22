@@ -22,6 +22,14 @@ CROPS = {
     "WHEAT":      {"seed": 10, "first": 2, "maxday": 4},
     "CARROT":     {"seed": 20, "first": 2, "maxday": 3},
     "MELON":      {"seed": 80, "first": 10, "maxday": 12},
+    # expB-303: the first `ongoing` crop we grow. HARVEST does not clear the
+    # tile; production fires in `_daily_refresh_plants` at the end of each day
+    # whose age is `first - 1 + interval * k` (9, 11, 13, 15), adding 1 unit or
+    # 2 when the tile was watered that day and is fertilized; `max_yield` is a
+    # CAP on standing units, not a season total, so the tile must be emptied
+    # between events. Structural, straight off engine CROPS in 1.32.7.
+    "STRAWBERRY": {"seed": 100, "first": 10, "maxday": 10,
+                   "ongoing": True, "interval": 2, "max_yield": 4},
 }
 ANIMALS = {
     "GOOSE": {"cost": 300, "structure": "COOP",    "product": "EGG"},

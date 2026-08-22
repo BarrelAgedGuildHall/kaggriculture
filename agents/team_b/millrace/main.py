@@ -33,7 +33,33 @@ from feedchain import make_feedchain_agent
 # race rule — structural replant window + MR-per-action stopping rule (no
 # tile-count constant). FEEDCHAIN_DEFAULTS stay at the e8a76b6 behaviour so
 # `millrace:feedchain` remains the frozen A/B control lineage.
-_AGENT = make_feedchain_agent({"melon_replant": True, "melon_rule": "mr"})
+#
+# expB-303 (strawberry): 16 tiles of STRAWBERRY, the game's richest crop and a
+# corner Team B held at zero while Team A realised ~$241/unit on it. The
+# acreage is a FIXED constant and therefore a deliberate, logged §0 violation
+# (issue #16 list): the section-0-clean "mr" rule was measured and lost to
+# fixed-16 by 13pp head-to-head, so the constant ships until expB-304's
+# dispatch-queue pricing can derive the acreage. Sweep (128 ep, seeds 0-63,
+# vs Champion[B]): 8 tiles 74.2%, 16 tiles 76.6%, 24 tiles 69.5%.
+# expB-304a (the dispatch pricer, ruling-02 sections 2.3-2.6). Four changes,
+# each separately switchable so the decomposition is reproducible:
+#   dispatch="priced"    every candidate action carries its marginal
+#                        contribution from M1 LIVE prices and the queue runs in
+#                        descending contribution per unit-turn down to the
+#                        lambda_opp cut. Deletes the 12 hand-set band constants.
+#   dig=True             R1: a weeded tile is recoverable (DIG -> None, PLANT
+#                        needs None) and the champion never spent the action.
+#   dedupe_ontile=True   the on-tile loop never checked `claimed`, so two units
+#                        standing on one tile both emitted the same action:
+#                        477 engine-rejected unit-turns a season, now 1.1.
+#   ongoing_water_span   R3: service an ongoing crop to its last production eve,
+#                        not to max_yield_day (the age-12.9 strawberry weed
+#                        mode). STRAWBERRY has first == maxday == 10.
+_AGENT = make_feedchain_agent({"melon_replant": True, "melon_rule": "mr",
+                               "strawberry_tiles": 16,
+                               "dispatch": "priced", "dig": True,
+                               "dedupe_ontile": True,
+                               "ongoing_water_span": True})
 
 
 def agent(obs):
