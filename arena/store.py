@@ -202,6 +202,62 @@ def import_db(con: sqlite3.Connection, other: Path) -> int:
     return n
 
 
+def count_games_for(con: sqlite3.Connection, agent_id: str) -> int:
+    return con.execute("SELECT COUNT(*) FROM games WHERE p0 = ? OR p1 = ?",
+                       (agent_id, agent_id)).fetchone()[0]
+
+
+def relabel_agent(con: sqlite3.Connection, old_id: str, new_id: str) -> dict:
+    """Rename an agent id across every row that mentions it, in ONE transaction.
+
+    `game_id` is `sha1(p0|p1|seed|engine)`, so renaming a player without recomputing it would
+    leave rows whose key no longer matches their content: re-running that pairing would insert
+    a duplicate instead of upserting, and the store would slowly grow two histories of the
+    same game. The ids are recomputed here, which is also why this cannot be a plain UPDATE --
+    a recomputed id may collide with a row that already exists (the same pairing already
+    played under the new name), and the newer row must win exactly as `upsert_rows` would.
+
+    Either every row moves or none does: BEGIN IMMEDIATE ... COMMIT, rolled back on any error.
+    """
+    from .scheduler import game_id
+
+    rows = [dict(r) for r in con.execute("SELECT * FROM games WHERE p0 = ? OR p1 = ?",
+                                         (old_id, old_id))]
+    runs = [dict(r) for r in con.execute("SELECT * FROM runs")]
+    touched_runs = []
+    for run in runs:
+        agents = [a for a in (run.get("agents") or "").split(",") if a]
+        if old_id in agents:
+            run["agents"] = ",".join(new_id if a == old_id else a for a in agents)
+            touched_runs.append(run)
+
+    prev = con.isolation_level
+    con.isolation_level = None
+    try:
+        con.execute("BEGIN IMMEDIATE")
+        for row in rows:
+            con.execute("DELETE FROM games WHERE game_id = ?", (row["game_id"],))
+        for row in rows:
+            if row["p0"] == old_id:
+                row["p0"] = new_id
+            if row["p1"] == old_id:
+                row["p1"] = new_id
+            row["game_id"] = game_id(row["p0"], row["p1"], row["seed"], row["engine"])
+        collisions = _record_superseded(con, rows)   # NB-6: the same pairing already played
+        ph = ", ".join("?" for _ in COLNAMES)        # under the new name -- do not lose it silently
+        con.executemany(f"INSERT OR REPLACE INTO games ({', '.join(COLNAMES)}) VALUES ({ph})",
+                        [tuple(r.get(c) for c in COLNAMES) for r in rows])
+        for run in touched_runs:
+            con.execute("UPDATE runs SET agents = ? WHERE run_id = ?", (run["agents"], run["run_id"]))
+        con.execute("COMMIT")
+    except Exception:
+        con.execute("ROLLBACK")
+        raise
+    finally:
+        con.isolation_level = prev
+    return {"games": len(rows), "runs": len(touched_runs), "collisions": collisions}
+
+
 def export_csv(con: sqlite3.Connection, out: Path) -> int:
     rows = all_games(con)
     out.parent.mkdir(parents=True, exist_ok=True)
