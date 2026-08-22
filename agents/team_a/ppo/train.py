@@ -301,7 +301,10 @@ class Run:
         is the same PFSP distribution at the granularity the baseline can support.
         """
         names = list(self.opponents) + [c[0] for c in self.ckpts]
-        k = k or min(len(self.opponents), len(names))
+        # One slot is reserved for the self-play body whenever a checkpoint exists. Without
+        # it the fixed floors fill every slot and the PFSP pool is decorative: the run is
+        # then plain two-opponent training with a snapshot directory nobody plays.
+        k = k or (len(self.opponents) + (1 if self.ckpts else 0))
         if not self.pfsp or len(names) <= k:
             return names
         fixed = [nm for nm in names if nm in self.FLOORS]
