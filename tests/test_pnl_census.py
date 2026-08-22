@@ -46,6 +46,12 @@ def _census(**over):
         "lines": {ln: pc._blank_line() for ln in pc.LINE_PRODUCT},
         "tile_days_other": {"EMPTY_STRUCT": 0, "WEED": 0, "FALLOW": 0, "LOCKED": 0},
         "hands_by_day": [2, 2],
+        # expB-304c: the shed-overflow accounting the conservation identity needs
+        "destroyed": {},
+        "destroyed_by_path": {"drop": 0, "end_of_day": 0},
+        "shed_days": [],
+        "shed_full_turns": 0,
+        "placed_animals": {a: 0 for a in ANIMALS},
         "terminal": {"cash": 1000.0, "shed": {}, "shed_value": 0, "carried": {}, "carried_value": 0,
                      "unharvested": {}, "unharvested_value": 0, "seeds_left": {},
                      "seeds_left_cost": 0, "capital_written_off": 0, "animals_alive": 0},
