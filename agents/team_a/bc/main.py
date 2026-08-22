@@ -29,6 +29,14 @@ except ImportError:  # not on sys.path (direct exec from an unusual cwd)
 # the contribution of each layer stays measurable.
 _SAFE = int(os.environ.get("BC_SAFETY", "3"))
 
+# exp-022a. "buys_first" is the shipped behaviour; "sells_first" makes `_liquidate` emit the
+# same orders with the SELLs ahead of the buys, so the sale revenue funds the same turn's
+# capex. The default is pinned off (integration-ruling I-3) -- an arena arm carries the flag
+# by having this literal rewritten in ITS OWN snapshot (scripts/exp022a_build_arm.py), never
+# by an environment variable: both agents in a match inherit the same environment, so an
+# env-var switch would silently flip the opponent too.
+_LIQ = "buys_first"
+
 # Build the policy at IMPORT time, not on the first act. Loading three ensemble members costs
 # ~300 ms; done lazily that lands entirely inside turn 0 and was the only thing pushing the
 # worst measured turn over the arena's 400 ms ceiling (p99 stays ~20 ms). Both the real
@@ -37,7 +45,7 @@ _SAFE = int(os.environ.get("BC_SAFETY", "3"))
 # per-turn decision cost. Failure is deferred to the first call rather than killing the
 # import, so a weights problem still surfaces as a playable fallback instead of a crash.
 try:
-    _POLICY = _policy.load_default(safety=_SAFE)
+    _POLICY = _policy.load_default(safety=_SAFE, liquidate_order=_LIQ)
 except Exception:
     _POLICY = None
 
@@ -45,7 +53,7 @@ except Exception:
 def agent(obs, config=None):
     global _POLICY
     if _POLICY is None:
-        _POLICY = _policy.load_default(safety=_SAFE)
+        _POLICY = _policy.load_default(safety=_SAFE, liquidate_order=_LIQ)
     try:
         return _POLICY.act(obs)
     except Exception:

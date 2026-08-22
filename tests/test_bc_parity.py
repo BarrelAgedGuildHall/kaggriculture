@@ -71,3 +71,52 @@ def test_actions_well_formed(obss):
 def test_never_raises_on_degenerate_obs():
     """A crashed agent is scored as a loss, so the entry point must swallow everything."""
     assert entry.agent({"player": 0}) == {"farmer": ["PASS"], "hands": [], "market": []}
+
+
+# --------------------------------------------------------------------- exp-022a
+def _liq_probe(order):
+    """`_liquidate` on a hand-built context: 4 animals (reserve 12 WHEAT), a shed that can
+    fund three SELL lines, and two buy-side orders already in the list."""
+    import types
+
+    class Ctx:
+        tiles = [[{"animal": "COW"}] * 2, [{"animal": "COW"}] * 2]
+        shed = {"WHEAT": 20, "MILK": 5, "WOOL": 7}
+        prices = {"WHEAT": 40, "MILK": 170, "WOOL": 160}
+
+    pol = types.SimpleNamespace(liquidate_order=order)
+    orders = [["BUY_LAND"], ["HIRE"], ["SELL", "MILK", 1]]
+    return P.BCPolicy._liquidate(pol, Ctx(), orders)
+
+
+def test_liquidate_default_is_buys_first():
+    """The wrapper pin (integration-ruling I-3): the shipped default must stay `buys_first`
+    until the exp-013b/exp-014 pair closes, because every PPO rollout runs on it."""
+    import inspect
+    sig = inspect.signature(P.BCPolicy.__init__)
+    assert sig.parameters["liquidate_order"].default == "buys_first"
+    assert inspect.signature(P.load_default).parameters["liquidate_order"].default == "buys_first"
+
+
+def test_liquidate_order_only_reorders():
+    """exp-022a changes the SEQUENCE, never the CONTENTS: the same orders in both arms, and
+    the truncation budget (`room = MAX - len(kept)`) is computed the same way. If this ever
+    stops holding, the arm is measuring two variables."""
+    buys = _liq_probe("buys_first")
+    sells = _liq_probe("sells_first")
+    assert sorted(map(repr, buys)) == sorted(map(repr, sells))
+    assert len(buys) <= F.MAX_MARKET_ORDERS
+    # the net's own SELL orders are dropped by the rule in BOTH arms
+    assert [o for o in buys if o[0] == "SELL"] == [o for o in sells if o[0] == "SELL"]
+    kept = [o for o in buys if o[0] != "SELL"]
+    n_sell = len(buys) - len(kept)
+    assert [o[0] for o in buys[:len(kept)]] == [o[0] for o in kept]
+    assert all(o[0] == "SELL" for o in sells[:n_sell])
+    assert [o[0] for o in sells[n_sell:]] == [o[0] for o in kept]
+
+
+def test_liquidate_order_rejects_unknown_value():
+    import pytest as _pytest
+    members = sorted(str(p) for p in BC.glob("weights/*.npz"))
+    with _pytest.raises(ValueError):
+        P.BCPolicy(members, safety=3, liquidate_order="cheapest_first")

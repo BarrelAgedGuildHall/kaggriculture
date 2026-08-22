@@ -64,9 +64,18 @@ class Member:
 class BCPolicy:
     """`members` = list of .npz paths. The first is the primary member."""
 
-    def __init__(self, members, safety=3):
+    LIQUIDATE_ORDERS = ("buys_first", "sells_first")
+
+    def __init__(self, members, safety=3, liquidate_order="buys_first"):
         self.members = [Member(p) for p in members]
         self.safety = int(safety)
+        # exp-022a. `buys_first` is the shipped behaviour and stays the default until the
+        # exp-013b/exp-014 pair closes (integration-ruling I-3, the wrapper pin): every PPO
+        # rollout must keep running on the environment exp-013b trained in.
+        self.liquidate_order = str(liquidate_order)
+        if self.liquidate_order not in self.LIQUIDATE_ORDERS:
+            raise ValueError(f"liquidate_order must be one of {self.LIQUIDATE_ORDERS}, "
+                             f"got {liquidate_order!r}")
         # The Pokemon ensemble is only well-defined over members that speak the same
         # distribution: jun177's LogProbabilityEnsemble refuses any member whose config or
         # tensor schema differs from member 0. Mixing shapes here would not raise -- it would
@@ -199,7 +208,14 @@ class BCPolicy:
         neither hire, buy land nor restock wheat -- exp-004 ended 30 days with three
         quadrants still LOCKED. Selling is the money loop; a head that is merely
         *mostly* right about when to sell breaks it. WHEAT is held back to feed the
-        animals; everything else goes as it arrives."""
+        animals; everything else goes as it arrives.
+
+        `liquidate_order` (exp-022a) flips only the SEQUENCE of the returned list, never its
+        contents: the slot budget is still `room = MAX - len(kept)`, so exactly the same
+        orders are emitted either way. The engine commits market orders in list order
+        (`_process_market`), so `sells_first` lets today's sale revenue fund today's
+        BUY_LAND / BUY_ANIMAL instead of the buy failing `no_cash` first (exp-021 measured
+        42.9% of BUY_LAND and 44.0% of COW orders failing entirely, all `no_cash`)."""
         n_animals = sum(1 for row in ctx.tiles for t in row
                         if isinstance(t, dict) and t.get("animal"))
         reserve = {"WHEAT": 3 * n_animals}
@@ -211,7 +227,10 @@ class BCPolicy:
                 sells.append((int(ctx.prices.get(item, 1)) * have, [item, have]))
         sells.sort(key=lambda t: -t[0])
         room = F.MAX_MARKET_ORDERS - len(kept)
-        return kept + [["SELL", i, n] for _, (i, n) in sells[:max(0, room)]]
+        chosen = [["SELL", i, n] for _, (i, n) in sells[:max(0, room)]]
+        if self.liquidate_order == "sells_first":
+            return chosen + kept
+        return kept + chosen
 
     def _endgame(self, ctx, ops, orders):
         """Day 29 has no end-of-day, so the free auto-drop of unit inventories into the
@@ -344,7 +363,7 @@ def _step_towards(x, y, tx, ty):
     return "PASS"
 
 
-def load_default(directory=None, safety=3):
+def load_default(directory=None, safety=3, liquidate_order="buys_first"):
     """Every .npz in weights/ (sorted) becomes an ensemble member; `BC_MEMBERS` overrides."""
     here = directory or os.path.join(os.path.dirname(os.path.abspath(__file__)), "weights")
     env = os.environ.get("BC_MEMBERS")
@@ -354,4 +373,4 @@ def load_default(directory=None, safety=3):
         paths = sorted(os.path.join(here, f) for f in os.listdir(here) if f.endswith(".npz"))
     if not paths:
         raise RuntimeError(f"no BC weights found in {here}")
-    return BCPolicy(paths, safety=safety)
+    return BCPolicy(paths, safety=safety, liquidate_order=liquidate_order)

@@ -337,8 +337,9 @@ def _agent_job(job):
                       info={"seed": job["seed"]}, debug=False)
         env.reset(2)
         prof.wrap(env)
-        a = P.BCPolicy(members, safety=job.get("safety", 3))
-        b = P.BCPolicy(members, safety=job.get("safety", 3))
+        liq = job.get("liquidate_order", "buys_first")
+        a = P.BCPolicy(members, safety=job.get("safety", 3), liquidate_order=liq)
+        b = P.BCPolicy(members, safety=job.get("safety", 3), liquidate_order=liq)
         env.run([lambda o, c=None: a.act(o), lambda o, c=None: b.act(o)])
     finally:
         prof.restore()
@@ -355,6 +356,10 @@ def main(argv=None):
     ap.add_argument("--replays", nargs="*", default=[])
     ap.add_argument("--agent", default="")
     ap.add_argument("--seeds-from", default="", help="a directory of replay profiles")
+    ap.add_argument("--liquidate-order", default="buys_first",
+                    choices=("buys_first", "sells_first"),
+                    help="exp-022a. Applied to BOTH seats, so the arm profile keeps the "
+                         "self-play structure of the shipped `ours` baseline.")
     ap.add_argument("--workers", type=int, default=5)
     ap.add_argument("--out-dir", required=True)
     args = ap.parse_args(argv)
@@ -369,6 +374,7 @@ def main(argv=None):
                          (REPO_ROOT / "agents" / "team_a" / "bc" / "weights").glob("*.npz"))
         src = json.loads(Path(args.seeds_from).read_text(encoding="utf-8"))
         jobs = [{"seed": r["seed"], "cfg": r["cfg"], "members": members,
+                 "liquidate_order": args.liquidate_order,
                  "episode_id": r["episode_id"]} for r in src]
         fn = _agent_job
 

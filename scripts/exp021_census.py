@@ -315,7 +315,8 @@ def _one(job):
 
         env.interpreter = interpreter
 
-        actor = P.BCPolicy(job["members"], safety=int(job.get("safety", 3)))
+        actor = P.BCPolicy(job["members"], safety=int(job.get("safety", 3)),
+                           liquidate_order=str(job.get("liquidate_order", "buys_first")))
         import features as FMOD
         rec = PolicyRecorder(actor, FMOD)
         opp = _make_opponent(job["opponent"], K)
@@ -597,7 +598,8 @@ def _clean(job):
     env = ke.make("kaggriculture",
                   configuration={"seed": seed, "episodeSteps": int(job.get("steps", 720))},
                   debug=False)
-    actor = P.BCPolicy(job["members"], safety=int(job.get("safety", 3)))
+    actor = P.BCPolicy(job["members"], safety=int(job.get("safety", 3)),
+                       liquidate_order=str(job.get("liquidate_order", "buys_first")))
     opp = _make_opponent(job["opponent"], K)
     agents = [None, None]
     agents[seat] = lambda obs, config=None: actor.act(obs)
@@ -616,6 +618,10 @@ def main(argv=None):
     ap.add_argument("--tag", required=True)
     ap.add_argument("--members", default="", help="pathsep list; default = champion weights")
     ap.add_argument("--safety", type=int, default=3)
+    ap.add_argument("--liquidate-order", default="buys_first",
+                    choices=("buys_first", "sells_first"),
+                    help="exp-022a: order of `_liquidate`'s return. The OPPONENT is never "
+                         "affected -- `base` is always the frozen buys-first champion.")
     ap.add_argument("--steps", type=int, default=720)
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--check-parity", action="store_true")
@@ -630,7 +636,8 @@ def main(argv=None):
                          (REPO_ROOT / "agents" / "team_a" / "bc" / "weights").glob("*.npz"))
     lo, hi = (int(x) for x in args.seeds.split("-"))
     jobs = [{"seed": s, "seat": seat, "members": members, "opponent": args.opponent,
-             "steps": args.steps, "safety": args.safety}
+             "steps": args.steps, "safety": args.safety,
+             "liquidate_order": args.liquidate_order}
             for s in range(lo, hi + 1) for seat in (0, 1)]
 
     def run(fn, js):
@@ -653,6 +660,7 @@ def main(argv=None):
 
     out = {"tag": args.tag, "opponent": args.opponent, "seeds": [lo, hi],
            "episodes": len(rows), "members": members, "safety": args.safety,
+           "liquidate_order": args.liquidate_order,
            "parity": parity, "rows": rows}
     p = Path(args.out)
     p.parent.mkdir(parents=True, exist_ok=True)
