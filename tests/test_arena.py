@@ -1074,9 +1074,13 @@ def test_import_records_supersession_across_stores(tmp_path):
 
 
 # ------------------------------------------------------------------------------- relabel
-def _relabel_fixture(tmp_path, name="TeamA-EnsembleBC-v3", sha="4c859c9"):
-    """A registered agent with games already played under its id."""
-    agent = registry.register_file(TRIVIAL, name, "A", notes="relabel fixture", sha=sha)
+def _relabel_fixture(tmp_path, name="TeamA-EnsembleBC-v3", sha="4c859c9", src=None):
+    """A registered agent with games already played under its id.
+
+    `src` defaults to the single-file placeholder; pass a directory (see
+    `_relabel_dir_source`) to exercise the directory-agent snapshot layout, which is what
+    31 of the 43 agents on the live hub -- every champion included -- actually are."""
+    agent = registry.register_file(src or TRIVIAL, name, "A", notes="relabel fixture", sha=sha)
     db = tmp_path / "relabel.sqlite"
     con = store.connect(db)
     rows = []
@@ -1160,6 +1164,78 @@ def test_relabel_refuses_a_taken_id_and_a_no_op(tmp_path):
     with pytest.raises(ValueError, match="name@sha"):
         registry.relabel(agent["id"], "no-sha-here", db)
     assert agent["id"] in registry.load()["agents"]
+
+
+def _relabel_dir_source(tmp_path, sub="dir-src") -> Path:
+    """A multi-module directory agent, the shape every real Millrace/Ensemble build has."""
+    root = _write_dir_agent(tmp_path / sub, "def act(obs):\n    return {}\n")
+    (root / "helper.py").write_text("VALUE = 7\n", encoding="utf-8")
+    return root
+
+
+def _snapshot_tree(root: Path) -> dict:
+    return {str(p.relative_to(root)).replace("\\", "/"): p.read_bytes()
+            for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def test_relabel_moves_a_directory_agent_snapshot(tmp_path):
+    """Regression: a directory agent's entry is `<id>/main.py`, so renaming the *entry path*
+    moved a file into a directory that does not exist yet -- FileNotFoundError, on the only
+    population anyone would ever relabel. What moves is the snapshot ROOT."""
+    agent, db = _relabel_fixture(tmp_path, name="dir-agent", sha="ccc3333",
+                                 src=_relabel_dir_source(tmp_path))
+    old_id = agent["id"]
+    new_id = "dir-agent@ddd4444"
+    assert agent["entry"] == f"{old_id}/main.py", "fixture is not a directory agent"
+    registry.set_champion("A", old_id)
+    before = _snapshot_tree(ARENA_DIR / "agents" / old_id)
+    assert set(before) == {"main.py", "policy.py", "helper.py"}
+
+    res = registry.relabel(old_id, new_id, db)
+    assert res["games"] == 12 and res["champions"] == ["A"]
+
+    reg = registry.load()
+    entry = reg["agents"][new_id]
+    assert entry["entry"] == f"{new_id}/main.py"
+    assert reg["champions"]["A"] == new_id and old_id not in reg["agents"]
+    assert not (ARENA_DIR / "agents" / old_id).exists(), "the old snapshot directory was left behind"
+    assert _snapshot_tree(ARENA_DIR / "agents" / new_id) == before, "the snapshot did not move intact"
+    assert registry.entry_path(entry).exists(), "the registry points at an unloadable entry"
+
+    con = store.connect(db)
+    assert store.count_games_for(con, old_id) == 0 and store.count_games_for(con, new_id) == 12
+    assert store.integrity_report(con)["ok"]
+    con.close()
+
+
+def test_relabel_rolls_a_directory_snapshot_back_if_the_rows_fail(tmp_path, monkeypatch):
+    agent, db = _relabel_fixture(tmp_path, name="dir-rollback", sha="ccc5555",
+                                 src=_relabel_dir_source(tmp_path, "dir-src-rollback"))
+    old_id = agent["id"]
+    before = _snapshot_tree(ARENA_DIR / "agents" / old_id)
+
+    def boom(*a, **k):
+        raise RuntimeError("database is locked")
+
+    monkeypatch.setattr(store, "relabel_agent", boom)
+    with pytest.raises(RuntimeError, match="locked"):
+        registry.relabel(old_id, "dir-rollback@ddd6666", db)
+    assert old_id in registry.load()["agents"]
+    assert _snapshot_tree(ARENA_DIR / "agents" / old_id) == before
+    assert not (ARENA_DIR / "agents" / "dir-rollback@ddd6666").exists()
+
+
+def test_relabel_refuses_to_overwrite_an_existing_directory_snapshot(tmp_path):
+    """The collision guard has to look at the snapshot root too: with the entry-path check,
+    `agents/<new>/main.py` is absent while `agents/<new>/` is a live agent."""
+    agent, db = _relabel_fixture(tmp_path, name="dir-collide", sha="ccc7777",
+                                 src=_relabel_dir_source(tmp_path, "dir-src-collide"))
+    new_id = "dir-collide@ddd8888"
+    (ARENA_DIR / "agents" / new_id).mkdir()      # a snapshot directory already sits there
+    with pytest.raises(ValueError, match="refusing to overwrite"):
+        registry.relabel(agent["id"], new_id, db)
+    assert agent["id"] in registry.load()["agents"]
+    assert (ARENA_DIR / "agents" / agent["id"] / "main.py").exists()
 
 
 def test_relabel_puts_the_snapshot_back_if_the_rows_fail(tmp_path, monkeypatch):
