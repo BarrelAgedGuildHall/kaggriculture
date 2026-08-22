@@ -34,6 +34,11 @@ POST /api/control/bench       {"agent":"v0a","undo":false}      out of the ladde
 POST /api/control/retire      {"agent":"v0a","undo":false}      out of ladder AND rating fit
 POST /api/control/champion    {"team":"A","agent":"v1"}
 POST /api/control/register    {"name","team","git_ref","path under agents/"}  -> registers BENCHED
+POST /api/control/push        {"agent": <the sender's registry entry>, "files": {rel: base64},
+                               "manifest_sha256", "force", "sender"}          -> registers BENCHED
+     ONE agent snapshot, merged as ONE registry key, content-hash verified end to end
+     (arena/push.py). Use it instead of a registry ship, which replaces the hub's whole
+     registry.json (issue #15). 409 on an id collision unless "force".
 No auth: bind 127.0.0.1 or trust the tailnet. Registration is deliberately restricted to
 committed files under agents/ at an origin ref (registering schedules code execution here);
 see docs/pit.md "Security".
@@ -52,7 +57,7 @@ from urllib.parse import parse_qs, urlparse
 
 from . import engine as eng
 from . import hub as hubmod
-from . import leaderboard, leases, registry, store
+from . import leaderboard, leases, push, registry, store
 from .paths import ARENA_DIR, DB_PATH, PROGRESS_DIR
 
 _LB_CACHE: dict = {"key": None, "at": 0.0, "data": None}
@@ -162,6 +167,7 @@ CONTROL_KEYS: dict[str, set[str]] = {
     "activate": {"agent"},
     "champion": {"team", "agent"},
     "register": {"name", "team", "notes", "git_ref", "path", "code_b64"},
+    "push": {"agent", "files", "manifest_sha256", "force", "sender"},
 }
 LEASE_OPS = ("acquire", "renew", "release", "list")
 
@@ -262,6 +268,14 @@ def control(action: str, body: dict) -> dict:
             raise ValueError("register needs git_ref + path (agents/...)")
         a = registry.set_flag(a["id"], "active", False)   # benched until someone activates it
         return {"agent": a}
+    if action == "push":
+        # One agent snapshot, uploaded and merged as ONE registry key (arena/push.py). This is
+        # the supported way onto a hub whose working tree is not a git clone -- which is the Pit
+        # host, where `register {git_ref}` cannot work -- and it is deliberately NOT the registry
+        # ship, which replaces the hub's registry.json wholesale (issue #15). Same policy as
+        # register: the pushed agent arrives BENCHED.
+        from . import push as pushmod
+        return pushmod.receive(body)
     raise ValueError(f"unknown control action {action!r}")
 
 
@@ -445,6 +459,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"error": "not found"}, HTTPStatus.NOT_FOUND)
         except leases.LeaseHeld as exc:
             return self._json({"error": str(exc), "leases": exc.leases}, HTTPStatus.CONFLICT)
+        except push.PushConflict as exc:
+            # An id collision is a conflict, not a malformed request: the caller has to decide
+            # whether the bytes really changed, and `--force` is that decision.
+            return self._json({"error": str(exc), "agent": exc.agent_id, "existing": exc.existing},
+                              HTTPStatus.CONFLICT)
         except (KeyError, ValueError, FileNotFoundError) as exc:
             return self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
         except Exception as exc:

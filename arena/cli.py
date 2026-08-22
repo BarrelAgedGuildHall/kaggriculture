@@ -298,6 +298,41 @@ def cmd_lease(args) -> int:
     return 0
 
 
+def cmd_push(args) -> int:
+    """Upload ONE agent snapshot to a hub (arena/push.py)."""
+    from . import push as pushmod
+    agent, files = pushmod.collect(args.agent)
+    local_hash = pushmod.manifest_hash(files)
+    total = sum(len(d) for _, d in files)
+    _p(f"{agent['id']}  team={agent['team']}  {len(files)} file(s), {total / 1e3:.1f} kB")
+    _p(f"  content sha256 {local_hash}")
+    for rel, data in files:
+        _p(f"    {rel:<60} {len(data):>9} B")
+    if args.dry_run:
+        _p(f"[dry-run] nothing sent; would POST to {args.hub.rstrip('/')}/api/control/push")
+        return 0
+    payload = pushmod.build_payload(agent, files, force=args.force,
+                                    sender=args.sender or pushmod.default_sender())
+    out = _hub_call(args.hub, "/api/control/push", payload)
+    _p(f"\nhub {args.hub} ({out['arena_dir']}):")
+    _p(f"  stored {out['files']} file(s), {out['bytes'] / 1e3:.1f} kB as agents/{out['root']}")
+    ok = out["manifest_sha256"] == local_hash
+    _p(f"  content sha256 re-read from the hub's disk: {out['manifest_sha256']} "
+       f"{'== local, verified end to end' if ok else '!= LOCAL -- THE TRANSFER IS CORRUPT'}")
+    _p(f"  registry: {out['agents_before']} agents before, {out['agents_after']} after; "
+       f"gained {out['gained'] or '-'}, lost {out['lost'] or '-'}")
+    _p(f"  champions untouched: {out['champions_unchanged']} ({out['champions']})")
+    if out.get("superseded"):
+        _p(f"  ! superseded the previous snapshot, backed up to {out['superseded']['backup']}")
+    if not ok or out["lost"]:
+        _p("FAILED verification -- do not use this agent for anything measured")
+        return 1
+    _p(f"\n{out['id']} is registered BENCHED. Activate it when you want it in the ladder:\n"
+       f"  curl -sX POST {args.hub.rstrip('/')}/api/control/activate "
+       f"-H 'Content-Type: application/json' -d '{{\"agent\":\"{out['id']}\"}}'")
+    return 0
+
+
 def cmd_info(args) -> int:
     _p(f"arena dir : {ARENA_DIR}")
     _p(f"store     : {DB_PATH} ({'exists' if DB_PATH.exists() else 'missing'})")
@@ -449,6 +484,17 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--superseded", type=int, default=0, metavar="N",
                    help="also print the N most recent superseded measurements")
     s.set_defaults(fn=cmd_verify)
+
+    s = sub.add_parser("push", help="upload ONE registered agent snapshot to a hub (never the registry)")
+    s.add_argument("agent", help="a registered agent: name@sha, or a name (latest wins)")
+    s.add_argument("--hub", required=True, help="the hub, e.g. http://HOST:8765")
+    s.add_argument("--force", action="store_true",
+                   help="overwrite an id that already exists on the hub. Ids are content-addressed, "
+                        "so this means 'the bytes changed under the same id': the old snapshot is "
+                        "backed up and the supersession is written to data/arena/push-log.jsonl")
+    s.add_argument("--sender", default=None, help="who is pushing (default user@host); recorded on the entry")
+    s.add_argument("--dry-run", action="store_true", help="list what would be sent and send nothing")
+    s.set_defaults(fn=cmd_push)
 
     s = sub.add_parser("info", help="paths, engine, seed bands, workers")
     s.set_defaults(fn=cmd_info)
