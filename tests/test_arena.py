@@ -1071,3 +1071,184 @@ def test_import_records_supersession_across_stores(tmp_path):
     old = store.superseded_rows(local)
     assert len(old) == 1 and old[0]["run_id"] == "local-run" and old[0]["p99_0"] == 900.0
     local.close()
+
+
+# ------------------------------------------------------------------------------- relabel
+def _relabel_fixture(tmp_path, name="TeamA-EnsembleBC-v3", sha="4c859c9", src=None):
+    """A registered agent with games already played under its id.
+
+    `src` defaults to the single-file placeholder; pass a directory (see
+    `_relabel_dir_source`) to exercise the directory-agent snapshot layout, which is what
+    31 of the 43 agents on the live hub -- every champion included -- actually are."""
+    agent = registry.register_file(src or TRIVIAL, name, "A", notes="relabel fixture", sha=sha)
+    db = tmp_path / "relabel.sqlite"
+    con = store.connect(db)
+    rows = []
+    for seed in range(6):
+        for p0, p1 in ((agent["id"], "random@e"), ("random@e", agent["id"])):
+            rows.append({**_g(p0, p1, 1.0, seed),
+                         "game_id": scheduler.game_id(p0, p1, seed, "1.32.7"),
+                         "run_id": "run-old", "mode": "confirm", "engine": "1.32.7"})
+    store.upsert_rows(con, rows)
+    store.record_run(con, {"run_id": "run-old", "mode": "confirm",
+                           "agents": f"{agent['id']},random@e", "n_games": len(rows)})
+    con.close()
+    return agent, db
+
+
+def test_relabel_moves_the_registry_entry_and_every_game_row(tmp_path):
+    """The Modeler's case: the same bytes were registered under a git sha that has since been
+    rebased. Re-registering would leave the games pointing at an id no longer in the registry
+    -- 1,728 rows silently dropped from the leaderboard fit. Relabel moves both together."""
+    agent, db = _relabel_fixture(tmp_path)
+    old_id = agent["id"]
+    new_id = "TeamA-EnsembleBC-v3@12a5398"
+    registry.set_champion("A", old_id)
+    snapshot = (ARENA_DIR / "agents" / agent["entry"]).read_bytes()
+
+    res = registry.relabel(old_id, new_id, db)
+    assert res["games"] == 12 and res["champions"] == ["A"]
+
+    reg = registry.load()
+    assert new_id in reg["agents"] and old_id not in reg["agents"]
+    entry = reg["agents"][new_id]
+    assert entry["name"] == "TeamA-EnsembleBC-v3" and entry["sha"] == "12a5398"
+    assert entry["relabelled_from"] == old_id
+    assert reg["champions"]["A"] == new_id
+    assert (ARENA_DIR / "agents" / entry["entry"]).read_bytes() == snapshot
+    assert not (ARENA_DIR / "agents" / agent["entry"]).exists()
+
+    con = store.connect(db)
+    assert store.count_games_for(con, old_id) == 0, "rows were left orphaned under the old id"
+    assert store.count_games_for(con, new_id) == 12
+    runs = {r["run_id"]: r["agents"] for r in con.execute("SELECT * FROM runs")}
+    assert runs["run-old"] == f"{new_id},random@e"
+    assert store.integrity_report(con)["ok"], "relabel must not create an incomplete run"
+    con.close()
+
+
+def test_relabel_recomputes_game_ids_so_a_rerun_still_upserts(tmp_path):
+    """`game_id` hashes the player names. Leaving it stale would make the next run of the same
+    pairing INSERT beside the old row instead of upserting it -- two histories of one game."""
+    agent, db = _relabel_fixture(tmp_path, name="rerun-agent", sha="1111aaa")
+    new_id = "rerun-agent@2222bbb"
+    registry.relabel(agent["id"], new_id, db)
+    con = store.connect(db)
+    for row in store.all_games(con):
+        assert row["game_id"] == scheduler.game_id(row["p0"], row["p1"], row["seed"], row["engine"])
+    before = len(store.all_games(con))
+    rerun = {**_g(new_id, "random@e", 0.0, 0), "run_id": "run-new", "mode": "confirm",
+             "engine": "1.32.7", "game_id": scheduler.game_id(new_id, "random@e", 0, "1.32.7")}
+    store.upsert_rows(con, [rerun])
+    assert len(store.all_games(con)) == before, "a re-run duplicated instead of upserting"
+    con.close()
+
+
+def test_relabel_dry_run_changes_nothing(tmp_path):
+    agent, db = _relabel_fixture(tmp_path, name="dry-run-agent", sha="aaa1111")
+    res = registry.relabel(agent["id"], "dry-run-agent@bbb2222", db, dry_run=True)
+    assert res["dry_run"] and res["games"] == 12
+    assert agent["id"] in registry.load()["agents"]
+    con = store.connect(db)
+    assert store.count_games_for(con, agent["id"]) == 12
+    con.close()
+
+
+def test_relabel_refuses_a_taken_id_and_a_no_op(tmp_path):
+    agent, db = _relabel_fixture(tmp_path, name="taken-a", sha="ccc1111")
+    other = registry.register_file(TRIVIAL, "taken-b", "A", sha="ddd2222")
+    with pytest.raises(ValueError, match="already registered"):
+        registry.relabel(agent["id"], other["id"], db)
+    with pytest.raises(ValueError, match="already the id"):
+        registry.relabel(agent["id"], agent["id"], db)
+    with pytest.raises(ValueError, match="name@sha"):
+        registry.relabel(agent["id"], "no-sha-here", db)
+    assert agent["id"] in registry.load()["agents"]
+
+
+def _relabel_dir_source(tmp_path, sub="dir-src") -> Path:
+    """A multi-module directory agent, the shape every real Millrace/Ensemble build has."""
+    root = _write_dir_agent(tmp_path / sub, "def act(obs):\n    return {}\n")
+    (root / "helper.py").write_text("VALUE = 7\n", encoding="utf-8")
+    return root
+
+
+def _snapshot_tree(root: Path) -> dict:
+    return {str(p.relative_to(root)).replace("\\", "/"): p.read_bytes()
+            for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def test_relabel_moves_a_directory_agent_snapshot(tmp_path):
+    """Regression: a directory agent's entry is `<id>/main.py`, so renaming the *entry path*
+    moved a file into a directory that does not exist yet -- FileNotFoundError, on the only
+    population anyone would ever relabel. What moves is the snapshot ROOT."""
+    agent, db = _relabel_fixture(tmp_path, name="dir-agent", sha="ccc3333",
+                                 src=_relabel_dir_source(tmp_path))
+    old_id = agent["id"]
+    new_id = "dir-agent@ddd4444"
+    assert agent["entry"] == f"{old_id}/main.py", "fixture is not a directory agent"
+    registry.set_champion("A", old_id)
+    before = _snapshot_tree(ARENA_DIR / "agents" / old_id)
+    assert set(before) == {"main.py", "policy.py", "helper.py"}
+
+    res = registry.relabel(old_id, new_id, db)
+    assert res["games"] == 12 and res["champions"] == ["A"]
+
+    reg = registry.load()
+    entry = reg["agents"][new_id]
+    assert entry["entry"] == f"{new_id}/main.py"
+    assert reg["champions"]["A"] == new_id and old_id not in reg["agents"]
+    assert not (ARENA_DIR / "agents" / old_id).exists(), "the old snapshot directory was left behind"
+    assert _snapshot_tree(ARENA_DIR / "agents" / new_id) == before, "the snapshot did not move intact"
+    assert registry.entry_path(entry).exists(), "the registry points at an unloadable entry"
+
+    con = store.connect(db)
+    assert store.count_games_for(con, old_id) == 0 and store.count_games_for(con, new_id) == 12
+    assert store.integrity_report(con)["ok"]
+    con.close()
+
+
+def test_relabel_rolls_a_directory_snapshot_back_if_the_rows_fail(tmp_path, monkeypatch):
+    agent, db = _relabel_fixture(tmp_path, name="dir-rollback", sha="ccc5555",
+                                 src=_relabel_dir_source(tmp_path, "dir-src-rollback"))
+    old_id = agent["id"]
+    before = _snapshot_tree(ARENA_DIR / "agents" / old_id)
+
+    def boom(*a, **k):
+        raise RuntimeError("database is locked")
+
+    monkeypatch.setattr(store, "relabel_agent", boom)
+    with pytest.raises(RuntimeError, match="locked"):
+        registry.relabel(old_id, "dir-rollback@ddd6666", db)
+    assert old_id in registry.load()["agents"]
+    assert _snapshot_tree(ARENA_DIR / "agents" / old_id) == before
+    assert not (ARENA_DIR / "agents" / "dir-rollback@ddd6666").exists()
+
+
+def test_relabel_refuses_to_overwrite_an_existing_directory_snapshot(tmp_path):
+    """The collision guard has to look at the snapshot root too: with the entry-path check,
+    `agents/<new>/main.py` is absent while `agents/<new>/` is a live agent."""
+    agent, db = _relabel_fixture(tmp_path, name="dir-collide", sha="ccc7777",
+                                 src=_relabel_dir_source(tmp_path, "dir-src-collide"))
+    new_id = "dir-collide@ddd8888"
+    (ARENA_DIR / "agents" / new_id).mkdir()      # a snapshot directory already sits there
+    with pytest.raises(ValueError, match="refusing to overwrite"):
+        registry.relabel(agent["id"], new_id, db)
+    assert agent["id"] in registry.load()["agents"]
+    assert (ARENA_DIR / "agents" / agent["id"] / "main.py").exists()
+
+
+def test_relabel_puts_the_snapshot_back_if_the_rows_fail(tmp_path, monkeypatch):
+    """Two stores, one operation: if the sqlite transaction fails, the rename must not stand,
+    or the registry would point at a snapshot that is no longer there."""
+    agent, db = _relabel_fixture(tmp_path, name="rollback-agent", sha="eee1111")
+
+    def boom(*a, **k):
+        raise RuntimeError("database is locked")
+
+    monkeypatch.setattr(store, "relabel_agent", boom)
+    with pytest.raises(RuntimeError, match="locked"):
+        registry.relabel(agent["id"], "rollback-agent@fff2222", db)
+    assert agent["id"] in registry.load()["agents"]
+    assert (ARENA_DIR / "agents" / agent["entry"]).exists(), "the snapshot rename was not undone"
+    assert not (ARENA_DIR / "agents" / agent["entry"].replace("eee1111", "fff2222")).exists()

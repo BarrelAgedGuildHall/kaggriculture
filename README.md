@@ -139,6 +139,10 @@ uv run python -m arena gate v1 --team A                       # PASS/FAIL vs tea
 uv run python -m arena gate v1 --team A --band 3000-3199      # ... on a second, disjoint band: pool >=2 before promoting
 uv run python -m arena verify --superseded 20                 # integrity: does every run still own the games it played?
 uv run python -m arena retire v0                              # drop from the rating fit (rows kept); --undo
+uv run python -m arena relabel old@4c859c9 new@12a5398        # rename an id across the registry AND its game
+                                                              # rows in one transaction (game ids are recomputed);
+                                                              # --dry-run first. Use when the LABEL was wrong --
+                                                              # re-registering instead would orphan the rows.
 uv run python -m arena export --out data/arena/games.csv
 ```
 
