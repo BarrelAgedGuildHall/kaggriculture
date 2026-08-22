@@ -418,11 +418,23 @@ def test_kaggle_loader_flat_exec_routed_entry():
 
 # ------------------------------------------------- expB-219/220 melon race rule
 
-def test_shipped_entry_carries_melon_race_rule():
-    # the submission entry constructs the expB-220 build; FEEDCHAIN_DEFAULTS
-    # stay at the e8a76b6 behaviour (frozen A/B control lineage)
+def test_shipped_entry_carries_the_gated_champion_config():
+    """The submission entry must construct the build the Pit actually gated.
+
+    UPDATED 2026-08-22 for Auditor finding B-1. This test used to pin
+    `melon_rule: "mr"` -- the expB-220 build -- while the promoted Champion[B]
+    `TeamB-Millrace-s32m6@hddf03d4580` had run on `fixed` / 6 tiles / 32
+    strawberry tiles, a config that existed only on the Pit host. A test that
+    pins the superseded configuration is worse than no test: it actively
+    asserted that the wrong agent was shippable. It now pins the gated one, so
+    a promotion that does not reach main.py fails the suite.
+
+    ruling-03 section 6.5 authorises both quantity constants; the re-test
+    trigger is expB-304b.
+    """
     src = (MILLRACE_DIR / "main.py").read_text(encoding="utf-8")
-    assert '"melon_replant": True' in src and '"melon_rule": "mr"' in src
+    assert '"melon_replant": True' in src and '"melon_rule": "fixed"' in src
+    assert '"melon_tiles": 6' in src
     from millrace.feedchain import FEEDCHAIN_DEFAULTS
     assert FEEDCHAIN_DEFAULTS["melon_replant"] is False
     assert FEEDCHAIN_DEFAULTS["melon_rule"] == "fixed"
