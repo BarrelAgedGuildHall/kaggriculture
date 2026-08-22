@@ -26,6 +26,7 @@ from __future__ import annotations
 import json
 import os
 import socket
+import threading
 import time
 import uuid
 
@@ -38,6 +39,14 @@ DEFAULT_TTL_S = 3600            # 1 h: long enough for a gate battery arm, short
 MAX_TTL_S = 6 * 3600            # a run that needs more than this renews, deliberately
 MIN_TTL_S = 1
 
+# The whole file is a read-modify-write, and the hub serves on a ThreadingHTTPServer, so two
+# requests could interleave between _load and _save and drop a lease. One process-wide lock plus a
+# unique temp name closes that window. Across processes (hub + a CLI on the same host) the write is
+# still last-writer-wins -- atomic per write thanks to os.replace, but not serialised. That is
+# acceptable for now because a lost *acquire* fails safe (the caller sees its lease missing in the
+# verify step the runbook requires) while a lost *release* only leaves the ladder paused.
+_LOCK = threading.RLock()
+
 
 class LeaseHeld(RuntimeError):
     """Raised when an operation would disturb a run that holds a live lease."""
@@ -45,6 +54,31 @@ class LeaseHeld(RuntimeError):
     def __init__(self, leases: list[dict], action: str = "resume"):
         self.leases = leases
         super().__init__(describe(leases, action))
+
+
+class LeaseStateUnreadable(LeaseHeld):
+    """The lease file exists but cannot be read.
+
+    This used to be swallowed (`except Exception: state = {}`), which is the worst possible
+    answer: a truncated or half-written leases.json reported "no leases held", so resume went from
+    409 to 200 and the ladder started underneath a live measurement -- silently, with no log row.
+    Unknown state is now treated as **held**: every mutation refuses, `lease_held` reads true, and
+    the only way through is a deliberate, attributed force (which quarantines the file and says so
+    in the log).
+
+    It subclasses LeaseHeld so every existing refusal path -- HTTP 409, the CLI, `hub.set_paused`
+    -- already handles it.
+    """
+
+    def __init__(self, path, exc: Exception, action: str = "resume"):
+        self.leases = []
+        self.path = str(path)
+        RuntimeError.__init__(
+            self, f"{action} refused: the lease state at {path} is unreadable ({exc.__class__.__name__}: {exc}). "
+                  "Unknown lease state is treated as held. Inspect the file; if it is genuinely "
+                  "stale, override with a force-resume naming an actor "
+                  '(POST /api/control/resume {"force":true,"actor":"<who>"}), which quarantines it '
+                  "and writes the break to the lease log.")
 
 
 def _epoch() -> float:                       # patched in tests to travel in time
@@ -60,22 +94,58 @@ def _slug(s: str) -> str:
     return ("".join(keep).strip("-") or "run")[:24]
 
 
-def _load() -> dict:
+def _load(action: str = "read") -> dict:
+    """Read the lease state. A missing file means "no leases"; an unreadable one means "unknown",
+    which is treated as held (LeaseStateUnreadable) -- never as empty."""
     try:
-        state = json.loads(LEASES_PATH.read_text(encoding="utf-8"))
+        raw = LEASES_PATH.read_text(encoding="utf-8")
     except FileNotFoundError:
-        state = {}
-    except Exception:                         # never let a corrupt file wedge the hub
-        state = {}
-    state.setdefault("leases", {})
+        return {"leases": {}}
+    except OSError as exc:
+        log_event("state-unreadable", {"path": str(LEASES_PATH), "error": f"{exc.__class__.__name__}: {exc}"})
+        raise LeaseStateUnreadable(LEASES_PATH, exc, action) from exc
+    try:
+        state = json.loads(raw)
+        if not isinstance(state, dict):
+            raise ValueError(f"lease state must be a JSON object, got {type(state).__name__}")
+        leases = state.setdefault("leases", {})
+        if not isinstance(leases, dict):
+            raise ValueError(f"'leases' must be an object, got {type(leases).__name__}")
+        for lid, rec in leases.items():
+            if not isinstance(rec, dict) or "expires_at" not in rec or "acquired_at" not in rec:
+                raise ValueError(f"lease {lid!r} is missing its timestamps")
+    except Exception as exc:
+        log_event("state-unreadable", {"path": str(LEASES_PATH), "bytes": len(raw),
+                                       "error": f"{exc.__class__.__name__}: {exc}"})
+        raise LeaseStateUnreadable(LEASES_PATH, exc, action) from exc
     return state
 
 
 def _save(state: dict) -> None:
     ensure_dirs()
-    tmp = LEASES_PATH.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
-    tmp.replace(LEASES_PATH)
+    # unique temp name: a fixed one is a second race between two writers (F3)
+    tmp = LEASES_PATH.with_name(f"{LEASES_PATH.name}.tmp-{os.getpid()}-{uuid.uuid4().hex[:6]}")
+    try:
+        tmp.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
+        os.replace(tmp, LEASES_PATH)
+    finally:
+        if tmp.exists():
+            tmp.unlink(missing_ok=True)
+
+
+def quarantine(actor: str, reason: str = "force") -> str | None:
+    """Move an unreadable lease file aside so the ladder can be recovered deliberately.
+
+    Only the force path calls this, it always names an actor, and it *keeps* the bad file (renamed)
+    -- deleting it would turn "unknown state" back into "no leases", which is the failure this
+    whole change exists to remove.
+    """
+    if not LEASES_PATH.exists():
+        return None
+    dest = LEASES_PATH.with_name(f"{LEASES_PATH.name}.corrupt-{time.strftime('%Y%m%d-%H%M%S')}")
+    os.replace(LEASES_PATH, dest)
+    log_event("state-quarantined", {"actor": actor, "reason": reason, "moved_to": str(dest)})
+    return str(dest)
 
 
 def log_event(event: str, detail: dict) -> None:
@@ -92,24 +162,40 @@ def _view(rec: dict, now: float) -> dict:
     return out
 
 
-def active(now: float | None = None) -> list[dict]:
-    """Live leases, oldest first. Expired ones are pruned (and logged) as a side effect."""
+def active(now: float | None = None, action: str = "read") -> list[dict]:
+    """Live leases, oldest first. Expired ones are pruned (and logged) as a side effect.
+
+    Raises LeaseStateUnreadable if the state cannot be read -- callers that must not fail (status
+    displays) use `status()` instead, which reports the fault while still reading as held."""
     now = _epoch() if now is None else now
-    state = _load()
-    live: dict[str, dict] = {}
-    expired: list[tuple[str, dict]] = []
-    for lid, rec in state["leases"].items():
-        if rec.get("expires_at", 0) > now:
-            live[lid] = rec
-        else:
-            expired.append((lid, rec))
-    if expired:
-        state["leases"] = live
-        _save(state)
-        for lid, rec in expired:
-            log_event("expired", {"lease_id": lid, "owner": rec.get("owner"), "purpose": rec.get("purpose"),
-                                  "ttl_s": rec.get("ttl_s")})
+    with _LOCK:
+        state = _load(action)
+        live: dict[str, dict] = {}
+        expired: list[tuple[str, dict]] = []
+        for lid, rec in state["leases"].items():
+            if rec.get("expires_at", 0) > now:
+                live[lid] = rec
+            else:
+                expired.append((lid, rec))
+        if expired:
+            state["leases"] = live
+            _save(state)
+    for lid, rec in expired:
+        log_event("expired", {"lease_id": lid, "owner": rec.get("owner"), "purpose": rec.get("purpose"),
+                              "ttl_s": rec.get("ttl_s")})
     return [_view(r, now) for _, r in sorted(live.items(), key=lambda kv: kv[1].get("acquired_at", 0))]
+
+
+def status() -> dict:
+    """Lease state for display: never raises, and an unreadable file still reads as HELD.
+
+    `lease_held` is the one-glance answer, so it must never say "free" for a reason as weak as
+    "I could not tell"."""
+    try:
+        live = active()
+        return {"leases": live, "lease_held": bool(live), "lease_state_error": ""}
+    except LeaseStateUnreadable as exc:
+        return {"leases": [], "lease_held": True, "lease_state_error": str(exc)}
 
 
 def describe(leases: list[dict], action: str = "resume") -> str:
@@ -132,16 +218,17 @@ def acquire(owner: str, purpose: str, ttl_s: int = DEFAULT_TTL_S, lease_id: str 
         raise ValueError("a lease needs a purpose (what is being measured, e.g. 'expB-303 gate battery')")
     ttl_s = max(MIN_TTL_S, min(MAX_TTL_S, int(ttl_s)))
     now = _epoch()
-    state = _load()
-    lid = lease_id or f"{_slug(owner)}-{time.strftime('%Y%m%d-%H%M%S', time.localtime(now))}-{uuid.uuid4().hex[:4]}"
-    if lid in state["leases"]:
-        raise ValueError(f"lease {lid!r} already exists")
-    rec = {"id": lid, "owner": owner, "purpose": purpose, "ttl_s": ttl_s,
-           "host": host or socket.gethostname(), "pid": os.getpid(),
-           "acquired_at": now, "acquired_at_iso": _iso(now),
-           "expires_at": now + ttl_s, "expires_at_iso": _iso(now + ttl_s), "renewals": 0}
-    state["leases"][lid] = rec
-    _save(state)
+    with _LOCK:
+        state = _load("acquire")
+        lid = lease_id or f"{_slug(owner)}-{time.strftime('%Y%m%d-%H%M%S', time.localtime(now))}-{uuid.uuid4().hex[:4]}"
+        if lid in state["leases"]:
+            raise ValueError(f"lease {lid!r} already exists")
+        rec = {"id": lid, "owner": owner, "purpose": purpose, "ttl_s": ttl_s,
+               "host": host or socket.gethostname(), "pid": os.getpid(),
+               "acquired_at": now, "acquired_at_iso": _iso(now),
+               "expires_at": now + ttl_s, "expires_at_iso": _iso(now + ttl_s), "renewals": 0}
+        state["leases"][lid] = rec
+        _save(state)
     log_event("acquire", {"lease_id": lid, "owner": owner, "purpose": purpose, "ttl_s": ttl_s,
                           "host": rec["host"]})
     return _view(rec, now)
@@ -149,7 +236,8 @@ def acquire(owner: str, purpose: str, ttl_s: int = DEFAULT_TTL_S, lease_id: str 
 
 def get(lease_id: str) -> dict:
     now = _epoch()
-    rec = _load()["leases"].get(lease_id)
+    with _LOCK:
+        rec = _load("get")["leases"].get(lease_id)
     if rec is None:
         raise KeyError(f"no such lease: {lease_id!r}")
     if rec["expires_at"] <= now:
@@ -160,18 +248,19 @@ def get(lease_id: str) -> dict:
 def renew(lease_id: str, ttl_s: int | None = None) -> dict:
     """Extend a live lease from now. An expired lease cannot be renewed -- take a new one."""
     now = _epoch()
-    state = _load()
-    rec = state["leases"].get(lease_id)
-    if rec is None:
-        raise KeyError(f"no such lease: {lease_id!r}")
-    if rec["expires_at"] <= now:
-        raise KeyError(f"lease {lease_id!r} expired at {rec['expires_at_iso']} -- acquire a new one")
-    rec["ttl_s"] = max(MIN_TTL_S, min(MAX_TTL_S, int(ttl_s if ttl_s is not None else rec["ttl_s"])))
-    rec["expires_at"] = now + rec["ttl_s"]
-    rec["expires_at_iso"] = _iso(rec["expires_at"])
-    rec["renewals"] = int(rec.get("renewals", 0)) + 1
-    rec["renewed_at_iso"] = _iso(now)
-    _save(state)
+    with _LOCK:
+        state = _load("renew")
+        rec = state["leases"].get(lease_id)
+        if rec is None:
+            raise KeyError(f"no such lease: {lease_id!r}")
+        if rec["expires_at"] <= now:
+            raise KeyError(f"lease {lease_id!r} expired at {rec['expires_at_iso']} -- acquire a new one")
+        rec["ttl_s"] = max(MIN_TTL_S, min(MAX_TTL_S, int(ttl_s if ttl_s is not None else rec["ttl_s"])))
+        rec["expires_at"] = now + rec["ttl_s"]
+        rec["expires_at_iso"] = _iso(rec["expires_at"])
+        rec["renewals"] = int(rec.get("renewals", 0)) + 1
+        rec["renewed_at_iso"] = _iso(now)
+        _save(state)
     log_event("renew", {"lease_id": lease_id, "owner": rec["owner"], "ttl_s": rec["ttl_s"],
                         "renewals": rec["renewals"]})
     return _view(rec, now)
@@ -179,11 +268,12 @@ def renew(lease_id: str, ttl_s: int | None = None) -> dict:
 
 def release(lease_id: str, reason: str = "released") -> dict:
     now = _epoch()
-    state = _load()
-    rec = state["leases"].pop(lease_id, None)
-    if rec is None:
-        raise KeyError(f"no such lease: {lease_id!r}")
-    _save(state)
+    with _LOCK:
+        state = _load("release")
+        rec = state["leases"].pop(lease_id, None)
+        if rec is None:
+            raise KeyError(f"no such lease: {lease_id!r}")
+        _save(state)
     log_event("release", {"lease_id": lease_id, "owner": rec.get("owner"),
                           "purpose": rec.get("purpose"), "reason": reason,
                           "held_for_s": int(round(now - rec.get("acquired_at", now)))})
@@ -195,8 +285,15 @@ def break_all(actor: str, reason: str = "force") -> list[dict]:
     actor = (actor or "").strip()
     if not actor:
         raise ValueError("breaking a lease requires an actor (who is overriding, for the log)")
+    try:
+        live = active(action="force-resume")
+    except LeaseStateUnreadable:
+        # The only path allowed past an unreadable lease file, and it is deliberate, attributed
+        # and logged: keep the bad file (renamed) and start from a clean, empty state.
+        quarantine(actor, reason)
+        return []
     broken = []
-    for l in active():
+    for l in live:
         rec = release(l["id"], reason=f"{reason} by {actor}")
         broken.append(rec)
     if broken:

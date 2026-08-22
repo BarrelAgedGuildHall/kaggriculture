@@ -3,11 +3,21 @@
 One row per game, keyed by `game_id` (sha1 of p0|p1|seed|engine, see scheduler.game_id), so
 re-running the same pairing on the same seed upserts, and results produced elsewhere (remote
 node, another clone) merge by id with `import_db`.
+
+That upsert is deliberate -- a clean node run is *meant* to supersede a noisy local one, and
+remote deltas are *meant* to merge -- but it used to be silent: re-running a pairing destroyed the
+earlier measurement with no trace, and a `runs` row could end up claiming n_games=400 while not one
+game in the store still carried its run_id (2026-08-21, run 20260821-080254-e57458). So a replaced
+row whose run_id differs is copied into the `superseded` table first, and `integrity_report`
+reports every run whose games no longer add up. The game key itself is unchanged: putting run_id
+into it would stop the merge from merging and would make new rows incomparable with every row
+already stored.
 """
 from __future__ import annotations
 
 import csv
 import sqlite3
+import time
 from pathlib import Path
 
 from .paths import DB_PATH, ensure_dirs
@@ -25,6 +35,13 @@ COLUMNS = [
 ]
 COLNAMES = [c for c, _ in COLUMNS]
 
+# What is kept when a row is replaced by a different run: enough to re-read the lost measurement
+# and to say who overwrote it. Not the full row -- this is a ledger, not a second store.
+SUPERSEDED_COLS = ["superseded_at", "superseded_by_run", "game_id", "run_id", "mode", "p0", "p1",
+                   "seed", "engine", "arena_sha", "host", "money0", "money1", "result0",
+                   "crash0", "crash1", "timeout0", "timeout1", "p99_0", "p99_1", "max_0", "max_1",
+                   "created_at"]
+
 
 def connect(path: Path | None = None) -> sqlite3.Connection:
     path = Path(path) if path else DB_PATH
@@ -41,13 +58,43 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
     con.execute("""CREATE TABLE IF NOT EXISTS runs (
         run_id TEXT PRIMARY KEY, mode TEXT, agents TEXT, n_games INTEGER, seeds TEXT,
         engine TEXT, arena_sha TEXT, host TEXT, workers INTEGER, wall_s REAL, started_at TEXT, finished_at TEXT)""")
+    con.execute("CREATE TABLE IF NOT EXISTS superseded (" + ", ".join(
+        f"{c} {'INTEGER' if c.startswith(('seed', 'crash', 'timeout')) else 'REAL' if c.startswith(('money', 'result', 'p99', 'max')) else 'TEXT'}"
+        for c in SUPERSEDED_COLS) + ")")
+    con.execute("CREATE INDEX IF NOT EXISTS idx_superseded_run ON superseded(run_id)")
     con.commit()
     return con
+
+
+def _record_superseded(con: sqlite3.Connection, rows: list[dict]) -> int:
+    """Copy any stored row that `rows` is about to replace **with a different run** into the
+    supersession ledger. Same-run re-writes (a re-import of the same delta, a progress rewrite)
+    are not supersessions and are not recorded."""
+    ids = [r.get("game_id") for r in rows if r.get("game_id")]
+    if not ids:
+        return 0
+    incoming = {r["game_id"]: r for r in rows if r.get("game_id")}
+    kept = []
+    for chunk in (ids[i:i + 400] for i in range(0, len(ids), 400)):
+        q = f"SELECT * FROM games WHERE game_id IN ({', '.join('?' for _ in chunk)})"
+        for row in con.execute(q, tuple(chunk)):
+            old = dict(row)
+            new_run = incoming[old["game_id"]].get("run_id") or ""
+            if (old.get("run_id") or "") == new_run:
+                continue
+            old["superseded_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+            old["superseded_by_run"] = new_run
+            kept.append(tuple(old.get(c) for c in SUPERSEDED_COLS))
+    if kept:
+        con.executemany(f"INSERT INTO superseded ({', '.join(SUPERSEDED_COLS)}) "
+                        f"VALUES ({', '.join('?' for _ in SUPERSEDED_COLS)})", kept)
+    return len(kept)
 
 
 def upsert_rows(con: sqlite3.Connection, rows: list[dict]) -> int:
     if not rows:
         return 0
+    _record_superseded(con, rows)
     ph = ", ".join("?" for _ in COLNAMES)
     con.executemany(
         f"INSERT OR REPLACE INTO games ({', '.join(COLNAMES)}) VALUES ({ph})",
@@ -55,6 +102,48 @@ def upsert_rows(con: sqlite3.Connection, rows: list[dict]) -> int:
     )
     con.commit()
     return len(rows)
+
+
+def superseded_rows(con: sqlite3.Connection, run_id: str | None = None) -> list[dict]:
+    """The measurements that later runs overwrote (most recent first)."""
+    sql = "SELECT * FROM superseded" + (" WHERE run_id = ?" if run_id else "") + " ORDER BY superseded_at DESC"
+    return [dict(r) for r in con.execute(sql, (run_id,) if run_id else ())]
+
+
+def integrity_report(con: sqlite3.Connection) -> dict:
+    """Orphan-run integrity check (NB-6).
+
+    A run row records how many games it played. Because games upsert by `game_id`, a later run of
+    the same pairing on the same seeds takes those rows over -- so a run can silently end up with
+    fewer stored games than it played, or none at all. This reports every such run, what took its
+    rows, and any game whose run_id has no run row at all.
+    """
+    stored = {r["run_id"]: r["n"] for r in
+              con.execute("SELECT run_id, COUNT(*) AS n FROM games GROUP BY run_id")}
+    lost: dict[str, dict[str, int]] = {}
+    for r in con.execute("SELECT run_id, superseded_by_run, COUNT(*) AS n "
+                         "FROM superseded GROUP BY run_id, superseded_by_run"):
+        lost.setdefault(r["run_id"], {})[r["superseded_by_run"] or "(unknown)"] = r["n"]
+    runs, incomplete = [], []
+    for r in con.execute("SELECT * FROM runs ORDER BY started_at"):
+        run = dict(r)
+        have = stored.get(run["run_id"], 0)
+        rec = {"run_id": run["run_id"], "mode": run["mode"], "agents": run["agents"],
+               "started_at": run["started_at"], "n_games": run["n_games"], "stored": have,
+               "missing": max(0, (run["n_games"] or 0) - have),
+               "superseded_by": lost.get(run["run_id"], {})}
+        runs.append(rec)
+        if rec["missing"]:
+            incomplete.append(rec)
+    known = {r["run_id"] for r in runs}
+    orphan_games = {rid: n for rid, n in stored.items() if rid and rid not in known}
+    return {
+        "runs": runs,
+        "incomplete_runs": incomplete,
+        "orphan_games": orphan_games,
+        "superseded_total": con.execute("SELECT COUNT(*) FROM superseded").fetchone()[0],
+        "ok": not incomplete and not orphan_games,
+    }
 
 
 def record_run(con: sqlite3.Connection, run: dict) -> None:
