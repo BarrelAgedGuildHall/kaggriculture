@@ -77,6 +77,14 @@ TIERS = {
 TARGET_PER_TIER = 120              # 4 teams x ~30 episodes
 MIN_TEAMS_PER_TIER = 4
 
+# Engine 1.32.7 shipped 2026-08-15 and Kaggle adopted it within about a day, so an episode
+# that ended before this is almost certainly 1.32.6 and will be discarded after a 30 MB
+# download. This bites the LOW tiers specifically: a rank-3,000 team plays rarely, so its
+# "30 most recent wins" reach much further back in time than a rank-10 team's do. Measured
+# on the first field-tier run: 38 of 120 selected episodes came back 1.32.6, one whole team
+# entirely. Filtering at selection is free; filtering after the download is not.
+PIN_SHIPPED = "2026-08-16"
+
 INDEX_FIELDS = [
     "episode_id", "tier", "team_id", "team_name", "lb_rank", "lb_score",
     "submission_id", "seat", "rating_at_play", "rating_after", "bank",
@@ -220,7 +228,10 @@ def episodes_for_submission(sub: str) -> list[dict]:
 
 # ---------------------------------------------------------------- selection
 
-def select(lb: list[dict], per_team: int, target: int, only_tier: str | None) -> dict[str, list[dict]]:
+def select(lb: list[dict], per_team: int, target: int, only_tier: str | None,
+           since: str = PIN_SHIPPED, exclude: set[int] | None = None,
+           exclude_teams: set[str] | None = None,
+           min_teams: int = MIN_TEAMS_PER_TIER) -> dict[str, list[dict]]:
     by_team = mirror_submissions_by_team()
     lb_by_team = {r["TeamId"]: r for r in lb}
     plan: dict[str, list[dict]] = {}
@@ -236,9 +247,11 @@ def select(lb: list[dict], per_team: int, target: int, only_tier: str | None) ->
         teams_used = 0
         print(f"\n[{tier}] LB rank {lo}-{hi}: {len(band)} teams in band", file=sys.stderr)
         for row in cand:
-            if len(picked) >= target and teams_used >= MIN_TEAMS_PER_TIER:
+            if len(picked) >= target and teams_used >= min_teams:
                 break
             team = row["TeamId"]
+            if exclude_teams and team in exclude_teams:
+                continue
             subs = by_team.get(team, [])
             if not subs:
                 continue
@@ -253,6 +266,10 @@ def select(lb: list[dict], per_team: int, target: int, only_tier: str | None) ->
                 for r in rows:
                     if r["team_id"] != team or not r["won"] or r["episode_id"] in seen:
                         continue
+                    if since and r["end_time"][:10] < since:
+                        continue                    # predates the engine pin -- see PIN_SHIPPED
+                    if exclude and r["episode_id"] in exclude:
+                        continue                    # already in the corpus
                     seen.add(r["episode_id"])
                     wins.append(r)
                 time.sleep(0.3)
@@ -273,9 +290,9 @@ def select(lb: list[dict], per_team: int, target: int, only_tier: str | None) ->
                   f"(of {len(wins)} found)  running total {len(picked)}", file=sys.stderr)
         plan[tier] = picked
         print(f"  -> {tier}: {len(picked)} episodes from {teams_used} teams", file=sys.stderr)
-        if teams_used < MIN_TEAMS_PER_TIER:
+        if teams_used < min_teams:
             print(f"  !! only {teams_used} teams had usable history in this band "
-                  f"(ruling asks for {MIN_TEAMS_PER_TIER}) -- reported, not silently padded",
+                  f"(asked for {min_teams}) -- reported, not silently padded",
                   file=sys.stderr)
     return plan
 
@@ -365,6 +382,15 @@ def main(argv=None) -> int:
                         "meta/selection.json (Kaggle rate-limits ListEpisodes, and a "
                         "re-selection would also silently drift the corpus)")
     p.add_argument("--cap-bytes", type=int, default=CAP_BYTES)
+    p.add_argument("--since", default=PIN_SHIPPED,
+                   help="ignore wins that ended before this date (they predate the engine "
+                        "pin and would be downloaded only to be discarded)")
+    p.add_argument("--min-teams", type=int, default=MIN_TEAMS_PER_TIER,
+                   help="stop selecting once the target is met AND this many teams are in")
+    p.add_argument("--top-up", action="store_true",
+                   help="select only what the corpus is still missing: skip episodes and "
+                        "teams already in index.csv, and write meta/selection-topup.json "
+                        "instead of overwriting the frozen selection")
     args = p.parse_args(argv)
 
     CORPUS.mkdir(parents=True, exist_ok=True)
@@ -376,6 +402,7 @@ def main(argv=None) -> int:
         snap_name = sel["snapshot"]
         plan = {t: eps for t, eps in sel["tiers"].items()
                 if not args.tier or t == args.tier}
+        out_name = sel_path.name
         print(f"using cached selection {sel_path} (snapshot {snap_name}, "
               f"selected {sel['selected_at']})", file=sys.stderr)
     else:
@@ -386,16 +413,28 @@ def main(argv=None) -> int:
         lb, snap_name = read_leaderboard(zip_path)
         print(f"public LB snapshot: {snap_name} ({len(lb)} teams)", file=sys.stderr)
 
-        plan = select(lb, args.per_team, args.target, args.tier)
+        have = read_index() if args.top_up else {}
+        exclude = set(have)
+        # A team already represented in the corpus is not what a short tier needs -- it
+        # needs another TEAM, or the tier is a 3-team centroid wearing a 4-team label.
+        exclude_teams = {r["team_id"] for r in have.values()
+                         if not args.tier or r["tier"] == args.tier} if args.top_up else set()
+        if args.top_up:
+            print(f"top-up: {len(exclude)} episodes and {len(exclude_teams)} teams already "
+                  f"in the corpus will be skipped", file=sys.stderr)
+        plan = select(lb, args.per_team, args.target, args.tier,
+                      since=args.since, exclude=exclude, exclude_teams=exclude_teams,
+                      min_teams=args.min_teams)
         (CORPUS / "meta").mkdir(parents=True, exist_ok=True)
-        json.dump({"snapshot": snap_name,
+        out_name = "selection-topup.json" if args.top_up else "selection.json"
+        json.dump({"snapshot": snap_name, "since": args.since, "top_up": args.top_up,
                    "selected_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
                    "tiers": {t: eps for t, eps in plan.items()}},
-                  open(CORPUS / "meta" / "selection.json", "w"), indent=2)
+                  open(CORPUS / "meta" / out_name, "w"), indent=2)
 
     total = sum(len(v) for v in plan.values())
     print(f"\nselected {total} episodes across {len(plan)} tiers "
-          f"-> {CORPUS / 'meta' / 'selection.json'}", file=sys.stderr)
+          f"-> {CORPUS / 'meta' / out_name}", file=sys.stderr)
     if args.plan:
         return 0
 

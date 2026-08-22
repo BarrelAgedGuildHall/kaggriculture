@@ -31,9 +31,17 @@ uv run python scripts/fetch_ghost_corpus.py --plan
 # 2. fetch. ALWAYS --use-selection once a selection exists (see "Freeze the selection").
 uv run python scripts/fetch_ghost_corpus.py --use-selection --delay-s 0.5
 
-# 3. per-commodity census (re-steps every replay; ~2.5 s each, ~15 min for 360)
+# 3. per-commodity census (re-steps every replay; ~3 s each, ~18 min for 352)
 uv run python scripts/census_ghost_corpus.py
+
+# top up a short tier with teams it does not already have, writing a SEPARATE selection
+uv run python scripts/fetch_ghost_corpus.py --plan --top-up --tier field --target 30 --min-teams 1
+uv run python scripts/fetch_ghost_corpus.py --use-selection <corpus>/meta/selection-topup.json
 ```
+
+**Do not run the census while a fetch is in flight.** Both hammer the bulk disk; measured
+2026-08-22, the fetch dropped from **21.7 to 1.3 episodes/min** with a census running
+alongside, and recovered as soon as the census was stopped. Serialise them.
 
 Both are idempotent and resumable: `index.csv` / `census.csv` are appended one episode at a
 time and flushed, so a killed run continues where it stopped. `index.csv` is authoritative —
@@ -66,8 +74,30 @@ Read a replay with `gzip.open(path, "rt", encoding="utf-8")`.
 
 Every replay's own top-level `module_version` is checked against the pin **after download and
 before packing**; a mismatch is deleted, counted, and reported per version at the end. The pin
-is never assumed from the fetch date. As of 2026-08-22 the entire corpus is 1.32.7 (1.32.7
-shipped 2026-08-15 and Kaggle adopts within ~a day, so recent episodes are uniform).
+is never assumed from the fetch date.
+
+**The low tiers are where this bites.** A rank-10 team plays constantly, so its "30 most
+recent wins" all sit inside the last few days; a rank-3,000 team plays rarely, so its 30 reach
+back past the 2026-08-15 engine bump. On the first field-tier run **38 of 120 selected
+episodes came back 1.32.6** — one whole team's entire allocation — and each cost a 30 MB
+download before it could be discarded. Selection therefore floors at `PIN_SHIPPED`
+(`--since`, default 2026-08-16), which is free; a tier left short after discards is topped up
+with `--top-up` rather than quietly shipped as a 3-team centroid wearing a 4-team label.
+
+**Corpus as built, 2026-08-22** (LB snapshot `2026-08-22T02:56:57`): **352 episodes,
+185.0 MB packed** (10.4 GB raw-equivalent), **3.70% of the 5 GB cap**, **100% engine 1.32.7**,
+100% winning seats, 0 orphan files, 0 missing replays.
+
+| tier | episodes | teams (LB rank) | `rating_at_play` | dates |
+|---|---|---|---|---|
+| `frontier` | 120 | 4 (2, 5, 8, 10) | 600–3,051 (μ 2,277) | 08-18 … 08-22 |
+| `upper` | 120 | 4 (108, 126, 170, 187) | 1,947–2,572 (μ 2,221) | 08-20 … 08-22 |
+| `field` | 112 | 4 (2828, 2829, 3100, 3136) | 676–1,655 (μ 963) | 08-15 … 08-22 |
+
+`field` is 112 rather than 120 because team 16622993 had only 22 wins at the pin. Note
+`rating_at_play` is the *submission's* ladder rating in that episode, not the team's LB score
+(`lb_score`) — a rank-2 team's fresh submission starts at 600 and climbs, which is why the
+frontier tier's floor is 600.
 
 ## The census, and why it re-steps
 

@@ -141,3 +141,29 @@ def test_index_rows_are_wins_at_the_pinned_engine():
         assert r["engine_version"] == fetch.ENGINE_PIN
         assert float(r["bank"]) > float(r["opp_bank"]), "winning episodes only"
         assert r["tier"] in fetch.TIERS
+
+
+def test_selection_floors_at_the_engine_ship_date():
+    """1.32.7 shipped 2026-08-15; selecting older wins only buys 30 MB downloads that get
+    discarded, and it bites the LOW tiers hardest because they play rarely."""
+    assert fetch.PIN_SHIPPED == "2026-08-16"
+
+
+@pytest.mark.skipif(not (_corpus() / "index.csv").exists(), reason="no corpus index")
+def test_corpus_has_no_orphan_files_or_missing_replays():
+    """index.csv is authoritative: every row has a file, every file has a row."""
+    corpus = _corpus()
+    with open(corpus / "index.csv", newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    indexed = {int(r["episode_id"]) for r in rows}
+    assert len(indexed) == len(rows), "duplicate episode ids in the index"
+    on_disk = {int(p.name.split(".")[0])
+               for tier in fetch.TIERS for p in (corpus / tier).glob("*.json.gz")}
+    assert indexed == on_disk
+
+
+@pytest.mark.skipif(not (_corpus() / "index.csv").exists(), reason="no corpus index")
+def test_corpus_is_under_the_cap():
+    with open(_corpus() / "index.csv", newline="", encoding="utf-8") as f:
+        packed = sum(int(r["bytes_gz"]) for r in csv.DictReader(f))
+    assert packed < fetch.CAP_BYTES
