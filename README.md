@@ -134,7 +134,11 @@ uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gate
                                                               # other non-measuring holds alongside;
                                                               # release with `arena lease release <id> --resume`
 export KAGGRI_LEASE=<lease-id>                                # ...then match/gate know the lease is yours
-                                                              # (or pass --lease <id>; --ignore-lease overrides, logged)
+                                                              # (or pass --lease <id>; --ignore-lease overrides, logged).
+                                                              # A run that declares NO lease takes one for itself and
+                                                              # releases it when it ends (--no-lease opts out, loudly);
+                                                              # `source scripts/lease.sh` for the EXIT-trap helper that
+                                                              # releases on Ctrl-C too. See docs/pit.md "Pause leases".
 uv run python -m arena bench v0a                              # out of the ladder (still rated); --undo re-activates
 uv run python -m arena leaderboard                            # markdown/json export -> data/arena/leaderboard.md (+ workshop/notes/leaderboard-internal.md)
 uv run python -m arena champion set v0 --team A               # teams: A | B | org

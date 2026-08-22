@@ -18,6 +18,7 @@ within a round (~1-3 min).
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import threading
 import time
@@ -102,6 +103,75 @@ def release_lease(lease_id: str, resume: bool = False) -> dict:
     if resume and not leases.status()["lease_held"]:
         set_paused(False)
     return rec
+
+
+def _pause_stamp() -> str:
+    """The 'paused since' timestamp in the flag file ('' when the ladder is not paused)."""
+    try:
+        return PAUSE_FLAG.read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+@contextlib.contextmanager
+def lease_for_run(owner: str, purpose: str, ttl_s: int = leases.DEFAULT_TTL_S, *,
+                  pause: bool = True, notify=None):
+    """Hold an exclusive lease for one run, then put the ladder back the way we found it.
+
+    This is what `arena match` / `arena gate` take for you when you did not declare a lease
+    (Auditor L-1, 2026-08-22: the guard refused to start *under* a foreign lease but never took
+    one, so two leaseless runs still collided -- the mirror image of the 2026-08-21 incident, and
+    the easy default, because nothing prompted for a lease).
+
+    Restoring the pause matters as much as releasing the lease. On the Pit host a live lease makes
+    `reconcile_pause()` stop the ladder, and **nothing resumes it** -- so a lease taken and
+    released around a two-second `arena gate` would otherwise leave the ladder down until a human
+    noticed. The rule here is: if the ladder was already paused when we arrived, leave it paused
+    (it is not ours); if it was running, resume it on the way out unless the pause stamp changed
+    under us (somebody paused deliberately during the run) or a lease is still live (`set_paused`
+    refuses, and it is right to).
+
+    `pause=False` for a run that plays no games (`arena gate` reads stored rows): it still needs
+    the lease, for exclusivity against a battery, but it has no reason to stop the ladder.
+
+    `notify` (optional) is called with a one-line explanation of what happened to the pause flag,
+    so the CLI can tell the operator; the same facts also go to `lease-log.jsonl`.
+    """
+    was_paused = is_paused()
+    rec = leases.acquire(owner, purpose, ttl_s)      # LeaseConflict -> the caller refuses to start
+    ours = ""
+    try:
+        if pause:
+            set_paused(True)
+            ours = _pause_stamp()
+        yield rec
+    finally:
+        try:
+            leases.release(rec["id"], reason="run finished")
+        except KeyError:
+            leases.log_event("release-noop", {"lease_id": rec["id"], "owner": owner,
+                                              "reason": "already gone at release (lapsed or force-broken)"})
+        note = _restore_pause(was_paused, ours, rec["id"])
+        if note and notify:
+            notify(note)
+
+
+def _restore_pause(was_paused: bool, ours: str, lease_id: str) -> str:
+    """Undo the pause a run-lease caused. Returns a one-line explanation for the CLI to print."""
+    if was_paused or not is_paused():
+        return ""
+    stamp = _pause_stamp()
+    if ours and stamp and stamp != ours:
+        leases.log_event("pause-left-alone", {"lease_id": lease_id, "stamp": stamp,
+                                              "reason": "the pause stamp changed during the run"})
+        return "the ladder is paused by somebody else's pause (stamp changed during the run) -- left as is"
+    try:
+        set_paused(False)
+    except leases.LeaseHeld as exc:
+        leases.log_event("pause-left-alone", {"lease_id": lease_id, "reason": str(exc)[:200]})
+        return "the ladder stays paused: another lease is live"
+    leases.log_event("pause-restored", {"lease_id": lease_id})
+    return "the ladder was running when this started, so it was resumed"
 
 
 def reconcile_pause() -> bool:

@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -15,33 +17,96 @@ def _p(*a, **k):
     print(*a, **k, flush=True)
 
 
-def _guard(args, action: str, detail: str) -> None:
-    """Refuse to start while somebody else holds the Pit (arena/leases.py `guard_run`).
+@contextlib.contextmanager
+def _run_lease(args, action: str, detail: str, *, pause: bool):
+    """Guard the run, and hold a lease for it -- both directions of the lock.
 
     Two operatives measuring on one host is the whole defect: on 2026-08-21 a second battery ran
     through a live one and cost it 16 spurious timeout-losses, which the arena scores as losses
     regardless of bank. A lease that stops the ladder but not the other operative is a warning
     light, not a lock.
+
+    The first version only refused to start *under* somebody else's lease. That fixes the
+    incident in the form it happened (holder first, intruder second) and not in the mirror form
+    -- a leaseless measured run, then somebody acquires and starts a battery under it -- which
+    was the easy default, because nothing prompted for a lease (Auditor L-1). So, in order:
+
+      foreign lease live      refuse, exit 3 (unchanged)
+      --ignore-lease          start anyway, take nothing, logged as `guard-ignored`
+      my own lease declared   use it (`--lease` / $KAGGRI_LEASE); take nothing, change nothing
+      --no-lease              start with no lease at all: loud warning + `run-unleased` on the log
+      otherwise               TAKE an exclusive lease, released however this run ends
+
+    Scripted callers keep working either way: a battery that exports `KAGGRI_LEASE` once takes
+    the first branch and nothing changes for it, and a script that wants the old leaseless
+    behaviour says `--no-lease` once.
     """
     seen = leases.guard_run(action, lease_id=args.lease, hub_url=args.lease_hub,
                             ignore=args.ignore_lease, detail=detail)
-    if seen and args.ignore_lease:
-        _p(f"! --ignore-lease: starting anyway while {len(seen)} lease(s) are live "
-           f"({', '.join(l['id'] for l in seen)}); this is on the lease log and any timing "
-           f"measured now is contestable")
-    elif seen:
-        _p(f"lease {seen[0]['id']} (yours) is live: {seen[0]['purpose']}")
+    declared = (args.lease or os.environ.get(leases.LEASE_ENV, "")).strip()
+    mine = [l for l in seen if l.get("id") == declared] if declared else []
+    foreign = [l for l in seen if l.get("id") != declared]
+
+    if args.ignore_lease:
+        if foreign:
+            _p(f"! --ignore-lease: starting anyway while {len(foreign)} lease(s) are live "
+               f"({', '.join(l['id'] for l in foreign)}); this is on the lease log and any timing "
+               f"measured now is contestable")
+        else:
+            _p("! --ignore-lease: this run takes no lease of its own")
+        yield None
+        return
+
+    if mine:
+        _p(f"lease {mine[0]['id']} (yours) is live: {mine[0]['purpose']} "
+           f"({mine[0]['expires_in_s'] // 60}m left)")
+        yield None
+        return
+
+    if declared:
+        _p(f"! the lease you declared ({declared}) is not live -- it lapsed, or the id is wrong")
+
+    if args.no_lease:
+        _p(f"! --no-lease: this {action} runs with NO lease, so nothing stops another operative "
+           f"starting a run on this host underneath it. Any timing it measures is contestable.")
+        leases.log_event("run-unleased", {"action": action, "detail": detail, "pid": os.getpid(),
+                                          "arena_dir": str(ARENA_DIR)})
+        yield None
+        return
+
+    from . import hub as hubmod
+    owner = (args.lease_owner or "").strip() or leases.default_owner()
+    ttl = int(args.lease_ttl or leases.DEFAULT_TTL_S)
+    with hubmod.lease_for_run(owner, f"{action}: {detail}"[:160], ttl_s=ttl, pause=pause,
+                              notify=lambda note: _p(f"lease: {note}")) as rec:
+        _p(f"lease {rec['id']} taken for this {action} (owner {owner}, {rec['ttl_s'] // 60}m, "
+           f"arena {ARENA_DIR}) and released when it ends."
+           + (" The ladder is paused for the duration." if pause else ""))
+        if ttl <= leases.DEFAULT_TTL_S:
+            _p(f"  a run that outlives its lease loses the protection: pass --lease-ttl for a long "
+               f"battery, or take one lease for the whole battery "
+               f"(`arena lease acquire` + export {leases.LEASE_ENV}).")
+        yield rec
 
 
 def _add_lease_guard_args(s) -> None:
     s.add_argument("--lease", default=None,
                    help=f"the pause lease you hold (env {leases.LEASE_ENV}); the run refuses to "
-                        "start while anyone ELSE holds one")
+                        "start while anyone ELSE holds one, and takes no lease of its own")
     s.add_argument("--lease-hub", default=None,
                    help=f"also check this hub's leases before starting, e.g. http://HOST:8765 "
                         f"(env {leases.HUB_ENV}); fails closed if it cannot be read")
     s.add_argument("--ignore-lease", action="store_true",
                    help="start even though someone else holds a lease (written to the lease log)")
+    s.add_argument("--no-lease", action="store_true",
+                   help="do not take a lease for this run (still refuses under a foreign one). "
+                        "Logged as `run-unleased`: any timing measured this way is contestable")
+    s.add_argument("--lease-owner", default=None,
+                   help=f"owner to name on the lease this run takes (env {leases.OWNER_ENV}; "
+                        "default user@host)")
+    s.add_argument("--lease-ttl", type=int, default=None,
+                   help=f"seconds for the lease this run takes (default {leases.DEFAULT_TTL_S}); "
+                        "a run that outlives it loses the protection, so size it to the battery")
 
 
 def cmd_register(args) -> int:
@@ -118,18 +183,22 @@ def _summarize_match(res: dict) -> None:
 
 
 def cmd_match(args) -> int:
-    _guard(args, "match", f"{args.mode} {' '.join(args.agents)}"[:200])
     if args.node:
+        # The games run on the node, so the leases that matter are the node's. Guarding (and
+        # leasing) *this* machine first would check a lease file no game will ever touch, and a
+        # stale local lease would refuse a node run that is perfectly fine. `remote.run_remote`
+        # forwards the lease flags and the node-side `arena match` guards and leases there.
         from .remote import run_remote
         return run_remote(args)
-    from .scheduler import run_match
-    res = run_match(args.agents, mode=args.mode, n=args.n, seeds=args.seeds, workers=args.workers, steps=args.steps,
-                    keep_replay=args.keep_replays, db_path=Path(args.db) if args.db else None,
-                    game_timeout=args.game_timeout, quiet=args.quiet, run_id=args.run_id)
-    res["db_path"] = args.db
-    _summarize_match(res)
-    if args.json:
-        Path(args.json).write_text(json.dumps({k: v for k, v in res.items() if k != "jobs"}, indent=1, default=str), encoding="utf-8")
+    with _run_lease(args, "match", f"{args.mode} {' '.join(args.agents)}"[:200], pause=True):
+        from .scheduler import run_match
+        res = run_match(args.agents, mode=args.mode, n=args.n, seeds=args.seeds, workers=args.workers, steps=args.steps,
+                        keep_replay=args.keep_replays, db_path=Path(args.db) if args.db else None,
+                        game_timeout=args.game_timeout, quiet=args.quiet, run_id=args.run_id)
+        res["db_path"] = args.db
+        _summarize_match(res)
+        if args.json:
+            Path(args.json).write_text(json.dumps({k: v for k, v in res.items() if k != "jobs"}, indent=1, default=str), encoding="utf-8")
     return 0
 
 
@@ -151,12 +220,14 @@ def cmd_leaderboard(args) -> int:
 def cmd_gate(args) -> int:
     # A gate read taken while another battery is on the host reports that battery's contention:
     # `gates.evaluate` takes p99/max as the MAX over stored games, so it can only get worse.
-    _guard(args, "gate", f"{args.name} vs {args.vs or args.team}")
-    from . import gates
-    res = gates.evaluate(args.name, team=args.team, db_path=Path(args.db) if args.db else None, opponent=args.vs,
-                         band=args.band, seed_lo=args.seed_lo, seed_hi=args.seed_hi, min_games=args.min_games,
-                         p99_limit=args.p99_ms, max_limit=args.max_ms)
-    _p(gates.format_result(res))
+    # It plays no games, so its lease does not pause the ladder (pause=False) -- it only has to
+    # keep a battery from starting beside the rows it is reading.
+    with _run_lease(args, "gate", f"{args.name} vs {args.vs or args.team}", pause=False):
+        from . import gates
+        res = gates.evaluate(args.name, team=args.team, db_path=Path(args.db) if args.db else None, opponent=args.vs,
+                             band=args.band, seed_lo=args.seed_lo, seed_hi=args.seed_hi, min_games=args.min_games,
+                             p99_limit=args.p99_ms, max_limit=args.max_ms)
+        _p(gates.format_result(res))
     return 0 if res["pass"] else 1
 
 
@@ -322,7 +393,21 @@ def _print_leases(leaseset: list[dict]) -> None:
 
 def cmd_lease(args) -> int:
     """Pause leases: mutual exclusion between a manual run and the hub ladder (arena/leases.py)."""
+    if not getattr(args, "print_id", False):
+        return _lease_op(args)[0]
+    # `--print-id` is for scripts that capture the id with $( ): stdout must carry the id and
+    # NOTHING else, so the human-readable report goes to stderr. See scripts/lease.sh.
+    with contextlib.redirect_stdout(sys.stderr):
+        rc, lease_id = _lease_op(args)
+    if lease_id:
+        print(lease_id, flush=True)
+    return rc
+
+
+def _lease_op(args) -> tuple[int, str]:
     op = args.op
+    lease_id = ""
+    _p(f"arena dir: {ARENA_DIR}" + (f" (hub {args.hub})" if args.hub else ""))
     if op == "acquire" and args.ttl is None:
         args.ttl = leases.DEFAULT_TTL_S
     if args.hub:                                   # remote hub over HTTP
@@ -340,15 +425,18 @@ def cmd_lease(args) -> int:
             out = _hub_call(args.hub, "/api/control/lease", body)
         if out.get("lease"):
             _p(f"{op}: {out['lease']['id']}")
+            if op == "acquire":
+                lease_id = out["lease"]["id"]
         if out.get("lease_state_error"):
             _p(f"! LEASE STATE UNREADABLE on the hub -- treated as HELD: {out['lease_state_error']}")
         _print_leases(out.get("leases", []))
         _p(f"ladder paused: {out.get('paused')}")
-        return 0
+        return 0, lease_id
     from . import hub as hubmod
     if op == "acquire":
         rec = hubmod.acquire_lease(args.owner, args.purpose, ttl_s=args.ttl,
                                    pause=not args.no_pause, shared=args.shared)
+        lease_id = rec["id"]
         _p(f"lease {rec['id']} held by {rec['owner']} for {rec['ttl_s'] // 60} min "
            f"({'SHARED' if rec['shared'] else 'exclusive'}): {rec['purpose']}")
         _p("the ladder will not resume until it is released or lapses; renew with "
@@ -370,7 +458,7 @@ def cmd_lease(args) -> int:
         else:
             _print_leases(st["leases"])
         _p(f"ladder paused: {hubmod.is_paused()}")
-    return 0
+    return 0, lease_id
 
 
 def cmd_info(args) -> int:
@@ -502,6 +590,10 @@ def build_parser() -> argparse.ArgumentParser:
                    help="allow other SHARED leases alongside this one. Only for a hold that "
                         "measures nothing; a measured run must stay exclusive (default)")
     g.add_argument("--hub", help="operate on a remote hub, e.g. http://HOST:8765")
+    g.add_argument("--print-id", action="store_true",
+                   help="print ONLY the new lease id on stdout (the report goes to stderr) so a "
+                        "script can capture it: KAGGRI_LEASE=$(arena lease acquire ... --print-id). "
+                        "See scripts/lease.sh, which also installs the EXIT trap that releases it")
     g.set_defaults(fn=cmd_lease)
     g = ls.add_parser("list", help="show live leases")
     g.add_argument("--hub")

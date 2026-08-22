@@ -74,7 +74,31 @@ and the arena scores an over-budget turn as a **loss** regardless of bank. So no
 - `arena match` and `arena gate` **refuse to start** while somebody else holds a lease
   (exit code 3, `REFUSED: …`). Pass `--lease <id>` — or export `KAGGRI_LEASE=<id>` once for the
   whole battery — so your own lease is not read as foreign. `--ignore-lease` is the deliberate
-  override and is written to `lease-log.jsonl` as `guard-ignored`.
+  override and is written to `lease-log.jsonl` as `guard-ignored`;
+- **and a run that declares no lease now takes one** (added 2026-08-22 after the Auditor's L-1).
+  Refusing to start *under* someone else's lease only fixes the incident in the form it happened.
+  In the mirror form — a leaseless measured run, then somebody acquires and starts a battery
+  under it — both sides were still silent, and that was the *easy* default because nothing ever
+  prompted for a lease. `arena match` / `arena gate` now resolve it in this order:
+
+  | situation | what happens |
+  |---|---|
+  | somebody else's lease is live | refuse, exit 3 (unchanged) |
+  | `--ignore-lease` | start anyway, take nothing, `guard-ignored` on the log |
+  | your lease is declared (`--lease` / `$KAGGRI_LEASE`) | use it; take nothing, change nothing |
+  | `--no-lease` | start with no lease; loud warning + `run-unleased` on the log |
+  | otherwise | **take an exclusive lease**, released however the run ends |
+
+  The lease a run takes for itself names `--lease-owner` (or `$KAGGRI_LEASE_OWNER`, else
+  user@host), lives for `--lease-ttl` seconds (default 1 h — **size it to the battery**, a run
+  that outlives its lease loses the protection), and puts the ladder back the way it found it:
+  `match` pauses for the duration and resumes on the way out *if it was running when it started*;
+  `gate` plays no games, so it leases without pausing. A ladder that was already paused stays
+  paused — it is not ours to resume.
+
+  Scripted callers are unaffected either way: a battery that exports `KAGGRI_LEASE` once takes
+  the third row and nothing changes for it; a script that genuinely wants the old leaseless
+  behaviour says `--no-lease` once.
 
 ```bash
 # before a timing arm / gate battery / any measured manual run on the Pit host
@@ -91,6 +115,42 @@ export KAGGRI_LEASE=<lease-id>
 uv run python -m arena match cand champ --mode confirm
 uv run python -m arena gate cand --team B
 ```
+
+#### Long-running scripts: release on EXIT, not on the last line
+
+A script that acquires on line 3 and releases on line 60 releases **nothing** when it dies on
+line 40 — a failed command, a Ctrl-C, an ssh drop. The lease then sits there for up to its whole
+TTL: every other operative's `arena match` is refused, and the ladder stays paused because a live
+lease re-asserts the pause. That has now cost three separate evenings, so the standing convention
+is: **install the release in the same breath as the acquire.**
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/lease.sh"                  # scripts/lease.sh, in this repo
+kaggri_lease_acquire engineer-b "expB-303 gate battery" 7200
+#  ^ acquires (exclusive, pauses the ladder), exports $KAGGRI_LEASE, and installs
+#    trap … EXIT INT TERM. Nothing below can leak the lease; no release line at the bottom.
+
+uv run python -m arena match cand champ --mode confirm
+kaggri_lease_renew 7200                            # nothing auto-renews, by design
+uv run python -m arena gate cand --team B
+```
+
+In Python, the same thing is a context manager:
+
+```python
+from arena import leases
+with leases.held("engineer-b", "expB-303 gate battery", ttl_s=7200) as lease:
+    os.environ[leases.LEASE_ENV] = lease["id"]     # child `arena match`es inherit the declaration
+    ...
+```
+
+and in PowerShell, `try { … } finally { arena lease release $id --resume }`. `arena lease acquire
+--print-id` prints only the id on stdout (the report goes to stderr) so a script can capture it.
+If you do nothing at all, `arena match` and `arena gate` take and release a lease per run, which
+is the floor, not the goal: one lease for the whole battery is still the right shape, because it
+covers the gaps *between* the runs.
 
 or over HTTP:
 
@@ -141,7 +201,7 @@ first instinct is to distrust the lease, not the reading):
   or two arena dirs (`/api/status` → `arena_dir` vs the `ARENA_DIR` your CLI prints from
   `arena info`) before suspecting the lease.
 
-Four more, from the Auditor's review of the lease PR (2026-08-22) — all fixed in code, recorded
+More, from the Auditor's reviews of the lease PR (2026-08-22) — all fixed in code, recorded
 here because each one is a way the ladder could look free when it was not:
 
 - **`op` is required and bodies are key-checked.** `POST /api/control/lease` used to default `op`
@@ -158,9 +218,32 @@ here because each one is a way the ladder could look free when it was not:
 - **A lease implies a paused ladder.** The hub loop checked the pause flag only, so a lease held
   over an un-paused ladder (a `--no-pause` acquire, a flag deleted by hand) had nothing
   reconciling the two. It now re-asserts the pause and writes a `reconciled-pause` row.
-- **Concurrent lease writes are serialised** in-process (the hub is a threading server) and the
-  temp file is uniquely named. Across processes the write is still last-writer-wins, so the
-  runbook's "verify your lease is listed after acquiring" step stands.
+- **Concurrent lease writes are serialised** in-process (the hub is a threading server) *and*
+  across processes, by an `O_EXCL` lock file around every mutation — two shells that each read
+  "no leases" and each wrote themselves in was the cross-process race, and it is closed
+  (`tests/test_arena.py::test_two_process_race_leaves_exactly_one_holder`). The runbook's "verify
+  your lease is listed after acquiring" step still stands, because it costs nothing and catches
+  the case where you are talking to a different arena dir than you think.
+
+And two more from the Auditor's second pass (2026-08-22), both about the lock file itself:
+
+- **The lock file carries its holder's identity.** A critical section that outlives
+  `LOCK_STALE_S` (20 s) has its lock broken as stale so a crashed holder cannot wedge the arena
+  forever — and the old code then let the slow holder delete its *successor's* lock on the way
+  out, so a third process could enter while the second was still mutating (Auditor L-2,
+  reproduced: `A-in, B-in, A-out, B-out`). Now each holder writes a unique token, the break is a
+  **rename** (so exactly one breaker wins it), a holder only removes the lock that still carries
+  its own token, and — the part that actually protects the file — **every write re-checks the
+  token first and fails closed** (`LockLost`) rather than landing on top of the new holder's
+  state. `lock-broken` and `lock-lost` in `lease-log.jsonl` are the evidence; a `lock-lost` row
+  means a process stalled >20 s inside a small JSON read-modify-write, so any timing measured on
+  that host at that moment is suspect.
+- **Probes must point themselves at a scratch arena.** A probe whose docstring said
+  "set `KAGGRI_ARENA_DIR`" but which did not set it itself was run the obvious way and wrote
+  `leases.json`, `lease-log.jsonl` and a `paused` flag into a real arena dir (Auditor L-3). On the
+  Pit host that invocation **pauses the live ladder, and nothing resumes it.** Any script that
+  exercises control state now calls `arena.paths.require_scratch_arena(...)` first, which refuses
+  unless `KAGGRI_ARENA_DIR` was deliberately pointed at a directory holding no live arena state.
 
 **Is the deploy live?** `arena_sha` in `/api/status` may be a *declared* value: on the Pit host the
 hub runs from an untarred tree with no `.git`, so it comes from `KAGGRI_ARENA_SHA` in the systemd

@@ -101,13 +101,17 @@ def run_remote(args) -> int:
         argv += ["--workers", str(args.remote_workers)]
     if args.quiet:
         argv += ["--quiet"]
-    # The node runs `arena match` itself, so the lease guard fires there too -- against the Pit
-    # host's own lease file, which is the one that matters. Forward the declaration so a holder's
-    # own lease is not read as foreign.
-    if getattr(args, "lease", None):
-        argv += ["--lease", args.lease]
-    if getattr(args, "ignore_lease", False):
-        argv += ["--ignore-lease"]
+    # The node runs `arena match` itself, so the guard fires there -- and the node-side run also
+    # TAKES the lease, against the Pit host's own lease file, which is the one that matters.
+    # `cmd_match` skips the local guard entirely for --node runs, so every lease flag has to be
+    # forwarded or it silently does nothing (Auditor L-4: --lease-hub was not).
+    for flag in ("lease", "lease_owner", "lease_hub", "lease_ttl"):
+        val = getattr(args, flag, None)
+        if val:
+            argv += ["--" + flag.replace("_", "-"), str(val)]
+    for flag in ("ignore_lease", "no_lease"):
+        if getattr(args, flag, False):
+            argv += ["--" + flag.replace("_", "-")]
     from . import engine as eng
     remote_cmd = (f'export PATH="$HOME/.local/bin:$PATH" KAGGRI_ARENA_SHA={shlex.quote(eng.arena_git_sha())}; '
                   f"cd {REMOTE_DIR} && uv run python -m arena {' '.join(shlex.quote(a) for a in argv)}")

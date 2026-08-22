@@ -5,11 +5,13 @@ arena.paths), so these tests never touch data/arena/. Run: uv run pytest -q test
 """
 from __future__ import annotations
 
+import contextlib
 import importlib
 import json
 import os
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 import pytest
@@ -1254,6 +1256,100 @@ def test_a_stale_lock_file_is_broken_rather_than_wedging_the_arena(monkeypatch):
         leases.LOCK_PATH.unlink(missing_ok=True)
 
 
+def test_a_broken_holder_does_not_delete_its_successors_lock(monkeypatch):
+    """Auditor L-2, reproduced: A is inside, its lock is broken as stale, B takes its own -- and
+    A must not delete B's lock on the way out (observed A-in, B-in, A-out, B-out, with the lock
+    file gone, so a *third* process could enter while B was still mutating).
+
+    Two threads model two processes: the in-process `_LOCK` is neutered, which is exactly the
+    part the lock FILE exists to cover, and LOCK_STALE_S is compressed from 20 s to 0.4 s so the
+    stall does not have to be real."""
+    import threading as th
+    from arena import leases
+    inside, tokens = [], {}
+    monkeypatch.setattr(leases, "LOCK_STALE_S", 0.4)
+    monkeypatch.setattr(leases, "_LOCK", contextlib.nullcontext())
+
+    def slow():                                    # A: stalls long enough to look abandoned
+        with leases._state_lock("slow"):
+            inside.append("A-in")
+            tokens["A"] = leases._lock_holder()
+            time.sleep(1.2)
+            inside.append("A-out")
+
+    def fast():                                    # B: arrives after A's lock has gone stale
+        time.sleep(0.6)
+        with leases._state_lock("fast"):
+            inside.append("B-in")
+            tokens["B"] = leases._lock_holder()
+            deadline = time.time() + 20             # stay inside until A has left
+            while "A-out" not in inside and time.time() < deadline:
+                time.sleep(0.02)
+            tokens["after_A_left"] = leases._lock_holder()
+            inside.append("B-out")
+
+    ta, tb = th.Thread(target=slow), th.Thread(target=fast)
+    try:
+        ta.start(); tb.start(); ta.join(timeout=30); tb.join(timeout=30)
+        assert inside == ["A-in", "B-in", "A-out", "B-out"], \
+            f"the interleaving under test did not occur ({inside}); the assertions below are void"
+        assert tokens["A"] != tokens["B"], "each holder writes its own identity into the lock"
+        assert tokens["after_A_left"] == tokens["B"], \
+            "B's lock survived A's exit -- the unconditional unlink here is what let a THIRD in"
+        assert not leases.LOCK_PATH.exists(), "and B still cleaned up after itself"
+        events = [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+        assert any(e["event"] == "lock-broken" for e in events[-8:]), "the break is on the log"
+        lost = [e for e in events if e["event"] == "lock-lost"]
+        assert lost and lost[-1]["held_token"] == tokens["A"] and lost[-1]["found"] == tokens["B"], \
+            "and so is the fact that A ran outside its lock -- anything A wrote is suspect"
+    finally:
+        monkeypatch.undo()
+        leases.LOCK_PATH.unlink(missing_ok=True)
+
+
+def test_a_broken_out_holder_cannot_write_over_the_new_holders_state(monkeypatch):
+    """The other half of L-2. No timeout-based lock can stop a pathologically stalled holder from
+    overlapping its successor -- but it can stop the stalled one's WRITE, which is the part that
+    corrupts a lease file. Every write re-checks the lock identity first and fails closed."""
+    from arena import leases
+    monkeypatch.setattr(leases, "_LOCK", contextlib.nullcontext())
+    before = leases.LEASES_PATH.read_text(encoding="utf-8") if leases.LEASES_PATH.exists() else None
+    try:
+        with leases._state_lock("slow"):
+            leases.LOCK_PATH.write_text("successors-token\npid 1 acquire\n", encoding="utf-8")
+            with pytest.raises(leases.LockLost) as e:
+                leases._save({"leases": {"invented": {"expires_at": 1, "acquired_at": 0}}})
+            assert isinstance(e.value, leases.LeaseHeld), "unknown state is HELD state -> 409"
+            assert "NOT applied" in str(e.value)
+        now = leases.LEASES_PATH.read_text(encoding="utf-8") if leases.LEASES_PATH.exists() else None
+        assert now == before, "the refused write left the successor's state exactly as it was"
+        assert leases.LOCK_PATH.read_text(encoding="utf-8").startswith("successors-token"), \
+            "and did not take the successor's lock with it"
+        lost = [e for e in _events() if e["event"] == "lock-lost"]
+        assert any(e["action"] == "save" and e["found"] == "successors-token" for e in lost), \
+            "the refused write is on the log; anything that process reported is suspect"
+    finally:
+        monkeypatch.undo()
+        leases.LOCK_PATH.unlink(missing_ok=True)
+
+
+def test_a_stale_break_is_owned_by_one_breaker_and_leaves_no_debris():
+    """The break is a rename, so two would-be breakers cannot both 'win' it -- and the renamed
+    file is not left lying around next to leases.json."""
+    from arena import leases
+    leases.LOCK_PATH.write_text("some-dead-token\npid 999999 acquire\n", encoding="utf-8")
+    old_stale = leases.LOCK_STALE_S
+    leases.LOCK_STALE_S = -1.0             # not 0.0: a fresh file's age can round to exactly 0
+    try:
+        assert leases._lock_is_stale() is True
+        assert not leases.LOCK_PATH.exists()
+        assert leases._lock_is_stale() is True, "a lock that is already gone just means 'retry'"
+        assert not list(leases.LOCK_PATH.parent.glob(leases.LOCK_PATH.name + ".broken-*"))
+    finally:
+        leases.LOCK_STALE_S = old_stale
+        leases.LOCK_PATH.unlink(missing_ok=True)
+
+
 def test_a_live_lock_fails_closed_instead_of_writing_anyway(monkeypatch):
     from arena import leases
     leases.LOCK_PATH.write_text("pid 999999 acquire\n", encoding="utf-8")
@@ -1339,6 +1435,235 @@ def test_the_guard_fails_closed_when_a_declared_hub_cannot_be_read():
     from arena import leases
     with pytest.raises(leases.LeaseCheckFailed, match="treated as held"):
         leases.guard_run("match", hub_url="http://127.0.0.1:9")   # discard port: never listening
+
+
+# ---------------------------------------- the OTHER direction of the guard (Auditor L-1, 08-22)
+# The guard refused to start *under* a foreign lease but never TOOK one, and said nothing at all
+# when none existed. So the incident was fixed in the form it happened (holder first, intruder
+# second) and not in the mirror form -- a leaseless measured run, then somebody acquires and
+# starts a battery under it -- which was the easy default, because nothing prompted for a lease.
+
+def _stub_run_match(monkeypatch, during=None):
+    """Replace the game loop with a stub, optionally running `during()` inside the run."""
+    from arena import scheduler
+    def fake(agents, **kw):
+        if during is not None:
+            during()
+        return {"rows": [], "agents": [], "mode": kw.get("mode", "screen"),
+                "run_id": "stub-run", "wall_s": 0.0}
+    monkeypatch.setattr(scheduler, "run_match", fake)
+
+
+def _events():
+    from arena import leases
+    return [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+
+
+def test_a_leaseless_match_takes_a_lease_of_its_own(monkeypatch):
+    from arena import cli, hub, leases
+    seen_inside = {}
+
+    def during():
+        seen_inside["leases"] = [dict(l) for l in leases.active()]
+        seen_inside["paused"] = hub.is_paused()
+
+    _stub_run_match(monkeypatch, during)
+    assert leases.active() == [] and not hub.is_paused()
+    assert cli.main(["match", "random", "pass", "--n", "2", "--lease-owner", "engineer"]) == 0
+
+    held = seen_inside["leases"]
+    assert len(held) == 1, "a run that declares no lease now takes one, so nothing can join it"
+    assert held[0]["owner"] == "engineer" and held[0]["shared"] is False
+    assert "match" in held[0]["purpose"] and "random" in held[0]["purpose"], \
+        "the refusal somebody else gets has to say what is running"
+    assert seen_inside["paused"] is True, "a run that plays games also holds the ladder off"
+
+    assert leases.active() == [], "and it releases on the way out -- no TTL wait for the next run"
+    assert not hub.is_paused(), "and puts the ladder back the way it found it"
+    ev = _events()
+    mine = [e["event"] for e in ev
+            if e.get("lease_id") == held[0]["id"] and e["event"] in ("acquire", "release")]
+    assert mine == ["acquire", "release"]
+    assert any(e["event"] == "pause-restored" for e in ev[-4:])
+
+
+def test_a_second_leaseless_run_is_refused_while_the_first_is_playing(monkeypatch):
+    """The mirror form of the 2026-08-21 incident, end to end: two leaseless `arena match`es.
+
+    Before the fix both proceeded silently and shared the host. Now the first one's own lease is
+    what refuses the second."""
+    from arena import cli, leases
+    intruder = {}
+
+    def during():
+        intruder["rc"] = cli.main(["match", "random", "pass", "--n", "2"])
+
+    _stub_run_match(monkeypatch, during)
+    assert cli.main(["match", "random", "pass", "--n", "2", "--lease-owner", "engineer-b"]) == 0
+    assert intruder["rc"] == cli.REFUSED_EXIT, "the second run must be refused, not silently share"
+    refused = [e for e in _events() if e["event"] == "guard-refused"]
+    assert refused and refused[-1]["action"] == "match"
+    assert leases.active() == []
+
+
+def test_no_lease_is_the_documented_opt_out_and_is_logged_loudly(monkeypatch, capsys):
+    """Scripted callers that genuinely want no lease say so once -- and it leaves a trace, so a
+    timing claim from an unleased run can be challenged afterwards."""
+    from arena import cli, leases
+    inside = {}
+    _stub_run_match(monkeypatch, lambda: inside.update(n=len(leases.active())))
+    assert cli.main(["match", "random", "pass", "--n", "2", "--no-lease"]) == 0
+    assert inside["n"] == 0, "--no-lease takes nothing"
+    out = capsys.readouterr().out
+    assert "--no-lease" in out and "contestable" in out
+    un = [e for e in _events() if e["event"] == "run-unleased"]
+    assert un and un[-1]["action"] == "match"
+
+
+def test_a_declared_lease_is_used_rather_than_a_second_one_taken(monkeypatch):
+    """The scripted-battery path: one lease for the whole battery, exported once. Nothing about
+    it changes -- in particular the run must not take a lease under the operator's lease."""
+    from arena import cli, leases
+    lease = leases.acquire("engineer-b", "expB-303 battery", ttl_s=600)
+    inside = {}
+    _stub_run_match(monkeypatch, lambda: inside.update(ids=[l["id"] for l in leases.active()]))
+    try:
+        monkeypatch.setenv(leases.LEASE_ENV, lease["id"])
+        assert cli.main(["match", "random", "pass", "--n", "2"]) == 0
+        assert inside["ids"] == [lease["id"]], "the battery's own lease, and only it"
+        assert [l["id"] for l in leases.active()] == [lease["id"]], \
+            "and the run does not release a lease it did not take"
+    finally:
+        monkeypatch.delenv(leases.LEASE_ENV, raising=False)
+        leases.release(lease["id"])
+
+
+def test_ignore_lease_still_takes_nothing(monkeypatch):
+    """`--ignore-lease` means 'leases are not my problem for this run': it overrides the refusal
+    AND skips the acquire, so it cannot surprise a script by pausing the ladder."""
+    from arena import cli, leases
+    inside = {}
+    _stub_run_match(monkeypatch, lambda: inside.update(n=len(leases.active())))
+    assert cli.main(["match", "random", "pass", "--n", "2", "--ignore-lease"]) == 0
+    assert inside["n"] == 0
+
+
+def test_a_node_run_leases_the_node_not_this_desktop(monkeypatch):
+    """The games run on the node, so the lease that matters is the node's (Auditor L-4). Guarding
+    here would check a lease file no game touches -- and a stale local lease would refuse a
+    perfectly good node run."""
+    from arena import cli, leases, remote
+    calls = {}
+    monkeypatch.setattr(remote, "run_remote", lambda args: calls.setdefault("argv", args) and 0 or 0)
+    stale = leases.acquire("modeler", "something local", ttl_s=600)
+    try:
+        assert cli.main(["match", "random", "pass", "--node", "workflows-box"]) == 0
+        assert "argv" in calls, "the local guard must not stand between a --node run and the node"
+        assert [l["id"] for l in leases.active()] == [stale["id"]], "and it takes nothing here"
+    finally:
+        leases.release(stale["id"])
+
+
+def test_remote_forwards_every_lease_flag(monkeypatch):
+    """Skipping the local guard is only safe if the node-side run gets the whole declaration."""
+    import argparse
+    from arena import remote
+    args = argparse.Namespace(lease="L1", lease_owner="engineer-b", lease_hub="http://h:8765",
+                              lease_ttl=7200, ignore_lease=False, no_lease=True)
+    argv = []
+    for flag in ("lease", "lease_owner", "lease_hub", "lease_ttl"):
+        val = getattr(args, flag, None)
+        if val:
+            argv += ["--" + flag.replace("_", "-"), str(val)]
+    for flag in ("ignore_lease", "no_lease"):
+        if getattr(args, flag, False):
+            argv += ["--" + flag.replace("_", "-")]
+    assert argv == ["--lease", "L1", "--lease-owner", "engineer-b",
+                    "--lease-hub", "http://h:8765", "--lease-ttl", "7200", "--no-lease"]
+    src = (Path(remote.__file__)).read_text(encoding="utf-8")
+    for flag in ("lease_owner", "lease_hub", "lease_ttl", "no_lease"):
+        assert flag in src, f"remote.py must forward --{flag.replace('_', '-')}"
+
+
+def test_a_gate_leases_without_stopping_the_ladder():
+    """`arena gate` plays no games: it needs exclusivity against a battery, but no pause. And a
+    lease that paused the ladder for two seconds and did not resume it would be worse than the
+    problem -- nothing resumes a ladder that `reconcile_pause` stopped."""
+    from arena import hub, leases
+    assert not hub.is_paused()
+    with hub.lease_for_run("auditor", "gate: cand vs B", ttl_s=60, pause=False) as rec:
+        assert [l["id"] for l in leases.active()] == [rec["id"]]
+        assert not hub.is_paused(), "a read does not stop the ladder"
+    assert leases.active() == [] and not hub.is_paused()
+
+
+def test_a_run_lease_leaves_a_ladder_that_was_already_paused_paused():
+    """Restoring means 'as we found it', not 'running'. A ladder somebody else stopped is theirs."""
+    from arena import hub, leases
+    hub.set_paused(True)
+    try:
+        with hub.lease_for_run("engineer", "match: screen a b", ttl_s=60):
+            assert hub.is_paused()
+        assert hub.is_paused(), "we did not pause it, so it is not ours to resume"
+        assert leases.active() == []
+    finally:
+        hub.set_paused(False)
+
+
+def test_a_run_lease_is_released_even_when_the_run_raises():
+    from arena import hub, leases
+    with pytest.raises(ZeroDivisionError):
+        with hub.lease_for_run("engineer", "match: boom", ttl_s=60):
+            1 / 0
+    assert leases.active() == [], "a crashed run must not leave the Pit leased for its whole TTL"
+    assert not hub.is_paused()
+
+
+def test_leases_held_releases_on_every_exit_path():
+    """The Python half of the EXIT-trap convention."""
+    from arena import leases
+    with leases.held("ops", "ingest window", ttl_s=60, shared=True) as rec:
+        assert [l["id"] for l in leases.active()] == [rec["id"]]
+    assert leases.active() == []
+    with pytest.raises(KeyboardInterrupt):
+        with leases.held("ops", "ingest window", ttl_s=60) as rec:
+            raise KeyboardInterrupt
+    assert leases.active() == [], "Ctrl-C is the case that actually happens"
+    with leases.held("ops", "vanishing", ttl_s=60) as rec:
+        leases.release(rec["id"])                  # somebody force-broke it under us
+    assert any(e["event"] == "release-noop" for e in _events()[-3:]), \
+        "releasing a lease that is already gone is logged, not raised out of a finally"
+
+
+# ------------------------------------------- probe isolation (Auditor L-3, 2026-08-22)
+# The auditor ran a probe of mine the way its own docstring documented, minus the env var it did
+# not set itself; it wrote leases.json, lease-log.jsonl and a `paused` flag into a real arena dir.
+# On the Pit host that invocation pauses the live ladder, and nothing resumes it.
+
+def test_require_scratch_arena_refuses_a_live_arena_dir(tmp_path, monkeypatch):
+    from arena import paths as P
+    monkeypatch.delenv("KAGGRI_ARENA_DIR", raising=False)
+    with pytest.raises(P.LiveArenaRefused, match="default arena dir"):
+        P.require_scratch_arena("this probe")
+
+    monkeypatch.setenv("KAGGRI_ARENA_DIR", str(tmp_path / "live"))
+    live = tmp_path / "live"
+    live.mkdir()
+    (live / "arena.sqlite").write_text("not really", encoding="utf-8")
+    monkeypatch.setattr(P, "ARENA_DIR", live)
+    with pytest.raises(P.LiveArenaRefused, match="live arena state"):
+        P.require_scratch_arena("this probe")
+
+    scratch = tmp_path / "scratch"
+    monkeypatch.setenv("KAGGRI_ARENA_DIR", str(scratch))
+    monkeypatch.setattr(P, "ARENA_DIR", scratch)
+    monkeypatch.setattr(P, "AGENTS_DIR", scratch / "agents")
+    monkeypatch.setattr(P, "REPLAYS_DIR", scratch / "replays")
+    monkeypatch.setattr(P, "RUNS_DIR", scratch / "runs")
+    monkeypatch.setattr(P, "PROGRESS_DIR", scratch / "progress")
+    assert P.require_scratch_arena("this probe") == scratch
+    assert (scratch / P.SCRATCH_MARKER).exists()
+    assert P.require_scratch_arena("this probe") == scratch, "a marked scratch dir is reusable"
 
 
 # --------------------------------------------------- verify baselines (Auditor finding P21-3)

@@ -47,6 +47,20 @@ Since 2026-08-22 the lease is a real lock, not a warning light: a second `acquir
 You no longer have to *notice* a foreign lease — but you do have to declare your own with
 `--lease <id>` or `KAGGRI_LEASE`, or the guard will read it as somebody else's.
 
+A run that declares no lease **takes one for itself** and releases it when it ends, so two
+leaseless runs can no longer collide either. That is a floor, not a substitute for this
+checklist: a per-run lease does not cover the gaps between your runs, and it does not wait for
+`phase: paused` before the games start. Take the arm's lease yourself, wait for the ladder to be
+quiet, and export `KAGGRI_LEASE`.
+
+If the arm is driven by a script, take the lease through `scripts/lease.sh` so a Ctrl-C or a
+failed command still releases it:
+
+```bash
+source scripts/lease.sh
+kaggri_lease_acquire <you> "<exp id + what>" 3600     # + trap … EXIT INT TERM
+```
+
 - Wait for `phase: paused` — the ladder finishes the round it is already in.
 - **Gate on loadavg, never on `pgrep -f <pattern>`.** A waiter written as
   `while pgrep -f ppo_train.py; do sleep 30; done` matches its own command line and every other
@@ -82,6 +96,10 @@ uv run python -m arena lease release <lease-id> --resume
 Renew (`arena lease renew <id>`) rather than letting a lease lapse mid-battery: an expired lease
 stops blocking the ladder silently, and the next arm is contaminated without anyone doing
 anything wrong.
+
+And release it from a **trap**, not from the last line of the script. Three separate evenings
+have now ended with a lease held by a process that died — `scripts/lease.sh` (shell),
+`with arena.leases.held(...)` (Python), `try/finally` (PowerShell).
 
 ## Conflicts
 

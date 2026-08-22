@@ -32,6 +32,16 @@ p99 7.2 ms quiesced -- and the arena scores an over-budget turn as a loss regard
   * `guard_run` makes `arena match` / `arena gate` **refuse to start** while somebody else holds
     a lease. A lease that does not exclude the thing it exists to protect against is a warning
     light, not a lock.
+  * and, since the guard only closed one direction (Auditor L-1), a run that declares no lease
+    now **takes one** (`hub.lease_for_run`, released on every exit path) instead of proceeding
+    silently. Two leaseless runs colliding was the same incident with the actors swapped, and it
+    was the easy default because nothing ever prompted for a lease. `--no-lease` is the opt-out
+    and is logged as `run-unleased`.
+
+Anything that takes a lease must release it on **every** exit path, including Ctrl-C: use
+`leases.held(...)` in Python or `scripts/lease.sh` (an EXIT trap) in a shell script. A lease left
+behind by a dead process holds the ladder down and refuses everybody else's runs until its TTL
+lapses.
 
 Every acquire/renew/release/expiry/force-break/refusal is appended to
 `data/arena/lease-log.jsonl` -- that log is the evidence for voiding (or not voiding) a
@@ -63,6 +73,7 @@ LOCK_STALE_S = 20.0             # a lock file older than this belonged to a dead
 # Env fallbacks so a battery script exports once instead of threading flags through every command.
 LEASE_ENV = "KAGGRI_LEASE"      # the lease id *I* hold -- my own lease is not a foreign lease
 HUB_ENV = "KAGGRI_PIT_HUB"      # also check this hub's leases before starting a run
+OWNER_ENV = "KAGGRI_LEASE_OWNER"  # who to name as owner on a lease taken for you (see default_owner)
 
 # The whole file is a read-modify-write, and the hub serves on a ThreadingHTTPServer, so two
 # requests could interleave between _load and _save and drop a lease. `_LOCK` closes that window
@@ -116,6 +127,25 @@ class LeaseLockTimeout(LeaseStateUnreadable):
     def __init__(self, path, waited: float, action: str = "read"):
         LeaseStateUnreadable.__init__(
             self, path, TimeoutError(f"another process held the lease lock for {waited:.1f}s"), action)
+
+
+class LockLost(LeaseStateUnreadable):
+    """This process was inside the state lock when the lock was broken as stale.
+
+    Subclasses LeaseStateUnreadable (and so LeaseHeld) for the usual reason: "I could not
+    establish the lease state" must read as HELD everywhere. The mutation was refused, not
+    half-applied -- the write never happened.
+    """
+
+    def __init__(self, path, action: str, held: str, found: str | None):
+        self.leases = []
+        self.path = str(path)
+        RuntimeError.__init__(
+            self, f"{action} refused: this process held the lease lock {held} but the lock file "
+                  f"now holds {found!r} -- it was broken as stale (more than {LOCK_STALE_S:.0f}s "
+                  f"inside a lease read-modify-write) and somebody else owns it. The write was "
+                  f"NOT applied. Retry; if this repeats, the host is stalling badly enough that "
+                  f"any timing measured on it is suspect (see `lock-lost` in lease-log.jsonl).")
 
 
 class LeaseConflict(LeaseHeld):
@@ -193,6 +223,7 @@ def _load(action: str = "read") -> dict:
 
 def _save(state: dict) -> None:
     ensure_dirs()
+    _refuse_if_lock_lost("save")
     # unique temp name: a fixed one is a second race between two writers (F3)
     tmp = LEASES_PATH.with_name(f"{LEASES_PATH.name}.tmp-{os.getpid()}-{uuid.uuid4().hex[:6]}")
     try:
@@ -203,12 +234,62 @@ def _save(state: dict) -> None:
             tmp.unlink(missing_ok=True)
 
 
+_HELD = threading.local()       # the lock token this thread is currently inside, if any
+
+
+def _refuse_if_lock_lost(action: str) -> None:
+    """Refuse a write whose lock was broken out from under it.
+
+    Breaking a stale lock lets a second holder in while the first is still (very slowly) inside;
+    no timeout-based lock can avoid that, and 20 s inside a small JSON read-modify-write needs a
+    pathological stall. What it CAN avoid is the slow holder's write landing on top of the new
+    holder's state -- which is the part that actually corrupts a lease file. So the last thing
+    before every write is: is this still my lock? If not, the mutation fails closed
+    (LeaseLockTimeout is a LeaseHeld: "I could not establish the state" reads as HELD, never as
+    free) and `lock-lost` records that it happened.
+    """
+    token = getattr(_HELD, "token", None)
+    if token is None:
+        return                                   # not inside _state_lock (a pure read path)
+    found = _lock_holder()
+    if found == token:
+        return
+    log_event("lock-lost", {"action": action, "pid": os.getpid(), "held_token": token,
+                            "found": found,
+                            "note": "the lock was broken as stale while this mutation was inside "
+                                    "it; the write was refused rather than applied over the new "
+                                    "holder's state"})
+    raise LockLost(LOCK_PATH, action, token, found)
+
+
+def _lock_token(action: str) -> str:
+    """The identity written into a lock file, first line, one line.
+
+    Host and pid make it readable in a forensic dump; the uuid is what makes it *unique* -- a pid
+    is reused, and "pid 4242 acquire" from a dead process must never be mistaken for our own lock.
+    """
+    return f"{socket.gethostname()}:{os.getpid()}:{uuid.uuid4().hex}"
+
+
+def _lock_holder() -> str | None:
+    """The token in the current lock file, or None if there is no lock file."""
+    try:
+        return LOCK_PATH.read_text(encoding="utf-8").splitlines()[0].strip()
+    except (OSError, IndexError):
+        return None
+
+
 def _lock_is_stale() -> bool:
-    """True (and the lock is removed) when the lock file outlived any plausible holder.
+    """True (and the lock is broken) when the lock file outlived any plausible holder.
 
     Deliberately uses the real clock, not `_epoch`: tests travel in time to expire *leases*, and
     that must not make the lock look abandoned. A crashed holder would otherwise wedge every
     mutation forever, which is the failure mode a lock file is famous for.
+
+    The break is a **rename**, not an unlink (Auditor L-2, 2026-08-22): `os.replace` to a unique
+    name is atomic, so when two processes decide the same lock is stale exactly one of them owns
+    the break and the loser simply retries. Unlinking let both "break" it and then both create,
+    and the evidence of the break disappeared with the file.
     """
     try:
         age = time.time() - os.path.getmtime(LOCK_PATH)
@@ -216,11 +297,15 @@ def _lock_is_stale() -> bool:
         return True                                  # it went away on its own: retry immediately
     if age <= LOCK_STALE_S:
         return False
+    holder = _lock_holder() or "?"
+    dest = LOCK_PATH.with_name(f"{LOCK_PATH.name}.broken-{time.strftime('%Y%m%d-%H%M%S')}-"
+                               f"{os.getpid()}-{uuid.uuid4().hex[:6]}")
     try:
-        holder = LOCK_PATH.read_text(encoding="utf-8").strip()
+        os.replace(LOCK_PATH, dest)
     except OSError:
-        holder = "?"
-    LOCK_PATH.unlink(missing_ok=True)
+        return True                                  # somebody else broke it first: retry
+    with contextlib.suppress(OSError):
+        dest.unlink()
     log_event("lock-broken", {"held_by": holder, "age_s": round(age, 1), "breaker_pid": os.getpid()})
     return True
 
@@ -231,10 +316,24 @@ def _state_lock(action: str = "mutate"):
 
     Order is always `_LOCK` then the lock file, and no critical section nests inside another, so
     there is nothing to deadlock on. Only mutations take it -- `status()`/`active()` reads stay
-    lock-free so a stale lock cannot wedge the dashboard's poll.
+    lock-free so a stale lock cannot wedge the dashboard's poll (a *jammed* one still fails the
+    prune closed, via LeaseLockTimeout -- see `active()`).
+
+    **Release is identity-checked** (Auditor L-2, 2026-08-22). The first version unlinked
+    unconditionally, so a critical section that outlived LOCK_STALE_S had its lock broken, a
+    second process took its own, and the first then deleted the *second's* lock on the way out --
+    letting a third in while the second was still mutating (observed A-in, B-in, A-out, B-out).
+    Now the lock file carries a unique token and we only remove the file that still carries ours;
+    finding somebody else's is logged as `lock-lost`, which is the forensic marker that a
+    mutation ran outside the lock and any lease written around it is suspect.
+
+    The residual window -- read our token, and be broken before the unlink lands -- is microseconds
+    against a 20 s staleness threshold, i.e. strictly smaller than the window it replaces, and it
+    is bounded by the same `lock-lost` evidence on the next holder's way out.
     """
     with _LOCK:
         ensure_dirs()
+        token = _lock_token(action)
         t0 = time.monotonic()
         while True:
             try:
@@ -247,14 +346,30 @@ def _state_lock(action: str = "mutate"):
                 if waited > LOCK_WAIT_S:
                     raise LeaseLockTimeout(LOCK_PATH, waited, action)
                 time.sleep(0.01)
+        previous = getattr(_HELD, "token", None)
         try:
             try:
-                os.write(fd, f"pid {os.getpid()} {action} {time.strftime('%Y-%m-%dT%H:%M:%S')}\n".encode())
+                os.write(fd, f"{token}\npid {os.getpid()} {action} "
+                             f"{time.strftime('%Y-%m-%dT%H:%M:%S')}\n".encode())
             finally:
                 os.close(fd)
+            _HELD.token = token
             yield
         finally:
-            LOCK_PATH.unlink(missing_ok=True)
+            _HELD.token = previous
+            _release_lock(token, action)
+
+
+def _release_lock(token: str, action: str) -> None:
+    """Drop the lock file, but only if it is still the one we created."""
+    holder = _lock_holder()
+    if holder == token:
+        LOCK_PATH.unlink(missing_ok=True)
+        return
+    log_event("lock-lost", {"action": action, "pid": os.getpid(), "held_token": token,
+                            "found": holder,
+                            "note": "our lock was broken as stale while we were inside it; the "
+                                    "file now belongs to somebody else and was left alone"})
 
 
 def quarantine(actor: str, reason: str = "force") -> str | None:
@@ -458,6 +573,53 @@ def release(lease_id: str, reason: str = "released") -> dict:
     return _view(rec, now)
 
 
+@contextlib.contextmanager
+def held(owner: str, purpose: str, ttl_s: int = DEFAULT_TTL_S, shared: bool = False,
+         reason: str = "run finished"):
+    """Hold a lease for the duration of a block, and release it however the block ends.
+
+    This is the Python half of the EXIT-trap convention (`scripts/lease.sh` is the shell half):
+    every long-running thing that takes a lease must release it on **every** exit path, including
+    an exception and a Ctrl-C, or the next operative finds the Pit leased by a process that died
+    an hour ago and has to wait out the TTL.
+
+        with leases.held("engineer-b", "expB-303 gate battery", ttl_s=3600) as lease:
+            os.environ[leases.LEASE_ENV] = lease["id"]     # child `arena match`es inherit it
+            ...
+
+    Releasing a lease that is already gone (it lapsed, or somebody force-broke it) is not an
+    error -- it is logged and swallowed, because raising in a finally would hide whatever the
+    block was actually doing.
+    """
+    rec = acquire(owner, purpose, ttl_s=ttl_s, shared=shared)
+    try:
+        yield rec
+    finally:
+        try:
+            release(rec["id"], reason=reason)
+        except KeyError:
+            log_event("release-noop", {"lease_id": rec["id"], "owner": owner,
+                                       "reason": "already gone at release (lapsed or force-broken)"})
+
+
+def default_owner() -> str:
+    """Who to name as the owner when nobody said (`KAGGRI_LEASE_OWNER`, else user@host).
+
+    A lease with a meaningless owner is only half a lease -- the whole point of the refusal
+    message is that it tells the next operative who to ask -- so operatives should export
+    KAGGRI_LEASE_OWNER (their operative id) on the Pit host. user@host is the honest fallback.
+    """
+    named = (os.environ.get(OWNER_ENV) or "").strip()
+    if named:
+        return named
+    try:
+        import getpass
+        user = getpass.getuser()
+    except Exception:                               # noqa: BLE001 - no name is not a failure
+        user = "unknown"
+    return f"{user}@{socket.gethostname()}"
+
+
 def break_all(actor: str, reason: str = "force") -> list[dict]:
     """Release every live lease on behalf of `actor` (the force-resume path). Always logged."""
     actor = (actor or "").strip()
@@ -509,6 +671,10 @@ def guard_run(action: str, lease_id: str | None = None, hub_url: str | None = No
     This is the half of the lock the first version was missing. `acquire` now stops a second
     lease, but the 2026-08-21 contamination did not need a second lease -- it only needed a second
     `arena match`, and nothing checked. So `arena match` and `arena gate` call this at run start.
+
+    It is only the *refusal* half. Refusing under a foreign lease and then running leaseless
+    leaves the mirror hole open (Auditor L-1), so the CLI follows a clean guard with
+    `hub.lease_for_run` unless the caller declared a lease or opted out -- see `cli._run_lease`.
 
       lease_id  the lease you hold (CLI `--lease`, env KAGGRI_LEASE): yours is not foreign
       hub_url   also consult a remote hub (CLI `--lease-hub`, env KAGGRI_PIT_HUB) for the case
