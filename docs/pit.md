@@ -156,6 +156,43 @@ ref from origin — needs git access on the hub machine) and the new agent start
 someone must explicitly activate it before the ladder will play it. Teams' flow: commit the
 frozen generation under `agents/team_a|team_b/`, push, register by ref, review, activate.
 
+### Moving ONE agent onto the hub — `arena push`
+
+`register --git-ref` needs a git clone with access to origin, and the hub's tree
+(`~/kaggri-arena/repo`) is an untarred bundle, not a repo — so on the Pit host it cannot work.
+The answer is **not** a registry ship: `arena/remote.py`'s bundle tars the *sender's*
+`data/arena/registry.json` and extracts it over the hub's, which replaces the hub's champion
+pointers, roster and flags with the shipping clone's (issue #15 — it cost Team A's champion
+pointer on 2026-08-20). `arena push` is the narrow, supported path:
+
+```bash
+# from the clone that registered the agent
+uv run python -m arena push TeamB-Millrace-strawberry@h9d854a3d8c --hub $PIT --dry-run
+uv run python -m arena push TeamB-Millrace-strawberry@h9d854a3d8c --hub $PIT
+```
+
+What it does, and what it deliberately does not:
+
+* uploads **one snapshot** (`data/arena/agents/<id>/`, `__pycache__` excluded) and merges
+  **one registry key**. Every other agent entry, every champion pointer and every
+  active/benched/retired flag on the hub is untouched — and the report prints agents
+  before/after plus `lost`/`gained` and `champions_unchanged` so you can prove it rather than
+  trust it.
+* **content-hash verified end to end**: the sender hashes `(path, bytes)` of every file, the hub
+  re-hashes what arrived *and* what it wrote to disk, and the CLI compares. A dropped weights
+  file or a truncated transfer exits 1 instead of registering a half agent.
+* the pushed agent arrives **benched**, exactly as `register` does. Activate it explicitly.
+* an id that already exists is refused with **409**. Ids are content-addressed, so the same id
+  is meant to be the same bytes; `--force` is the deliberate override — it backs the old
+  snapshot up to `agents/<id>.superseded-<ts>` and appends the supersession to
+  `data/arena/push-log.jsonl`. Those backups are never read again: prune them when the disk
+  matters.
+* limits: 400 files, 32 MB total. A snapshot is code plus weights; a dataset does not belong in
+  an agent.
+
+The ids match across clones because the sender's entry travels with the files, which is what
+makes gate evidence measured in a clone transferable to the hub's rows.
+
 ### Security (read before widening anything)
 
 Registering an agent **is scheduling code for execution on this host**: `kaggle_environments`
@@ -169,6 +206,14 @@ paths / inline `code_b64` are OFF by default; `"allow_unsafe_register": true` in
 `data/arena/hub.json` re-enables them for local dev only — never set it on the node. The rest
 of `/api/control/*` mutates arena state only (pause/bench/champion), which is the accepted
 tailnet-trust level.
+
+`push` sits at the same trust level as `register`, and the same rule applies to it: it schedules
+code for execution on this host, so a pushed agent is **benched on arrival** and somebody has to
+activate it. It is narrower than `allow_unsafe_register` in one way that matters — it can only
+ever write inside `data/arena/agents/<the pushed id>/` (absolute paths, drive letters, `..` and
+any root that is not the agent's own id are refused), and it cannot touch the registry beyond its
+own key. It is wider in another: the bytes did not go through a commit. Review the agent in its
+branch before pushing it, and remember that the tailnet is still the auth boundary.
 
 ## Running it on workflows-box (16 vCPU)
 
@@ -231,8 +276,8 @@ re-ships the tree as a side effect, or ship explicitly with scp + `tar xzf` per 
 Then `systemctl --user restart pit`. Once the node has read access to the GitHub repo (Ops),
 replace with `git -C ~/kaggler/repo pull && systemctl --user restart pit` and point the unit's
 WorkingDirectory there. **Note:** `register --git-ref` on the hub also needs that git access;
-until then register from the desktop (the registry + snapshot can be shipped the same way) or
-use the API's `code_b64`/local-path form.
+until then register in your clone and move the agent with **`arena push`** (above). Do not ship
+the registry — that is issue #15, and it silently replaces the hub's champions and roster.
 
 ## Ladder discipline
 

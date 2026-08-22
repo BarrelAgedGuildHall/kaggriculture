@@ -143,6 +143,10 @@ uv run python -m arena relabel old@4c859c9 new@12a5398        # rename an id acr
                                                               # rows in one transaction (game ids are recomputed);
                                                               # --dry-run first. Use when the LABEL was wrong --
                                                               # re-registering instead would orphan the rows.
+uv run python -m arena push v1 --hub http://HOST:8765               # upload ONE agent snapshot to a hub:
+                                                              # content-hash verified end to end, ONE registry
+                                                              # key merged, champions/roster untouched, arrives
+                                                              # benched. Never ship the registry (issue #15).
 uv run python -m arena export --out data/arena/games.csv
 ```
 
