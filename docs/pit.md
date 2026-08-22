@@ -246,7 +246,23 @@ use the API's `code_b64`/local-path form.
   other games it excluded on those seeds. Screen/confirm/gate remain CLI commands
   (`arena match --mode screen|confirm|round-robin`, `arena gate`). Promotion is still gate-based:
   0 crashes, 0 timeouts, p99 ≤ 150 ms, Wilson lower bound > 50 % vs the team champion over the
-  confirm set (seeds 1000–1199, 400 games).
+  gate's band (default `confirm` = seeds 1000–1199, 400 games).
+- **Seed bands are declared, and every gate states the one it used.** `paths.SEED_BANDS` names
+  them (`screen` 0–199, `confirm` 1000–1199, `ladder` 2000+); `arena gate --band` takes a name or
+  an explicit `lo-hi`, `arena match --seeds <band>` takes the same names, and
+  `KAGGRI_SEED_BANDS="confirm=3000-3199,confirmB=4000-4199"` rotates or adds bands without a code
+  change. This exists because a single hardcoded confirm band is a **shared blind spot**: on
+  2026-08-21 a +17.2pp read on 1000–1199 pooled to level (53.0 % [44.3–61.7]) over three disjoint
+  bands, and every gate in the org's history had inherited the same 200 seeds. Pool ≥ 2 disjoint
+  bands before comparing across families and report the between-band spread beside the CI.
+- **`arena verify` — do the runs still own their games?** `game_id` is
+  `sha1(p0|p1|seed|engine)` and rows upsert, which is what lets a clean node run supersede a noisy
+  local one and remote deltas merge. The cost is that re-running a pairing takes the earlier run's
+  rows: on 2026-08-21 run `20260821-080254-e57458` recorded `n_games=400` with **zero** games left
+  in the store. Replaced rows from a *different* run are now copied into the `superseded` ledger
+  first, and `arena verify` (exit 1 on failure, `--superseded N` to print the lost measurements)
+  reports every run whose games no longer add up plus any game whose `run_id` has no run row.
+  Run it before quoting a stored run, and after importing a remote delta.
 - Seat note (Auditor, 2026-08-19): the seat asymmetry the side-swap cancels comes from
   `_end_of_day` drawing weed-spawn randomness sequentially per farm index from one shared RNG —
   not from action resolution order.

@@ -909,3 +909,165 @@ def test_status_reports_both_identities():
     from arena import serve as srv
     st = srv.api_status()
     assert st["arena_code_hash"] and st["arena_sha_source"] in ("env", "git", "none")
+# ----------------------------------------------------------------------------- seed bands
+def test_seed_bands_are_declared_and_resolvable():
+    """The confirm band used to be a module constant, so every gate in the org's history
+    inherited the same 200 seeds. It is a named, overridable band now (and the defaults are
+    unchanged: screen 0-199, confirm 1000-1199, ladder 2000+)."""
+    from arena.paths import SEED_BANDS, band_of, band_seeds, bands_of, resolve_band
+    assert SEED_BANDS["screen"] == (0, 199)
+    assert SEED_BANDS["confirm"] == (1000, 1199)
+    assert SEED_BANDS["ladder"] == (2000, None)
+    assert resolve_band("confirm") == (1000, 1199)
+    assert resolve_band("3000-3199") == (3000, 3199)
+    assert resolve_band("5000-") == (5000, None)
+    with pytest.raises(ValueError, match="unknown seed band"):
+        resolve_band("nope")
+    assert band_seeds("confirm", 3) == [1000, 1001, 1002]
+    assert band_of(0) == "screen" and band_of(1100) == "confirm" and band_of(9999) == "ladder"
+    assert band_of(500) is None
+    assert bands_of([1, 1100, 1101]) == ["screen", "confirm"]
+    assert bands_of([500]) == ["unbanded"]
+
+
+def test_band_seeds_refuses_to_run_off_the_end_of_a_band():
+    """Silently borrowing seeds from the next band is how a held-out set stops being held out."""
+    from arena.paths import band_seeds
+    assert len(band_seeds("confirm", 200)) == 200
+    with pytest.raises(ValueError, match="holds 200 seeds"):
+        band_seeds("confirm", 201)
+
+
+def test_seed_bands_can_be_overridden_by_env(monkeypatch):
+    import importlib
+
+    import arena.paths as p
+    monkeypatch.setenv("KAGGRI_SEED_BANDS", "confirm=3000-3199,confirmB=4000-4199")
+    try:
+        importlib.reload(p)
+        assert p.SEED_BANDS["confirm"] == (3000, 3199)
+        assert p.SEED_BANDS["confirmB"] == (4000, 4199)
+        assert p.CONFIRM_SEED_BASE == 3000
+        assert p.SEED_BANDS["screen"] == (0, 199), "unnamed bands keep their defaults"
+    finally:
+        monkeypatch.delenv("KAGGRI_SEED_BANDS")
+        importlib.reload(p)
+        assert p.SEED_BANDS["confirm"] == (1000, 1199)
+
+
+def test_parse_seeds_accepts_any_declared_band():
+    assert scheduler.parse_seeds("ladder", "screen", 6) == [2000, 2001, 2002]
+    assert scheduler.parse_seeds("confirm", "screen", 4) == [1000, 1001]
+
+
+def test_gate_states_the_band_it_ran_on(tmp_path):
+    """Every gate result names its band -- a pooled claim is a claim about which bands."""
+    db = tmp_path / "band.sqlite"
+    con = store.connect(db)
+    champ = registry.register_file(TRIVIAL, "band-champ", "B")
+    f = tmp_path / "bandcand.py"
+    f.write_text("def agent(obs):\n    return {'farmer': ['PASS'], 'hands': [], 'market': []}\n# band\n",
+                 encoding="utf-8")
+    cand = registry.register_file(f, "band-cand", "B")
+    registry.set_champion("B", champ["id"])
+    base = {"run_id": "b", "mode": "confirm", "steps": 720, "engine": "1.32.7", "arena_sha": "x", "host": "t",
+            "status0": "DONE", "status1": "DONE", "over_budget0": 0, "over_budget1": 0, "error0": "", "error1": "",
+            "harness_error": "", "steps_played": 720, "wall_s": 1.0, "replay_path": "", "p50_0": 1, "p50_1": 1}
+    rows = []
+    for seed in list(range(1000, 1005)) + list(range(3000, 3005)):
+        rows.append({**base, **_g(cand["id"], champ["id"], 1.0, seed),
+                     "game_id": scheduler.game_id(cand["id"], champ["id"], seed, "1.32.7")})
+    store.upsert_rows(con, rows)
+    con.close()
+    res = gates.evaluate("band-cand", team="B", db_path=db, min_games=5)
+    assert res["band"] == "confirm" and (res["seed_lo"], res["seed_hi"]) == (1000, 1199)
+    assert res["n"] == 5, "the default band must not silently reach into another band"
+    assert "band confirm" in res["checks"]["enough_games"]["detail"]
+    assert "band confirm" in gates.format_result(res)
+    other = gates.evaluate("band-cand", team="B", db_path=db, band="3000-3199", min_games=5)
+    assert other["n"] == 5 and other["band"] == "3000-3199"
+    assert other["pass"] and res["pass"], "the same agent, two disjoint bands -- what pooling needs"
+
+
+# ----------------------------------------------------------------------------- NB-6 integrity
+def _row(run_id, seed=7, result0=1.0, **over):
+    r = {**_g("p0@1", "p1@1", result0, seed), "game_id": scheduler.game_id("p0@1", "p1@1", seed, "1.32.7"),
+         "run_id": run_id, "mode": "confirm", "steps": 720, "engine": "1.32.7", "arena_sha": "s", "host": "h",
+         "status0": "DONE", "status1": "DONE", "over_budget0": 0, "over_budget1": 0, "error0": "", "error1": "",
+         "harness_error": "", "steps_played": 720, "wall_s": 1.0, "replay_path": "", "p50_0": 1, "p50_1": 1}
+    r.update(over)
+    return r
+
+
+def test_rerunning_a_pairing_keeps_the_measurement_it_replaces(tmp_path):
+    """NB-6: game_id is sha1(p0|p1|seed|engine) and rows upsert, so a re-run silently destroyed the
+    earlier measurement. The upsert stays (it is what makes remote deltas merge); what it replaces
+    is now kept in the `superseded` ledger."""
+    con = store.connect(tmp_path / "nb6.sqlite")
+    store.upsert_rows(con, [_row("run-A", result0=1.0, money0=500.0)])
+    store.upsert_rows(con, [_row("run-B", result0=0.0, money0=100.0)])
+    games = store.all_games(con)
+    assert len(games) == 1 and games[0]["run_id"] == "run-B", "the upsert semantics are unchanged"
+    old = store.superseded_rows(con)
+    assert len(old) == 1
+    assert old[0]["run_id"] == "run-A" and old[0]["superseded_by_run"] == "run-B"
+    assert old[0]["result0"] == 1.0 and old[0]["money0"] == 500.0
+    con.close()
+
+
+def test_same_run_rewrites_are_not_supersessions(tmp_path):
+    con = store.connect(tmp_path / "same.sqlite")
+    store.upsert_rows(con, [_row("run-A")])
+    store.upsert_rows(con, [_row("run-A", result0=0.5)])   # progress rewrite / re-import
+    assert store.superseded_rows(con) == []
+    con.close()
+
+
+def test_integrity_report_finds_the_orphaned_run(tmp_path):
+    """The 2026-08-21 case: a run row claiming n_games=400 with zero games left in the store."""
+    con = store.connect(tmp_path / "orphan.sqlite")
+    store.upsert_rows(con, [_row("run-A", seed=s) for s in range(4)])
+    store.record_run(con, {"run_id": "run-A", "mode": "confirm", "agents": "a,b", "n_games": 4,
+                           "seeds": "0-3", "engine": "1.32.7", "arena_sha": "s", "host": "h",
+                           "workers": 2, "wall_s": 1.0, "started_at": "2026-08-21T08:02:54",
+                           "finished_at": "2026-08-21T08:12:00"})
+    rep = store.integrity_report(con)
+    assert rep["ok"] and rep["incomplete_runs"] == []
+
+    store.upsert_rows(con, [_row("run-B", seed=s) for s in range(4)])
+    store.record_run(con, {"run_id": "run-B", "mode": "confirm", "agents": "a,b", "n_games": 4,
+                           "seeds": "0-3", "engine": "1.32.7", "arena_sha": "s", "host": "h",
+                           "workers": 2, "wall_s": 1.0, "started_at": "2026-08-21T09:00:00",
+                           "finished_at": "2026-08-21T09:10:00"})
+    rep = store.integrity_report(con)
+    assert not rep["ok"]
+    bad = rep["incomplete_runs"]
+    assert len(bad) == 1 and bad[0]["run_id"] == "run-A"
+    assert bad[0]["n_games"] == 4 and bad[0]["stored"] == 0 and bad[0]["missing"] == 4
+    assert bad[0]["superseded_by"] == {"run-B": 4}
+    assert rep["superseded_total"] == 4
+    assert len(store.superseded_rows(con, run_id="run-A")) == 4
+    con.close()
+
+
+def test_integrity_report_flags_games_with_no_run_row(tmp_path):
+    con = store.connect(tmp_path / "noRun.sqlite")
+    store.upsert_rows(con, [_row("run-ghost")])
+    rep = store.integrity_report(con)
+    assert rep["orphan_games"] == {"run-ghost": 1} and not rep["ok"]
+    con.close()
+
+
+def test_import_records_supersession_across_stores(tmp_path):
+    """A node run superseding a noisy local one is intended behaviour -- it just has to leave a
+    trace, so a contaminated arm can be told apart from a clean re-run afterwards."""
+    local = store.connect(tmp_path / "local.sqlite")
+    node = store.connect(tmp_path / "node.sqlite")
+    store.upsert_rows(local, [_row("local-run", result0=0.0, p99_0=900.0)])
+    store.upsert_rows(node, [_row("node-run", result0=1.0, p99_0=12.0)])
+    node.close()
+    store.import_db(local, tmp_path / "node.sqlite")
+    assert store.all_games(local)[0]["p99_0"] == 12.0
+    old = store.superseded_rows(local)
+    assert len(old) == 1 and old[0]["run_id"] == "local-run" and old[0]["p99_0"] == 900.0
+    local.close()

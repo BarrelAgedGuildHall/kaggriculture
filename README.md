@@ -16,6 +16,7 @@ Kaggler's entry for the Kaggle **Kaggriculture** simulation competition
 | `scripts/make_submission.py` | Build `dist/main.py` (or `dist/submission.tar.gz`) and verify it plays standalone in a fresh venv. |
 | `scripts/engine_watch.py` | Exit 1 if PyPI has a newer `kaggle-environments` than our pin (daily cron / CI). |
 | `arena/` | **The internal arena** — registry, paired-seed scheduler, SQLite store, BT/Elo leaderboard, gates, remote runs. See "Arena" below. |
+| `tools/` | **Shared measurement tooling** — both teams read the same books. `pnl_census.py` (per-line income statement + terminal balance sheet, `docs/tools/pnl-census.md`), `agent_spec.py` (one agent-spec grammar). |
 | `docs/engine/` | Copies of the engine's `README.md` (rules), `AGENTS.md` (API), `kaggriculture.json` (config) and `VERSION.md` (pinned version + sha256 + parity evidence). |
 | `tests/` | `pytest` smoke tests (engine pin, determinism, replay checker, packaging) + `test_arena.py`. |
 | `data/` | Git-ignored: replays (`data/replays/official`, `data/replays/local`), index, anything large. |
@@ -132,7 +133,9 @@ uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gate
 uv run python -m arena bench v0a                              # out of the ladder (still rated); --undo re-activates
 uv run python -m arena leaderboard                            # markdown/json export -> data/arena/leaderboard.md (+ workshop/notes/leaderboard-internal.md)
 uv run python -m arena champion set v0 --team A               # teams: A | B | org
-uv run python -m arena gate v1 --team A                       # PASS/FAIL vs team A's champion on the confirm set
+uv run python -m arena gate v1 --team A                       # PASS/FAIL vs team A's champion on the confirm band (1000-1199)
+uv run python -m arena gate v1 --team A --band 3000-3199      # ... on a second, disjoint band: pool >=2 before promoting
+uv run python -m arena verify --superseded 20                 # integrity: does every run still own the games it played?
 uv run python -m arena retire v0                              # drop from the rating fit (rows kept); --undo
 uv run python -m arena export --out data/arena/games.csv
 ```
