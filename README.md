@@ -133,7 +133,9 @@ uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gate
 uv run python -m arena bench v0a                              # out of the ladder (still rated); --undo re-activates
 uv run python -m arena leaderboard                            # markdown/json export -> data/arena/leaderboard.md (+ workshop/notes/leaderboard-internal.md)
 uv run python -m arena champion set v0 --team A               # teams: A | B | org
-uv run python -m arena gate v1 --team A                       # PASS/FAIL vs team A's champion on the confirm set
+uv run python -m arena gate v1 --team A                       # PASS/FAIL vs team A's champion on the confirm band (1000-1199)
+uv run python -m arena gate v1 --team A --band 3000-3199      # ... on a second, disjoint band: pool >=2 before promoting
+uv run python -m arena verify --superseded 20                 # integrity: does every run still own the games it played?
 uv run python -m arena retire v0                              # drop from the rating fit (rows kept); --undo
 uv run python -m arena export --out data/arena/games.csv
 ```
