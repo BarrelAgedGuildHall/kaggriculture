@@ -62,5 +62,11 @@ _AGENT = make_feedchain_agent({"melon_replant": True, "melon_rule": "mr",
                                "ongoing_water_span": True})
 
 
-def agent(obs):
-    return _AGENT(obs)
+# TWO arguments on purpose (ruling-04 C-4/R-29): both loaders slice the call on
+# `co_argcount` (`kaggle_environments/agent.py:152,171`; `arena/agent_child.py`),
+# so this signature receives the live `configuration` and the chassis reads
+# `actTimeout` from it instead of carrying an absolute-seconds constant.  A
+# loader that supplies nothing still works — `config` stays None and the chassis
+# falls back to the vendored engine table.
+def agent(obs, config=None):
+    return _AGENT(obs, config)

@@ -21,8 +21,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
+
+# ruling-04 C-2/R-27: a measurement harness must never mask a planner exception.
+# With this set, the millrace chassis re-raises instead of silently playing its
+# fallback -- which is how a missing config key once produced a full 30-day
+# episode of PASS, status DONE and a bank of exactly `startingMoney`, and
+# nothing reported it.
+os.environ.setdefault("MILLRACE_STRICT", "1")
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
@@ -49,15 +57,21 @@ def run_episode(spec_a, spec_b, seed, steps, record_actions_for=None):
     stream = []
     fed_days = 0
     animal_days = 0
+    non_pass = 0          # emitted unit actions that are not PASS (agent 0)
+    market_orders = 0     # emitted market orders (agent 0)
     while not env.done:
         obs = [env.state[i].observation for i in range(2)]
         acts = []
         for i, ag in enumerate(agents):
-            try:
-                a = ag(obs[i])
-            except Exception:
-                a = {"farmer": ["PASS"], "hands": [], "market": []}
+            # NO except here (C-2): a crashing agent must fail the census loudly
+            # rather than be silently replaced by PASS for 720 turns.
+            a = ag(obs[i])
             acts.append(a if isinstance(a, dict) else {"farmer": ["PASS"], "hands": [], "market": []})
+        a0 = acts[0]
+        for ua in [a0.get("farmer")] + list(a0.get("hands") or []):
+            if isinstance(ua, list) and ua and ua[0] != "PASS":
+                non_pass += 1
+        market_orders += len(a0.get("market") or [])
         if record_actions_for is not None:
             stream.append(json.dumps(acts[record_actions_for], sort_keys=True, default=str))
         # daily fed census at the last hour of each day
@@ -88,6 +102,12 @@ def run_episode(spec_a, spec_b, seed, steps, record_actions_for=None):
         "statuses": [s.status for s in env.steps[-1]],
         "timings": getattr(agents[0], "timings", None),
         "action_stream": stream,
+        "productive_actions": non_pass,
+        "market_orders": market_orders,
+        "starting_money": float(env.configuration.get("startingMoney", 3000)),
+        "plan_exceptions": getattr(agents[0], "plan_exceptions", None),
+        "first_exc": getattr(agents[0], "first_exc", None),
+        "panic": getattr(agents[0], "panic", None),
     }
 
 
@@ -115,6 +135,17 @@ def cmd_census(args):
             f"{r['fed_fraction']} >= {exp['fed_fraction_min']}")
     chk("status DONE", r["statuses"][0] == "DONE", r["statuses"][0])
 
+    # ---- ruling-04 C-2/R-27: the dead-planner signature must never pass silently.
+    # A missing config key once produced a full episode of PASS with status DONE
+    # and a bank of exactly `startingMoney`. Three asserts close that hole.
+    if r["plan_exceptions"] is not None:
+        chk("plan_exceptions == 0", r["plan_exceptions"] == 0,
+            f"{r['plan_exceptions']}" + (f" first: {r['first_exc']}" if r["first_exc"] else ""))
+        chk("no PANIC latch", not r["panic"], str(r["panic"]))
+    chk("productive actions > 0", r["productive_actions"] > 0, str(r["productive_actions"]))
+    chk("final bank != startingMoney", r["final_money"][0] != r["starting_money"],
+        f"{r['final_money'][0]} vs starting {r['starting_money']}")
+
     timing = None
     if r["timings"]:
         timing = {"p50_ms": round(1000 * _percentile(r["timings"], 0.50), 2),
@@ -126,6 +157,8 @@ def cmd_census(args):
     out = {"engine": r["engine"], "agent": args.agent, "opponent": args.opponent,
            "seed": r["seed"], "placed": r["placed"], "planted_final": r["planted_final"],
            "fed_fraction": r["fed_fraction"], "final_money": r["final_money"],
+           "productive_actions": r["productive_actions"], "market_orders": r["market_orders"],
+           "plan_exceptions": r["plan_exceptions"], "first_exc": r["first_exc"], "panic": r["panic"],
            "timing": timing,
            "checks": [{"name": n, "ok": ok, "detail": d} for n, ok, d in checks]}
     ok_all = all(ok for _, ok, _ in checks)
