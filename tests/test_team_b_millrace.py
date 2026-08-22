@@ -69,15 +69,19 @@ def test_sanitise_pads_and_truncates_hands():
     assert len(out["hands"]) == 2
 
 
-def test_chassis_swallows_planner_exceptions():
+def test_chassis_swallows_planner_exceptions(monkeypatch):
+    # the shipped default: a crash on the ladder is `status ERROR`, a certain
+    # loss, so the mask stays. MILLRACE_STRICT (set by conftest for every other
+    # test) is what makes it loud in a harness.
+    monkeypatch.delenv("MILLRACE_STRICT", raising=False)
     agent = make_chassis(lambda obs, st, dl: 1 / 0)
     out = agent(_obs())
     assert out["farmer"] == ["PASS"] or out["farmer"] == ["DROP"]
     assert isinstance(out["market"], list)
 
 
-def test_fallback_sells_shed_only():
-    out = fallback_action(_obs(shed={"EGG": 4, "GOOSE": 2}))
+def test_fallback_sells_shed_only_when_latched():
+    out = fallback_action(_obs(shed={"EGG": 4, "GOOSE": 2}), latched=True)
     assert ["SELL", "EGG", 4] in out["market"]
     assert all(o[1] != "GOOSE" for o in out["market"])
 
@@ -354,7 +358,14 @@ def test_frozen_routed_snapshot_matches_millrace_modules():
     # CROPS, which the frozen expB-201 arm must not see. It is dropped from the
     # identity list and pinned by hash below instead, exactly as this test's
     # own note prescribes.
-    for name in ("chassis.py", "layout.py", "routing.py", "routed_probe.py"):
+    #
+    # DIVERGED 2026-08-22 (expB-306c / ruling-04 section 1.3): millrace's
+    # `chassis.py` deleted the post-hoc deadline discard, split the crash mask
+    # from the deadline mask and moved the safety valve onto the engine's own
+    # overage bank. The frozen expB-201 control keeps the M0 chassis it was
+    # measured with -- that IS the control -- so chassis.py leaves the identity
+    # list and stays pinned by FROZEN_ROUTED_SHA256 below.
+    for name in ("layout.py", "routing.py", "routed_probe.py"):
         assert (ROUTED_DIR / name).read_bytes() == (MILLRACE_DIR / name).read_bytes(), name
 
 

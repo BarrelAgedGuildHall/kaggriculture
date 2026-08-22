@@ -16,10 +16,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import statistics
 import sys
 import time
 from pathlib import Path
+
+# Team B's millrace chassis masks planner exceptions so a crash on the ladder is
+# not `status ERROR` (a certain loss).  That mask must never be silent in a
+# measurement harness: ruling-04 C-2 requires MILLRACE_STRICT in the test suite,
+# in this script and in every Pit harness invocation, so a swallowed exception
+# surfaces as a loud failure instead of a full episode of PASS.  Harmless for
+# every other agent; override by exporting MILLRACE_STRICT= (empty) yourself.
+os.environ.setdefault("MILLRACE_STRICT", "1")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _engine import ENV_NAME, LOCAL_REPLAYS, REPO_ROOT, engine_version, import_engine, load_agent_callable  # noqa: E402
