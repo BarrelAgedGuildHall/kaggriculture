@@ -18,6 +18,8 @@ weights must not contain a critic tensor at all.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -111,6 +113,38 @@ def test_nav_head_fails_loudly_rather_than_inventing_a_nav(episode):
         rec.labels(acc, 0, ("nav",), sorted(rec.steps))
 
 
+def _s2_shard():
+    import os
+    root = os.environ.get("GUILDHALL_WAREHOUSE")
+    if not root:
+        return None
+    p = Path(root) / "datasets" / "s2-labels" / "s2_labels_ladder-1.32.7.npz"
+    return p if p.exists() else None
+
+
+@pytest.mark.skipif(_s2_shard() is None, reason="S-2 shard not present (warehouse tier)")
+def test_our_label_definitions_match_ops_s2_shard():
+    """The calibration set is only a calibration set if the columns mean the same thing.
+
+    Checked against Ops' real shard rather than against our own re-statement of it: the product
+    order, which pools carry the `NO_FLOOR` sentinel, and that `headroom_actual` really is
+    undefined exactly there -- which is what our substitution rule keys off. If Ops re-extracts
+    after an engine rebalance and a different pool becomes bottomless, this fails here instead of
+    silently changing what the `headroom` head is regressing.
+    """
+    z = np.load(str(_s2_shard()), allow_pickle=True)
+    assert [str(p) for p in z["products"]] == list(L.PRODUCTS)
+    sentinel = z["inv_floor"] == AUX.NO_FLOOR
+    bottomless = {L.PRODUCTS[j] for j in range(L.N_PRODUCTS) if sentinel[:, j].any()}
+    assert bottomless == {"WHEAT", "EGG"}
+    # the sentinel is per-product, never per-row: a pool is bottomless for a whole episode
+    assert (sentinel.all(0) | (~sentinel).all(0)).all()
+    # and headroom_actual carries the sentinel exactly where inv_floor does
+    assert np.array_equal(z["headroom_actual"] == AUX.NO_FLOOR, sentinel)
+    # drain_remaining_actual -- the substitute -- is valid for all nine
+    assert (z["drain_remaining_actual"] >= 0).all()
+
+
 def test_aux_heads_are_off_the_deployed_path():
     """A-4.3's red test, in its critic-side form.
 
@@ -135,3 +169,29 @@ def test_aux_heads_are_off_the_deployed_path():
     assert zeroed == 4, "no auxiliary head parameters found -- the test is not testing anything"
     assert np.array_equal(before, cr.value(x)), "an auxiliary head is inside value()"
     assert np.array_equal(lines_before, cr.lines(x))
+
+
+def test_the_packaged_actor_carries_no_critic_or_auxiliary_tensor(tmp_path):
+    """A-4.3 in its artefact form -- the boundary that actually ships.
+
+    `save_member` writes the source weights with the trained ACTOR tensors replaced. If a critic
+    or auxiliary tensor could reach the `.npz`, a privileged head would be one `policy.py` change
+    away from the deployed forward path, and no score would ever show it. Enumerating the keys is
+    the whole test: the artefact may contain only the BC member's own tensors plus `m_`/`u_`.
+    """
+    from agents.team_a.ppo import ppo as PPO
+    from agents.team_a.ppo import train as T
+
+    src = str(H.WEIGHTS_DIR / "rebuild-m0.npz")
+    m = H.P.Member(src)
+    mkt = PPO.MarketPPO(m.mkt, m.mmu, m.msd, np.zeros(20), train_trunk=True)
+    unit = PPO.UnitPPO(m.unit, m.umu, m.usd)
+    out = tmp_path / "actor.npz"
+    T.save_member(src, mkt.mkt, str(out), unit=unit.unit)
+
+    src_keys = set(np.load(src, allow_pickle=True).files)
+    got = set(np.load(str(out), allow_pickle=True).files)
+    extra = got - src_keys
+    assert not [k for k in got if k.startswith(("v_", "critic", "opp_net", "headroom", "nav"))], (
+        f"a critic/auxiliary tensor reached the packaged artefact: {sorted(got - src_keys)}")
+    assert all(k.startswith(("m_", "u_")) for k in extra), sorted(extra)

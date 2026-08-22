@@ -186,16 +186,32 @@ class FactoredCritic:
                 "line_loss": (diff ** 2).mean(0).round(6).tolist()}
 
     # -- diagnostics ----------------------------------------------------------
+    # A line whose target barely varies over the batch has no explainable variance, and
+    # 1 - Var(resid)/Var(target) against a ~0 denominator is not a small number, it is a huge
+    # one: the smoke run put -98,844 on `sell_premium` simply because no premium crop had been
+    # harvested yet. That number would go straight onto an experiment row and mean nothing, so a
+    # degenerate line reports `None` instead. The floor is in RETURN units (targets are divided
+    # by REWARD_SCALE), i.e. $50 of per-episode spread.
+    EV_MIN_VAR = 1e-6
+
     def explained_var(self, x, target_lines):
-        """Per-line and pooled 1 - Var(residual)/Var(target), in return units."""
+        """Per-line and pooled 1 - Var(residual)/Var(target), in return units.
+
+        `None` for any line whose target variance is below `EV_MIN_VAR` -- undefined, not zero.
+        """
         p = self.lines(x)
         t = np.asarray(target_lines, dtype=np.float64)
-        per = [float(1.0 - np.var(t[:, k] - p[:, k]) / max(1e-12, np.var(t[:, k])))
-               for k in range(self.n_lines)]
+        per = []
+        for k in range(self.n_lines):
+            v = float(np.var(t[:, k]))
+            per.append(None if v < self.EV_MIN_VAR
+                       else round(float(1.0 - np.var(t[:, k] - p[:, k]) / v), 4))
         tot_t, tot_p = t.sum(1), p.sum(1)
-        return {"per_line": [round(v, 4) for v in per],
-                "pooled": round(float(1.0 - np.var(tot_t - tot_p)
-                                      / max(1e-12, np.var(tot_t))), 4)}
+        vt = float(np.var(tot_t))
+        return {"per_line": per,
+                "degenerate_lines": [k for k, v in enumerate(per) if v is None],
+                "pooled": (None if vt < self.EV_MIN_VAR
+                           else round(float(1.0 - np.var(tot_t - tot_p) / vt), 4))}
 
 
 def make_critic(kind, in_dim, **kw):
