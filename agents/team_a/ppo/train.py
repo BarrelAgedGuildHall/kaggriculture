@@ -43,7 +43,9 @@ from pathlib import Path
 
 import numpy as np
 
+from . import critic as CRITIC
 from . import harness as H
+from . import lines as LINES
 from . import market_head as MH
 from . import pool as POOL
 from . import ppo as PPO
@@ -53,6 +55,10 @@ from .bcpath import F, P, WEIGHTS_DIR
 REWARD_SCALE = 50_000.0
 TRAIN_SEED_BASE = 5000
 EPS0 = 0.05                    # PFSP floor on the even-matchup weight
+
+# Auxiliary supervised heads available to the factored critic (exp-014). Widths are the
+# 9 products of `lines`/S-2; `nav` is the NAV(lambda=15) mark block from exp-N1's nav_probe.
+AUX_DIMS = {"opp_net": 9, "headroom": 9, "nav": 4}
 
 
 def save_member(src_npz, mkt, out_path, unit=None):
@@ -125,23 +131,37 @@ def stack_units(results, turn_ix):
     return b, np.asarray(ep_of_row), np.asarray(mkt_row)
 
 
-def loo_baseline(results):
-    """Leave-one-out mean return within each (seed, seat, opponent) cell."""
+def loo_baseline(results, values=None):
+    """Leave-one-out mean return within each (seed, seat, opponent) cell.
+
+    `values` is the per-episode quantity to baseline; it defaults to `r["R"]` (the seat's own
+    bank) and may be a (n_episodes,) or (n_episodes, k) array. The k-column form is what
+    exp-014's factored critic needs: each terminal-bank line gets its OWN leave-one-out
+    baseline, so the line targets still sum to the scalar target (`sum_k (L_k - b_k) =
+    R - b`) and the factored critic is supervising a decomposition of exactly the quantity
+    the scalar critic sees. Baselining the scalar and then splitting it would not have that
+    property.
+    """
+    if values is None:
+        values = np.array([r["R"] for r in results], dtype=float)
+    values = np.asarray(values, dtype=float)
+    flat = values.ndim == 1
+    v = values[:, None] if flat else values
     cells = {}
     for i, r in enumerate(results):
         cells.setdefault((r["seed"], r["seat"], r["opponent_id"]), []).append(i)
-    base = np.zeros(len(results))
+    base = np.zeros_like(v)
     singles = 0
     for idx in cells.values():
-        rs = np.array([results[i]["R"] for i in idx], dtype=float)
+        rs = v[idx]
         if len(idx) == 1:
             base[idx[0]] = rs[0]        # degenerate cell: no signal, advantage 0
             singles += 1
             continue
-        tot = rs.sum()
+        tot = rs.sum(0)
         for k, i in enumerate(idx):
             base[i] = (tot - rs[k]) / (len(idx) - 1)
-    return base, singles
+    return (base[:, 0] if flat else base), singles
 
 
 def slice_batch(b, idx):
@@ -223,7 +243,8 @@ class Run:
                  entropy=1e-3, kl_target=0.02, temperature=1.0, temp_final=0.5,
                  seed_base=TRAIN_SEED_BASE, steps=720, critic_hidden=256,
                  phase="P0", unit_subsample=0.25, alpha_aux=0.0, aux_rows=(),
-                 pfsp=False, snapshot_every=5, max_ckpt=10, unit_temperature=1.0):
+                 pfsp=False, snapshot_every=5, max_ckpt=10, unit_temperature=1.0,
+                 alpha=0.0, critic_kind="scalar", critic_aux=(), critic_alpha_aux=0.1):
         self.out = Path(out_dir)
         (self.out / "ckpt").mkdir(parents=True, exist_ok=True)
         self.base_npz = str(base_npz or (WEIGHTS_DIR / "rebuild-m0.npz"))
@@ -247,7 +268,19 @@ class Run:
             self.unit_trainer = PPO.UnitPPO(self.member.unit, self.member.umu, self.member.usd,
                                             lr=lr, clip=clip, entropy_coef=entropy,
                                             temperature=self.unit_temperature)
-        self.critic = PPO.Critic(F.MARKET_TURN_DIM, hidden=critic_hidden)
+        # exp-014's ONE variable. `scalar` is exp-013b's control arm; `factored` decomposes the
+        # value head over the exact terminal-bank lines and adds auxiliary supervised heads on
+        # the shared trunk (critic.py). Everything else -- trainable parameters, reward, pool,
+        # temperatures, gradient-step count -- is identical between the two, which is what
+        # makes exp-013b re-usable as exp-014's control (halt ruling R-4.4).
+        self.alpha = float(alpha)
+        self.critic_aux = tuple(critic_aux)
+        n_lines = LINES.N_LINES + (1 if self.alpha else 0)
+        self.critic = CRITIC.make_critic(
+            critic_kind, F.MARKET_TURN_DIM, hidden=critic_hidden, n_lines=n_lines,
+            aux_dims={k: AUX_DIMS[k] for k in self.critic_aux},
+            alpha_aux=critic_alpha_aux)
+        self.record_lines = (self.critic.kind == "factored")
         self.critic_ready = False
 
         # the frozen 3-member mixture: KL anchor + BC-auxiliary reference (addendum 01 2.1)
@@ -274,6 +307,7 @@ class Run:
         self.unit_subsample = float(unit_subsample)
         self.kl_target = kl_target
         self.kl0 = None                 # KL(pi0 || mixture) measured at iteration 0
+        self.kl_below = {"mkt": 0, "unit": 0}   # consecutive iterations below KL_0 - kappa
         self.kl_target_unit = kl_target
         self.temp0, self.temp1 = temperature, temp_final
         self.log = []
@@ -362,8 +396,24 @@ class Run:
 
         R = np.array([r["R"] for r in results], dtype=float)
         R_opp = np.array([r["R_opp"] for r in results], dtype=float)
-        base, singles = loo_baseline(results)
-        target_ep = (R - base) / REWARD_SCALE
+        # The return is `R_us - alpha * R_them` (halt ruling R-2.2). alpha = 0 IS the founder's
+        # standing directive (maximise final-day money) and is the default, so this line is a
+        # no-op until the founder answers; alpha = 1 is pure margin. The opponent's bank was
+        # already recorded per episode (spec 3.1), so this is the whole change -- and `alpha`
+        # goes on the experiment row like the engine pin, because numbers do not carry across
+        # a reward change (R-4.3).
+        R_eff = R - self.alpha * R_opp
+        base, singles = loo_baseline(results, R_eff)
+        target_ep = (R_eff - base) / REWARD_SCALE
+        line_target_ep = None
+        if self.critic.kind == "factored" and results and results[0].get("lines") is not None:
+            LN = np.array([r["lines"] for r in results], dtype=float)
+            if self.alpha:
+                # keep the identity sum(lines) == R_eff - start: the opponent's bank is not
+                # decomposable from our seat, so it enters as its own line-sized column.
+                LN = np.concatenate([LN, -self.alpha * R_opp[:, None]], axis=1)
+            lbase, _ = loo_baseline(results, LN)
+            line_target_ep = (LN - lbase) / REWARD_SCALE
 
         # decayed per-opponent win rate (half-life 10 iterations), for PFSP
         for nm in set(r["opponent_id"] for r in results):
@@ -382,8 +432,9 @@ class Run:
         if self.phase != "P0":
             ub, u_ep, u_mkt_row = stack_units(results, turn_ix)
         self.trainer.temperature = self.temperature(it)
+        line_target_row = (line_target_ep[ep_of_row] if line_target_ep is not None else None)
         if not self.critic_ready:
-            self.critic.fit_norm(b["x"])
+            self.critic.fit_norm(b["x"], line_target_row)
             self.critic_ready = True
         target_row = target_ep[ep_of_row]
         v = self.critic.value(b["x"])
@@ -415,7 +466,11 @@ class Run:
                                        alpha=self.alpha_aux)
                 for k, val in st.items():
                     agg.setdefault(k, []).append(val)
-                self.critic.update(mb["x"], target_row[idx])
+                cst = self.critic.update(
+                    mb["x"], target_row[idx],
+                    target_lines=(None if line_target_row is None else line_target_row[idx]))
+                for k in ("critic_loss", "aux_loss", "gnorm_critic", "gnorm_critic_aux"):
+                    agg.setdefault(k, []).append(cst[k])
             if ub is not None:
                 un = len(ub["x"])
                 uorder = rng.permutation(un)
@@ -453,8 +508,29 @@ class Run:
 
         v2 = self.critic.value(b["x"])
         ev = 1.0 - float(np.var(target_row - v2) / max(1e-12, np.var(target_row)))
+
+        # R-5.4: the per-term gradient-norm SHARE, market and unit tracked separately. Shares
+        # rather than raw norms because the absolute scale moves with the batch and the
+        # advantage normalisation; the share is what answers "which term drove this update".
+        def _shares(a):
+            terms = {k[6:]: float(np.mean(a[k])) for k in a if k.startswith("gnorm_")}
+            tot = sum(terms.values())
+            return ({k: round(v / tot, 4) for k, v in sorted(terms.items())} if tot > 0
+                    else {k: 0.0 for k in sorted(terms)})
+
+        # R-5.2 amendment: KL falling BELOW KL_0 - kappa for 3 consecutive iterations means the
+        # anchor has become an attractor and the run is quietly re-distilling into the mixture.
+        # exp-013 fell 0.600 -> 0.437 and 0.076 -> 0.042 in six iterations with beta never
+        # leaving 1.0/0.125, and nobody could see it because it was not a number on a row.
+        below = {"mkt": bool(kl < self.kl0["mkt"] - self.kl_target),
+                 "unit": bool(u_kl < self.kl0["unit"] - self.kl_target) if self.unit_trainer
+                 else False}
+        for h in ("mkt", "unit"):
+            self.kl_below[h] = self.kl_below[h] + 1 if below[h] else 0
+
         row = {
             "iter": it, "episodes": len(results), "phase": self.phase,
+            "alpha": self.alpha, "critic": self.critic.kind,
             "money_mean": float(R.mean()), "money_sd": float(R.std(ddof=1)),
             "opp_money_mean": float(R_opp.mean()),
             "extraction_mean": float((R + R_opp).mean()),
@@ -474,6 +550,11 @@ class Run:
             "aux_mkt": float(np.mean(agg.get("aux_mkt", [0.0]))),
             "aux_unit": float(np.mean(uagg.get("aux_unit", [0.0]))) if uagg else 0.0,
             "explained_var": ev, "loo_singleton_cells": singles,
+            "gnorm_share_mkt": _shares(agg), "gnorm_share_unit": _shares(uagg) if uagg else {},
+            "kl_below_kl0_iters": dict(self.kl_below),
+            "kl_below_kl0_report": (self.kl_below["mkt"] >= 3 or self.kl_below["unit"] >= 3),
+            "critic_ev_lines": (self.critic.explained_var(b["x"], line_target_row)
+                                if line_target_row is not None else None),
             "rows": int(n), "unit_rows": int(len(ub["x"])) if ub is not None else 0,
             "rollout_s": round(t_roll, 1), "update_s": round(t_update, 1),
             "update_frac": round(t_update / max(1e-6, t_roll + t_update), 3),

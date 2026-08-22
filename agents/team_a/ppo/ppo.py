@@ -32,6 +32,39 @@ from .bcpath import N
 EPS = 1e-12
 
 
+class _GradNorm:
+    """Per-term gradient-norm accounting for a set of accumulating logit-gradient buffers.
+
+    Standing instrumentation from the 2026-08-22 halt ruling R-5.4. Each `mark` records the
+    L2 norm of everything added to the buffers since the previous `mark`, i.e. that term's own
+    contribution, under the key `gnorm_<name>`. The buffers are the ones the objective is
+    already building, so this costs one copy and one norm per term -- and it is the difference
+    between "we cannot say which term drove those six updates" and a number on every row.
+    """
+
+    def __init__(self, *bufs):
+        self.bufs = bufs
+        self.prev = [np.zeros_like(x) for x in bufs]
+
+    def mark(self, stats, name):
+        tot = 0.0
+        for i, b in enumerate(self.bufs):
+            d = b - self.prev[i]
+            tot += float(np.dot(d.reshape(-1), d.reshape(-1)))
+            self.prev[i] = b.copy()
+        stats[f"gnorm_{name}"] = float(np.sqrt(tot))
+        return stats[f"gnorm_{name}"]
+
+
+def gnorm_of(glogits):
+    """L2 norm over a {head: dL/dlogits} dict -- for terms computed in their own pass."""
+    tot = 0.0
+    for g in glogits.values():
+        f = np.asarray(g).reshape(-1)
+        tot += float(np.dot(f, f))
+    return float(np.sqrt(tot))
+
+
 def clone_mlp(mlp):
     return type(mlp).from_state({k: np.array(v, copy=True) for k, v in mlp.state().items()},
                                 dict(mlp.head_dims))
@@ -53,32 +86,11 @@ def _head_grads(h2, glogits, heads):
     return out
 
 
-class Critic:
-    """Train-only value net on the market-turn features. Never exported, so unconstrained."""
+# The critics moved to `critic.py` when exp-014 added the factored one; the name stays here
+# so `exp-013`'s call sites keep working and the two arms differ only by which class is built.
+from .critic import FactoredCritic, ScalarCritic, make_critic   # noqa: E402,F401
 
-    def __init__(self, in_dim, hidden=256, lr=1e-3, seed=0):
-        self.net = N.MLP(in_dim, hidden, {"v": 1}, seed=seed)
-        self.opt = N.Adam(self.net.params(), lr=lr)
-        self.mu = np.zeros(in_dim, np.float32)
-        self.sd = np.ones(in_dim, np.float32)
-
-    def fit_norm(self, x):
-        self.mu = x.mean(0).astype(np.float32)
-        self.sd = np.maximum(x.std(0), 1e-3).astype(np.float32)
-
-    def value(self, x):
-        return self.net.forward((x - self.mu) / self.sd)["v"][:, 0]
-
-    def update(self, x, target):
-        xn = (x - self.mu) / self.sd
-        out, cache = self.net.forward(xn, cache=True)
-        pred = out["v"][:, 0]
-        diff = pred - target
-        loss = float((diff ** 2).mean())
-        g = (2.0 * diff / len(target)).astype(np.float32)[:, None]
-        grads = self.net.backward(cache, {"v": g})
-        self.opt.step(self.net.params(), grads)
-        return loss, pred
+Critic = ScalarCritic
 
 
 class MarketPPO:
@@ -151,7 +163,8 @@ class MarketPPO:
         glogits = {"orders": gz_fire.astype(dt),
                    "qty": gz_qty.reshape(len(aux["x"]), -1).astype(dt),
                    "hire": gz_hire.astype(dt)}
-        return self._grads(cch, glogits), {"aux_mkt": loss}
+        return self._grads(cch, glogits), {"aux_mkt": loss,
+                                           "gnorm_bc_aux": gnorm_of(glogits)}
 
     def loss_grads(self, b, adv, logp_old, anchor_d=None):
         """Analytic gradients of the full objective w.r.t. the three head matrices.
@@ -200,6 +213,15 @@ class MarketPPO:
         gz_qty += _cat_grad_2d(d["p_qty"], b["qty_idx"],
                                (dr_q * r_q / T) * mask_q / n_factors)
 
+        # ---- R-5.4: per-term gradient-norm share ---------------------------
+        # The halt ruling's cheapest standing item, and the one that would have answered "which
+        # term drove exp-013's six updates?" at iteration 1. Terms accumulate into the same
+        # `gz_*` arrays, so each term's own contribution is the INCREMENT it adds; norms are
+        # taken in logit space, which is the honest relative measure because every term reaches
+        # the parameters through the same fixed linear map (`h2.T @ .`).
+        gnorm = _GradNorm(gz_fire, gz_hire, gz_qty)
+        gnorm.mark(stats, "surrogate")
+
         stats["surrogate"] = float((loss_f * mask_f).sum() + (loss_q * mask_q).sum()
                                    + (loss_h * mask_h).sum()) / n_factors
         total = stats["surrogate"]
@@ -221,6 +243,7 @@ class MarketPPO:
             stats["entropy_hire"] = float(hh.mean())
             total -= self.entropy_coef * float((hb * mask_f).sum() + (hq * mask_q).sum()
                                                + (hh * mask_h).sum()) / n_factors
+        gnorm.mark(stats, "entropy")
 
         # ---- adaptive KL anchor to the FROZEN 3-MEMBER MIXTURE --------------
         # Evaluated at T = 1 on BOTH sides (addendum 01 section 2.1 + 6.3(i)): the anchor is
@@ -241,6 +264,7 @@ class MarketPPO:
             stats["kl"] = float((kl_b * mask_f).sum() + (kl_q * mask_q).sum()
                                 + (kl_h * mask_h).sum()) / n_factors
             total += self.beta * stats["kl"]
+        gnorm.mark(stats, "kl")
 
         # match the parameter dtype (float32 in production; float64 in the gradient test,
         # where a float32 round-trip would swamp the finite differences)
@@ -251,6 +275,7 @@ class MarketPPO:
         grads = self._grads(cch, glogits)
         stats["n_factors"] = n_factors
         stats["loss"] = total
+        stats["gnorm_bc_aux"] = 0.0     # overwritten by aux_grads when the BC-aux term runs
         return grads, stats
 
     def adapt_beta(self, kl):
@@ -329,6 +354,7 @@ class UnitPPO:
         T = self.temperature
         gz = {k: np.zeros_like(d["p_" + k]) for k in masks}
         stats, total, clipped, n_clip = {}, 0.0, 0.0, 0.0
+        gnorm = _GradNorm(*[gz[k] for k in masks])       # R-5.4, see MarketPPO.loss_grads
 
         for k, m in masks.items():
             p = d["p_" + k]
@@ -343,6 +369,7 @@ class UnitPPO:
 
         stats["surrogate"] = total
         stats["clipfrac"] = clipped / max(1.0, n_clip)
+        gnorm.mark(stats, "surrogate")
 
         if self.entropy_coef:
             hs = dict(zip(("op", "crop", "item", "qty"), UH.entropy(d)))
@@ -351,6 +378,7 @@ class UnitPPO:
                 total -= self.entropy_coef * float((hs[k] * m).sum()) / n_factors
             stats["entropy_op"] = float((hs["op"] * masks["op"]).sum()
                                         / max(1.0, masks["op"].sum()))
+        gnorm.mark(stats, "entropy")
 
         if self.beta and anchor_d is not None:
             d1 = UH.unit_probs_at_one(d)
@@ -361,11 +389,13 @@ class UnitPPO:
                 kl_total += float((kl * m).sum())
             stats["kl"] = kl_total / n_factors
             total += self.beta * stats["kl"]
+        gnorm.mark(stats, "kl")
 
         dt = h2.dtype
         glogits = {k: gz[k].astype(dt) for k in masks}
         stats["n_factors"] = n_factors
         stats["loss"] = total
+        stats["gnorm_bc_aux"] = 0.0
         return _head_grads(h2, glogits, self.HEADS), stats
 
     def aux_grads(self, aux, alpha):
@@ -382,7 +412,8 @@ class UnitPPO:
             glogits[k] = (alpha * wk * (p - q) / n).astype(cch[4].dtype)
             if k == "op":
                 loss = float((-(q * np.log(np.maximum(p, EPS))).sum(1)).mean())
-        return _head_grads(cch[4], glogits, self.HEADS), {"aux_unit": loss}
+        return _head_grads(cch[4], glogits, self.HEADS), {"aux_unit": loss,
+                                                          "gnorm_bc_aux": gnorm_of(glogits)}
 
     def adapt_beta(self, kl, kl_target):
         if kl > 1.5 * kl_target:
