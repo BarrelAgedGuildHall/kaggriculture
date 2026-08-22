@@ -54,6 +54,8 @@ from . import lines as L
 AUX_DIMS = {"opp_net": L.N_PRODUCTS, "headroom": L.N_PRODUCTS, "nav": 4}
 
 NO_FLOOR = -1                 # S-2's sentinel: this pool's $1 floor is unreachable
+# Below this target variance an R^2 is undefined, not bad. In label units (whole units traded).
+R2_MIN_VAR = 1e-6
 FLOOR_SEARCH_CAP = 100_000    # S-2's reachability cap, verbatim
 
 # exp-N1's NAV mark block is S-1's deliverable (`feature/s1-nav-package`), not Team A's, and it is
@@ -271,10 +273,25 @@ def s2_calibration(critic, x, s2_npz, seat_col="p1", names=("opp_net", "headroom
             continue
         pred = out[k] * critic.aux_sd[k] + critic.aux_mu[k]
         resid = np.var(t - pred, axis=0)
-        report[k] = {"r2_per_product": [round(float(1.0 - r / max(1e-12, v)), 4)
-                                        for r, v in zip(resid, np.var(t, axis=0))],
-                     "r2_pooled": round(float(1.0 - np.var(t.sum(1) - pred.sum(1))
-                                              / max(1e-12, np.var(t.sum(1)))), 4),
+        var = np.var(t, axis=0)
+        # Same degeneracy as `critic.explained_var`, and it bites hardest exactly here: over the
+        # 24 ladder episodes the field sold 24 units of TOMATO and ZERO of EGG, so those columns
+        # have no variance to explain and 1 - Var(resid)/~0 reads -37 and -40. Reporting a number
+        # there would put "the head is catastrophically wrong about EGG" on exp-014's row when
+        # what happened is that nobody traded EGG. `None` and a named list instead.
+        per = [None if v < R2_MIN_VAR else round(float(1.0 - r / v), 4)
+               for r, v in zip(resid, var)]
+        vt = float(np.var(t.sum(1)))
+        report[k] = {"r2_per_product": per,
+                     "degenerate_products": [products[j] for j, v in enumerate(per) if v is None],
+                     # `None` only catches variance that is exactly zero; a product with tiny but
+                     # nonzero variance still yields a wild R^2, and no threshold can be chosen
+                     # here without inventing a knob. Reporting the target SD beside the R^2 makes
+                     # such a cell readable instead of alarming -- STRAWBERRY at SD 200 and TOMATO
+                     # at SD 0.4 are not the same claim even at the same R^2.
+                     "target_sd_per_product": [round(float(s), 3) for s in np.sqrt(var)],
+                     "r2_pooled": (None if vt < R2_MIN_VAR
+                                   else round(float(1.0 - np.var(t.sum(1) - pred.sum(1)) / vt), 4)),
                      "n_rows": int(len(t))}
     report["source"] = str(getattr(s2_npz, "fid", s2_npz))
     return report
