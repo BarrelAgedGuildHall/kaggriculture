@@ -223,7 +223,7 @@ class Run:
                  entropy=1e-3, kl_target=0.02, temperature=1.0, temp_final=0.5,
                  seed_base=TRAIN_SEED_BASE, steps=720, critic_hidden=256,
                  phase="P0", unit_subsample=0.25, alpha_aux=0.0, aux_rows=(),
-                 pfsp=False, snapshot_every=5, max_ckpt=10):
+                 pfsp=False, snapshot_every=5, max_ckpt=10, unit_temperature=1.0):
         self.out = Path(out_dir)
         (self.out / "ckpt").mkdir(parents=True, exist_ok=True)
         self.base_npz = str(base_npz or (WEIGHTS_DIR / "rebuild-m0.npz"))
@@ -237,10 +237,16 @@ class Run:
                                      kl_target=kl_target, temperature=temperature,
                                      train_trunk=(phase != "P0"))
         self.unit_trainer = None
+        # The unit head keeps its OWN, FIXED temperature. Measured (scripts/ppo_temp_calib.py,
+        # 16 ep/arm vs the frozen base): op-head entropy at T = 1 is already 0.60 nats -- 15x
+        # the market order head's 0.040 -- and raising it costs money fast (bank 28.1k at
+        # T = 1.0, 32.8k at 1.3, 16.4k at 1.6, 23.4k at 2.0 against a ~68k opponent). So
+        # T_unit = 1.0, flat, identical across every exp-013 arm; only the market head anneals.
+        self.unit_temperature = float(unit_temperature)
         if phase != "P0":
             self.unit_trainer = PPO.UnitPPO(self.member.unit, self.member.umu, self.member.usd,
                                             lr=lr, clip=clip, entropy_coef=entropy,
-                                            temperature=temperature)
+                                            temperature=self.unit_temperature)
         self.critic = PPO.Critic(F.MARKET_TURN_DIM, hidden=critic_hidden)
         self.critic_ready = False
 
@@ -267,6 +273,8 @@ class Run:
         self.steps = steps
         self.unit_subsample = float(unit_subsample)
         self.kl_target = kl_target
+        self.kl0 = None                 # KL(pi0 || mixture) measured at iteration 0
+        self.kl_target_unit = kl_target
         self.temp0, self.temp1 = temperature, temp_final
         self.log = []
         self.cursor = 0
@@ -331,6 +339,7 @@ class Run:
                                    "opponent": self.spec_of(opp), "opponent_id": opp,
                                    "rng_seed": (it * 1_000_003 + s * 97 + seat * 7 + rep),
                                    "temperature": self.temperature(it),
+                                   "unit_temperature": self.unit_temperature,
                                    "record_units": self.phase != "P0",
                                    "unit_subsample": self.unit_subsample,
                                    "steps": self.steps})
@@ -370,8 +379,6 @@ class Run:
         if self.phase != "P0":
             ub, u_ep, u_mkt_row = stack_units(results, turn_ix)
         self.trainer.temperature = self.temperature(it)
-        if self.unit_trainer:
-            self.unit_trainer.temperature = self.trainer.temperature
         if not self.critic_ready:
             self.critic.fit_norm(b["x"])
             self.critic_ready = True
@@ -423,9 +430,22 @@ class Run:
         t_update = time.perf_counter() - t1
 
         kl = float(np.mean(agg.get("kl", [0.0])))
-        beta = self.trainer.adapt_beta(kl)
         u_kl = float(np.mean(uagg.get("kl", [0.0]))) if uagg else 0.0
-        u_beta = self.unit_trainer.adapt_beta(u_kl, self.kl_target) if self.unit_trainer else 0.0
+        # kappa is a DRIFT budget, and pi0 does not start at the anchor: measured at iteration
+        # 0, KL(pi0 || mixture) is ~0.07 nats/factor on the market head and ~0.54 on the unit
+        # heads (pi0 is a distillation of the mixture, not the mixture). Comparing those to a
+        # flat kappa = 0.02 would peg beta at its 64 ceiling from the first update and turn the
+        # run into "re-distil pi0 into the mixture" with the surrogate as a rounding error.
+        # The target is therefore KL_0 + kappa: do not drift more than kappa beyond where this
+        # policy started. Fixed after iteration 0 and logged, so it is a pre-registered number
+        # and not a knob that moves with the result.
+        if self.kl0 is None:
+            self.kl0 = {"mkt": kl, "unit": u_kl}
+            self.trainer.kl_target = kl + self.kl_target
+            self.kl_target_unit = u_kl + self.kl_target
+        beta = self.trainer.adapt_beta(kl)
+        u_beta = (self.unit_trainer.adapt_beta(u_kl, self.kl_target_unit)
+                  if self.unit_trainer else 0.0)
         self.save_actor(self.actor_npz)
 
         v2 = self.critic.value(b["x"])
@@ -438,6 +458,9 @@ class Run:
             "win_rate": float(np.mean((R > R_opp) + 0.5 * (R == R_opp))),
             "win_by_opp": {nm: round(self.win_est[nm], 3) for nm in sorted(self.win_est)},
             "kl": kl, "beta": beta, "kl_unit": u_kl, "beta_unit": u_beta,
+            "kl0": self.kl0, "kl_target_mkt": self.trainer.kl_target,
+            "kl_target_unit": self.kl_target_unit,
+            "unit_temperature": self.unit_temperature,
             "temperature": self.trainer.temperature,
             "clipfrac": float(np.mean(agg.get("clipfrac", [0.0]))),
             "clipfrac_unit": float(np.mean(uagg.get("clipfrac", [0.0]))) if uagg else 0.0,

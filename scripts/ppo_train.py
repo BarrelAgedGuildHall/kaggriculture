@@ -44,6 +44,8 @@ def main(argv=None):
                     help="BC-auxiliary weight; the target is the FROZEN MIXTURE, never pi0")
     ap.add_argument("--aux-rows", nargs="*", default=[],
                     help="corpus row .npz chunks for the BC-auxiliary states")
+    ap.add_argument("--unit-temperature", type=float, default=1.0,
+                    help="FIXED sampling temperature of the unit head (never annealed)")
     ap.add_argument("--pfsp", action="store_true", help="PFSP opponent sampling + snapshots")
     args = ap.parse_args(argv)
 
@@ -55,6 +57,7 @@ def main(argv=None):
               temp_final=args.temp_final, seed_base=args.seed_base, steps=args.steps,
               phase=args.phase, unit_subsample=args.unit_subsample,
               alpha_aux=args.alpha_aux, aux_rows=args.aux_rows, pfsp=args.pfsp,
+              unit_temperature=args.unit_temperature,
               snapshot_every=args.snapshot_every)
     run.total_iters = args.iters
     Path(args.out, "config.json").write_text(json.dumps(vars(args), indent=1), encoding="utf-8")
