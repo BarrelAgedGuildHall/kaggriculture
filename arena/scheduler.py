@@ -214,8 +214,16 @@ def _harness_crash_row(job: dict, msg: str) -> dict:
 
 def run_match(agent_specs: list[str], mode: str = "screen", n: int | None = None, seeds: str | None = None,
               workers: int | None = None, steps: int = 720, keep_replay: str = "crash", db_path: Path | None = None,
-              game_timeout: float = 900.0, quiet: bool = False, run_id: str | None = None) -> dict:
-    """Run a match and store rows. Returns {run_id, rows, wall_s, jobs}."""
+              game_timeout: float = 900.0, quiet: bool = False, run_id: str | None = None,
+              nav_rate: int = 0, nav_sample_every: int | None = None, nav_variant: str | None = None,
+              nav_detail: bool = False) -> dict:
+    """Run a match and store rows. Returns {run_id, rows, wall_s, jobs}.
+
+    `nav_rate` is the percentage of this run's games that also record a NAV trajectory (S-3,
+    arena/navlog.py). 0 -- the default, and what every gate and screen uses -- means the games
+    are played exactly as they were before S-3 existed. The selection is deterministic in
+    `game_id`, so it does not drift and a re-run re-records the same games.
+    """
     reg = registry.ensure_residents()
     agents = [registry.resolve(s, reg) for s in agent_specs]
     n = n or default_n(mode)
@@ -232,6 +240,13 @@ def run_match(agent_specs: list[str], mode: str = "screen", n: int | None = None
 
     seed_list = parse_seeds(seeds, mode, n)
     jobs = plan_jobs(mode, agents, seed_list, steps, common)
+    if int(nav_rate or 0) > 0:
+        from . import navlog
+        for j in jobs:
+            if navlog.should_record(j["game_id"], nav_rate):
+                j.update(nav_telemetry=True, nav_detail=bool(nav_detail),
+                         nav_sample_every=int(nav_sample_every or navlog.DEFAULT_SAMPLE_EVERY),
+                         nav_variant=nav_variant or navlog.VARIANT)
     return _execute(jobs, mode, agents, seed_list, workers, db_path, game_timeout, quiet, run_id, host)
 
 
@@ -265,13 +280,18 @@ def _execute(jobs, mode, agents, seed_list, workers, db_path, game_timeout, quie
     def on_row(row):
         nonlocal done
         done += 1
+        nav = row.pop("nav_rows", None)      # not a `games` column: its own table (S-3)
         store.upsert_rows(con, [row])
+        if nav:
+            store.upsert_nav(con, nav)
         prog.update(done=done, updated_at=time.strftime("%Y-%m-%dT%H:%M:%S"),
                     last={"p0": row["p0"], "p1": row["p1"], "seed": row["seed"], "result0": row["result0"],
                           "money0": row["money0"], "money1": row["money1"],
                           "flag": bool(row["crash0"] or row["crash1"] or row["timeout0"] or row["timeout1"] or row["harness_error"])})
         if done % 5 == 0 or done == len(jobs):
             _write_progress(run_id, prog)
+        if row.get("nav_error") and not quiet:
+            print(f"  ! nav telemetry failed for {row['game_id']}: {row['nav_error']}", flush=True)
         if not quiet and (done % 10 == 0 or done == len(jobs)):
             print(f"  {done}/{len(jobs)} games  ({time.perf_counter() - t0:.0f}s)", flush=True)
 

@@ -9,7 +9,8 @@ sqlite store as each game finishes; the dashboard's BT/Elo fit reads them live.
 Control state lives in data/arena/ so it survives restarts and is shared with the CLI:
   paused          flag file  — hub idles while it exists (durable pause, PTCG-style)
   leases.json     pause leases — while any is live the ladder may not be resumed (see leases.py)
-  hub.json        config     — {"workers": N, "games_per_pairing": G, "max_opponents": K}
+  hub.json        config     — {"workers": N, "games_per_pairing": G, "max_opponents": K,
+                                "nav_telemetry": PCT, "nav_sample_every": STEPS}
   registry.json   active/benched/retired flags decide who plays (arena bench/retire or the UI)
 
 The hub never edits old rows and never runs two rounds at once. Round size is small
@@ -30,7 +31,13 @@ from .scheduler import run_match
 
 PAUSE_FLAG = ARENA_DIR / "paused"
 HUB_CONFIG = ARENA_DIR / "hub.json"
-DEFAULTS = {"workers": 0, "games_per_pairing": 4, "max_opponents": 5}
+# `nav_telemetry` is the PERCENTAGE of ladder games that also record a NAV trajectory (S-3,
+# arena/navlog.py). It is on here and nowhere else: the ladder is the population we want
+# calibration numbers over, and every gate/screen/confirm stays exactly as it was. 5% of the
+# ladder is a few hundred episodes an hour, which is plenty, at ~7 kB per seat -- 100% would be
+# gigabytes a week for no extra answer. Change it live: POST /api/control/config.
+DEFAULTS = {"workers": 0, "games_per_pairing": 4, "max_opponents": 5,
+            "nav_telemetry": 5, "nav_sample_every": 24}
 
 
 def config() -> dict:
@@ -211,11 +218,14 @@ class Hub:
                 self._set(phase="playing", round=desc)
                 run_match([plan["anchor"]["id"]] + [o["id"] for o in plan["opponents"]],
                           mode="screen", n=pairs * 2, seeds=seeds, workers=cfg["workers"] or None,
-                          quiet=True, run_id=run_id)
+                          quiet=True, run_id=run_id,
+                          nav_rate=int(cfg.get("nav_telemetry") or 0),
+                          nav_sample_every=int(cfg.get("nav_sample_every") or 0) or None)
                 # rows are stored with mode='screen' by run_match; retag this run as ladder
                 con = store.connect()
                 con.execute("UPDATE games SET mode = 'ladder' WHERE run_id = ?", (run_id,))
                 con.execute("UPDATE runs SET mode = 'ladder' WHERE run_id = ?", (run_id,))
+                con.execute("UPDATE nav_traj SET mode = 'ladder' WHERE run_id = ?", (run_id,))
                 con.commit()
                 con.close()
                 with self._lock:

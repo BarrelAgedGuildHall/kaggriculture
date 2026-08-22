@@ -13,14 +13,15 @@ service (the node's fast NVMe disk — never a network share):
 |---|---|
 | `registry.json` | agents (`name@sha`), active/benched/retired flags, champion pointers |
 | `agents/` | immutable snapshots of every registered agent (the bytes that play) |
-| `arena.sqlite` | every game ever played (rows keyed by game id; merged from remotes) |
+| `arena.sqlite` | every game ever played (rows keyed by game id; merged from remotes), plus `nav_traj` — the S-3 NAV trajectories, one row per (game, seat) |
 | `replays/` | replays kept for crashes/timeouts (and losses with `--keep-replays loss`) |
 | `progress/` | one JSON per run, live progress for the dashboard |
 | `runs/` | per-run sqlite deltas pulled back from remote `--node` matches |
 | `paused` | flag file: the hub ladder idles while it exists (survives restarts) |
 | `leases.json` | live **pause leases** — while any exists, resume is refused (see "Pause leases") |
 | `lease-log.jsonl` | append-only audit of every acquire / renew / release / expiry / force-break |
-| `hub.json` | hub config: `workers`, `games_per_pairing`, `max_opponents` |
+| `hub.json` | hub config: `workers`, `games_per_pairing`, `max_opponents`, `nav_telemetry` (% of ladder games recording a NAV trajectory), `nav_sample_every` |
+| `push-log.jsonl` | append-only record of every `arena push` and every snapshot it superseded |
 | `leaderboard.md` / `.json` | the last `arena leaderboard` export |
 
 Periodic export for the workshop: `uv run python -m arena leaderboard` (writes
@@ -155,6 +156,57 @@ Equal hashes mean the host is running your code, whatever the shas say. When you
 ref from origin — needs git access on the hub machine) and the new agent starts **benched**:
 someone must explicitly activate it before the ladder will play it. Teams' flow: commit the
 frozen generation under `agents/team_a|team_b/`, push, register by ref, review, activate.
+
+### NAV telemetry (S-3)
+
+The ladder records a **per-episode NAV trajectory** for a sample of its games: for each seat, the
+`nav`/`cash`/`phi` marks and the nine balance-sheet lines at every *n*-th snapshot, plus the
+terminal one. `arena/navlog.py`; the marks come from `nav` (S-1) itself, replayed over the
+episode's observations, so a step's mark is what the agent could have known at that step.
+
+```bash
+uv run python -m arena nav --mode ladder --limit 20            # terminal marks + realised bank
+uv run python -m arena nav --game 38be5f3d83cb5192 --trajectory
+uv run python -m arena nav --mode ladder --limit 2000 --calibrate
+uv run python -m arena nav --agent v1 --json /tmp/v1-nav.json  # offline analysis
+curl -s "$PIT/api/nav?mode=ladder&points=0&limit=200"          # same rows over HTTP
+```
+
+**It cannot move a measured number.** The per-turn `duration` the store keeps is the framework's
+own timer around the agent call; the trajectory is computed *after* `env.run()` returns, from the
+episode still in memory. Cost is wall-clock only (~35 ms per seat on a 720-step game). It is
+**off** for `arena match`, screens, confirms and gates unless you pass `--nav-telemetry`
+(`--nav-rate PCT` for a sample), and **on for the ladder only**:
+
+```bash
+# hub.json / POST /api/control/config — percent of ladder games recorded, and the mark interval
+curl -sX POST $PIT/api/control/config -H 'Content-Type: application/json' \
+     -d '{"nav_telemetry": 5, "nav_sample_every": 24}'      # 0 turns it off
+```
+
+5% of the ladder is a few hundred episodes an hour at ~7 kB per seat. 100% would be gigabytes a
+week for no extra answer. The sample is deterministic in `game_id`, so it does not drift with
+traffic and a re-run of a game re-records it.
+
+Reading the numbers:
+
+* `phi` at the terminal snapshot is **0 by construction** (`H(719) = 0`) and `nav == cash ==` the
+  realised bank. That identity is the cheapest possible check that the marks and the engine agree
+  — and it only holds on a full 720-step episode, so do not read a calibration off truncated
+  games.
+* `--calibrate` prints `r_nav` beside **`r_cash`, the cash-alone control**. NAV has earned its
+  place only where `r_nav > r_cash`; reporting the first without the second is how a NAV study
+  talks itself into a result.
+* `sign_acc` pairs the two seats of a game and asks how often the sign of the NAV gap already
+  agrees with who won. Both seats are marked from their **own** observation (private shed and
+  seeds included), so this is the full-information ceiling — the number an agent's in-game,
+  public-only estimate is scored *against*, not the estimate itself.
+* Every row carries `nav_schema` and `nav_source` (`nav.SCHEMA_VERSION` / `nav.source_hash()`),
+  the variant and the λ pair. A `nav` bump changes `nav_source`: **never pool rows across two
+  source hashes** without saying so, for the same reason nothing averages across an engine bump.
+
+The Pit does not retain ordinary replays (crash captures only), and S-3 deliberately did not
+change that: nothing is stored beyond the trajectory rows.
 
 ### Moving ONE agent onto the hub — `arena push`
 

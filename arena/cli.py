@@ -95,7 +95,10 @@ def cmd_match(args) -> int:
     from .scheduler import run_match
     res = run_match(args.agents, mode=args.mode, n=args.n, seeds=args.seeds, workers=args.workers, steps=args.steps,
                     keep_replay=args.keep_replays, db_path=Path(args.db) if args.db else None,
-                    game_timeout=args.game_timeout, quiet=args.quiet, run_id=args.run_id)
+                    game_timeout=args.game_timeout, quiet=args.quiet, run_id=args.run_id,
+                    nav_rate=(100 if args.nav_telemetry else args.nav_rate),
+                    nav_sample_every=args.nav_sample_every, nav_variant=args.nav_variant,
+                    nav_detail=args.nav_detail)
     res["db_path"] = args.db
     _summarize_match(res)
     if args.json:
@@ -298,6 +301,58 @@ def cmd_lease(args) -> int:
     return 0
 
 
+def cmd_nav(args) -> int:
+    """Read S-3 NAV trajectories out of the store (arena/navlog.py)."""
+    from . import navlog, store
+    con = store.connect(Path(args.db) if args.db else None)
+    rows = store.nav_rows(con, game_id=args.game, agent=args.agent, run_id=args.run, mode=args.mode,
+                          seat=args.seat, with_points=bool(args.trajectory or args.json or args.calibrate),
+                          limit=args.limit)
+    total = con.execute("SELECT COUNT(*) FROM nav_traj").fetchone()[0]
+    con.close()
+    if args.calibrate:
+        table = navlog.calibration(rows)
+        if not table:
+            _p(f"not enough recorded episodes for a calibration read "
+               f"(need >= {navlog.MIN_CALIBRATION_N} rows at a step; the store holds {total})")
+            return 0
+        _p(f"calibration over {len(rows)} row(s) — r_nav vs the CASH-ALONE CONTROL r_cash; "
+           f"NAV earns its place only where r_nav > r_cash")
+        _p(f"{'step':>5} {'day':>4} {'n':>6} {'r_nav':>7} {'r_cash':>7} {'pairs':>6} {'ties':>5} {'sign acc':>9}")
+        for t in table:
+            r_nav = "      ·" if t["r_nav"] is None else f"{t['r_nav']:>7.3f}"
+            r_cash = "      ·" if t["r_cash"] is None else f"{t['r_cash']:>7.3f}"
+            acc = "        ·" if t["sign_acc"] is None else f"{100 * t['sign_acc']:>8.1f}%"
+            _p(f"{t['step']:>5} {t['day']:>4} {t['n']:>6} {r_nav} {r_cash} "
+               f"{t['n_pairs']:>6} {t['n_ties']:>5} {acc}")
+        return 0
+    if args.json:
+        for r in rows:
+            r["points"] = navlog.trajectory(r)
+        Path(args.json).write_text(json.dumps(rows, indent=1, default=str), encoding="utf-8")
+        _p(f"wrote {len(rows)} row(s) to {args.json}")
+        return 0
+    if not rows:
+        _p(f"no NAV trajectories match (the store holds {total}). The ladder records a sample of "
+           f"its games; a manual run needs --nav-telemetry.")
+        return 0
+    _p(f"{'game':<17} {'st':>2} {'seat':>4} {'seed':>6} {'pts':>4} {'final cash':>11} {'final nav':>10} "
+       f"{'phi(T)':>8} {'money':>10} {'res':>4}  agent")
+    for r in rows:
+        _p(f"{r['game_id']:<17} {r['final_step']:>2} {r['seat']:>4} {r['seed']:>6} {r['n_points']:>4} "
+           f"{r['final_cash']:>11.0f} {r['final_nav']:>10.0f} {r['final_phi']:>8.2f} "
+           f"{r['money']:>10.0f} {r['result']:>4.1f}  {r['agent']}"
+           + ("  PROVISIONAL" if r["provisional"] else "") + (f"  ERROR {r['error'][:60]}" if r["error"] else ""))
+        if args.trajectory:
+            for p in navlog.trajectory(r):
+                _p(f"     step {p['step']:>3} day {p['day']:>2}  cash {p['cash']:>10.0f}  "
+                   f"nav {p['nav']:>10.0f}  phi {p['phi']:>9.0f}" + ("  (provisional)" if p["provisional"] else ""))
+    _p(f"\n{len(rows)} row(s) of {total} in the store. nav schema "
+       f"{sorted({r['nav_schema'] for r in rows})}, source {sorted({r['nav_source'] for r in rows})}, "
+       f"variant {sorted({r['variant'] for r in rows})}, lam {sorted({r['lam_opp'] for r in rows})}")
+    return 0
+
+
 def cmd_push(args) -> int:
     """Upload ONE agent snapshot to a hub (arena/push.py)."""
     from . import push as pushmod
@@ -386,6 +441,21 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--node", help="run on a remote node (ssh alias/host) and import the results back")
     s.add_argument("--remote-workers", type=int, help="workers on the node (default: its cpu_count-2)")
     s.add_argument("--quiet", action="store_true")
+    s.add_argument("--nav-telemetry", action="store_true",
+                   help="record a NAV trajectory for EVERY game of this run (S-3). Off by default, "
+                        "and it must stay off for anything measured: it costs ~35 ms of wall time "
+                        "per seat per game (never per-turn time, so gates are unaffected -- but a "
+                        "run that measures throughput should not carry it)")
+    s.add_argument("--nav-rate", type=int, default=0, metavar="PCT",
+                   help="record NAV trajectories for this percentage of the run's games "
+                        "(deterministic in game_id); --nav-telemetry is the same as --nav-rate 100")
+    s.add_argument("--nav-sample-every", type=int, default=None, metavar="STEPS",
+                   help="steps between marks (default 24 = one per game day); the terminal "
+                        "snapshot is always included")
+    s.add_argument("--nav-variant", default=None, choices=("spot", "walk", "drain"),
+                   help="mark variant (default drain, the most conservative; see docs/nav.md)")
+    s.add_argument("--nav-detail", action="store_true",
+                   help="also store each mark's per-line detail (roughly triples the row size)")
     s.set_defaults(fn=cmd_match)
 
     s = sub.add_parser("leaderboard", help="BT + Elo + head-to-head -> data/arena/leaderboard.md/json (+ workshop)")
@@ -484,6 +554,21 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--superseded", type=int, default=0, metavar="N",
                    help="also print the N most recent superseded measurements")
     s.set_defaults(fn=cmd_verify)
+
+    s = sub.add_parser("nav", help="S-3 NAV trajectories recorded per episode (see docs/pit.md)")
+    s.add_argument("--game", help="one game_id")
+    s.add_argument("--agent", help="every recorded episode of this agent")
+    s.add_argument("--run", help="every recorded episode of this run_id")
+    s.add_argument("--mode", help="ladder | screen | confirm | round-robin")
+    s.add_argument("--seat", type=int, choices=(0, 1))
+    s.add_argument("--limit", type=int, default=40)
+    s.add_argument("--trajectory", action="store_true", help="print every mark, not just the terminal one")
+    s.add_argument("--calibrate", action="store_true",
+                   help="per-step calibration: does the mark predict the bank? r_nav against the "
+                        "mandatory cash-alone control r_cash, plus the sign accuracy of the NAV gap")
+    s.add_argument("--json", help="dump the rows (with trajectories) here instead of printing")
+    s.add_argument("--db")
+    s.set_defaults(fn=cmd_nav)
 
     s = sub.add_parser("push", help="upload ONE registered agent snapshot to a hub (never the registry)")
     s.add_argument("agent", help="a registered agent: name@sha, or a name (latest wins)")

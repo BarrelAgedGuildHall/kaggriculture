@@ -54,7 +54,8 @@ def _timing(durs: list[float]) -> dict:
 
 def play_game(job: dict) -> dict:
     """job: game_id, p0, p1 (registry entries), seed, steps, keep_replay ('none'|'crash'|'loss'),
-    focus (agent id whose loss triggers a kept replay), mode, run_id, configuration (optional)."""
+    focus (agent id whose loss triggers a kept replay), mode, run_id, configuration (optional),
+    nav_telemetry + nav_sample_every/nav_variant/nav_detail (S-3, off unless asked)."""
     t0 = time.perf_counter()
     row = {
         "game_id": job["game_id"], "run_id": job.get("run_id", ""), "mode": job.get("mode", ""),
@@ -114,6 +115,22 @@ def play_game(job: dict) -> dict:
                 except Exception:
                     pass
     row["wall_s"] = round(time.perf_counter() - t0, 2)
+
+    # S-3 NAV telemetry. AFTER the episode, from the env still in memory: the per-turn
+    # `duration` above was measured by the framework around the agent call, so nothing computed
+    # here can move it, and a measured arm with telemetry off is bit-identical to one before it
+    # existed. `nav_rows` is not a `games` column -- the scheduler pulls it off the row and
+    # stores it in `nav_traj` (see arena/navlog.py).
+    if job.get("nav_telemetry") and env is not None and not row["harness_error"]:
+        try:
+            from . import navlog
+            row["nav_rows"] = navlog.game_rows(
+                env, row, sample_every=int(job.get("nav_sample_every") or navlog.DEFAULT_SAMPLE_EVERY),
+                variant=job.get("nav_variant") or navlog.VARIANT,
+                detail=bool(job.get("nav_detail")))
+        except Exception as exc:      # telemetry never costs a game
+            row["nav_rows"] = []
+            row["nav_error"] = repr(exc)[:300]
 
     keep = job.get("keep_replay", "crash")
     focus = job.get("focus")

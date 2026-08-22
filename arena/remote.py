@@ -101,6 +101,18 @@ def run_remote(args) -> int:
         argv += ["--workers", str(args.remote_workers)]
     if args.quiet:
         argv += ["--quiet"]
+    # S-3: the games run on the node, so the telemetry has to be asked for there. It comes back
+    # in the run delta -- `store.import_db` merges `nav_traj` alongside the games.
+    if getattr(args, "nav_telemetry", False):
+        argv += ["--nav-telemetry"]
+    if getattr(args, "nav_rate", 0):
+        argv += ["--nav-rate", str(args.nav_rate)]
+    if getattr(args, "nav_sample_every", None):
+        argv += ["--nav-sample-every", str(args.nav_sample_every)]
+    if getattr(args, "nav_variant", None):
+        argv += ["--nav-variant", str(args.nav_variant)]
+    if getattr(args, "nav_detail", False):
+        argv += ["--nav-detail"]
     from . import engine as eng
     remote_cmd = (f'export PATH="$HOME/.local/bin:$PATH" KAGGRI_ARENA_SHA={shlex.quote(eng.arena_git_sha())}; '
                   f"cd {REMOTE_DIR} && uv run python -m arena {' '.join(shlex.quote(a) for a in argv)}")
