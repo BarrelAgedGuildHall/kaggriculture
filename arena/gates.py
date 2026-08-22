@@ -1,26 +1,42 @@
-"""Promotion gates: an agent may become champion / be submitted only if, over the confirm set
+"""Promotion gates: an agent may become champion / be submitted only if, over a stated seed band
 against the current champion, it has 0 crashes, 0 timeouts, p99 turn <= 150 ms and a Wilson
 95 % lower bound on its win rate strictly above 50 %.
+
+The band is a **named, declared** parameter (`paths.SEED_BANDS`, default `confirm` = 1000-1199) and
+every result states the band it ran on. It used to be a module constant, which meant every
+promotion decision the org ever made inherited the same 200 seeds: a band artefact then looks
+identical to a result, on every gate at once. Pool at least two disjoint bands before promoting
+across families, and quote the between-band spread beside the CI.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
 from . import ratings, registry, store
-from .paths import CONFIRM_N, CONFIRM_SEED_BASE
+from .paths import CONFIRM_N, DEFAULT_GATE_BAND, resolve_band
 
 P99_LIMIT_MS = 150.0
 MAX_LIMIT_MS = 400.0
+DEFAULT_BAND = DEFAULT_GATE_BAND
 
 
 def evaluate(name: str, team: str = "org", db_path: Path | None = None, opponent: str | None = None,
-             seed_lo: int | None = CONFIRM_SEED_BASE, seed_hi: int | None = CONFIRM_SEED_BASE + CONFIRM_N // 2 - 1,
-             min_games: int = CONFIRM_N, p99_limit: float = P99_LIMIT_MS, max_limit: float = MAX_LIMIT_MS) -> dict:
+             band: str = DEFAULT_BAND, seed_lo: int | None = None, seed_hi: int | None = None,
+             min_games: int | None = None, p99_limit: float = P99_LIMIT_MS,
+             max_limit: float = MAX_LIMIT_MS) -> dict:
+    band_lo, band_hi = resolve_band(band)
+    if seed_lo is None:
+        seed_lo = band_lo
+    if seed_hi is None:
+        seed_hi = band_hi
+    if min_games is None:
+        min_games = CONFIRM_N
     reg = registry.load()
     agent = registry.resolve(name, reg)
     champ = registry.resolve(opponent, reg) if opponent else registry.get_champion(team, reg)
     reasons: list[str] = []
-    res = {"agent": agent["id"], "team": team, "champion": champ["id"] if champ else None, "checks": {}, "reasons": reasons}
+    res = {"agent": agent["id"], "team": team, "champion": champ["id"] if champ else None,
+           "band": band, "seed_lo": seed_lo, "seed_hi": seed_hi, "checks": {}, "reasons": reasons}
     if champ is None:
         reasons.append(f"no champion set for team {team!r} (arena champion set --team {team} <agent>); "
                        "first champion is assigned by decision, not by gate")
@@ -42,7 +58,8 @@ def evaluate(name: str, team: str = "org", db_path: Path | None = None, opponent
     score = sum(float(g["result0"]) if g["p0"] == agent["id"] else 1.0 - float(g["result0"]) for g in games)
     lo, hi = ratings.wilson(score, n)
     checks = {
-        "enough_games": (n >= min_games, f"{n} mode=confirm games on seeds {seed_lo}-{seed_hi} (need {min_games}"
+        "enough_games": (n >= min_games, f"{n} mode=confirm games on band {band} "
+                                         f"(seeds {seed_lo}-{seed_hi if seed_hi is not None else ''}) (need {min_games}"
                                           + (f"; {excluded} non-confirm games on these seeds excluded" if excluded else "") + ")"),
         "no_crashes": (st["crashes"] == 0, f"{st['crashes']} crashes"),
         "no_timeouts": (st["timeouts"] == 0, f"{st['timeouts']} timeouts"),
@@ -64,7 +81,9 @@ def evaluate(name: str, team: str = "org", db_path: Path | None = None, opponent
 
 
 def format_result(res: dict) -> str:
-    lines = [f"GATE {'PASS' if res['pass'] else 'FAIL'}  {res['agent']}  vs champion {res.get('champion')}  (team {res['team']})"]
+    lines = [f"GATE {'PASS' if res['pass'] else 'FAIL'}  {res['agent']}  vs champion {res.get('champion')}  "
+             f"(team {res['team']}, band {res.get('band')} "
+             f"{res.get('seed_lo')}-{res.get('seed_hi') if res.get('seed_hi') is not None else ''})"]
     for k, c in res.get("checks", {}).items():
         lines.append(f"  [{'ok' if c['ok'] else 'FAIL'}] {k}: {c['detail']}")
     for r in res["reasons"]:

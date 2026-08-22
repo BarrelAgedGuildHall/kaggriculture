@@ -27,7 +27,7 @@ from pathlib import Path
 
 from . import engine as eng
 from . import registry, store
-from .paths import CONFIRM_N, CONFIRM_SEED_BASE, PROGRESS_DIR, SCREEN_N, SCREEN_SEED_BASE
+from .paths import CONFIRM_N, PROGRESS_DIR, SCREEN_N, SEED_BANDS, band_seeds
 from .runner import worker_main
 
 
@@ -40,15 +40,14 @@ def game_id(p0: str, p1: str, seed: int, engine: str) -> str:
 
 
 def parse_seeds(spec: str | None, mode: str, n: int) -> list[int]:
-    """`screen` / `confirm` (named sets), `a-b` (inclusive), `a,b,c`, or None (by mode).
+    """A declared band name (`screen` / `confirm` / `ladder` / anything in `paths.SEED_BANDS`),
+    `a-b` (inclusive), `a,b,c`, or None (by mode).
     Returns exactly n//2 seeds (each is played on both seats) unless an explicit list is longer/shorter."""
     pairs = max(1, n // 2)
     if spec in (None, "", "auto"):
         spec = "confirm" if mode == "confirm" else "screen"
-    if spec == "screen":
-        return list(range(SCREEN_SEED_BASE, SCREEN_SEED_BASE + pairs))
-    if spec == "confirm":
-        return list(range(CONFIRM_SEED_BASE, CONFIRM_SEED_BASE + pairs))
+    if spec in SEED_BANDS:
+        return band_seeds(spec, pairs)
     if "-" in spec and "," not in spec:
         a, b = spec.split("-", 1)
         return list(range(int(a), int(b) + 1))
