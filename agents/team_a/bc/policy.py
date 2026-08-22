@@ -33,7 +33,12 @@ MKT_HEADS = {"orders": F.N_ORDERS, "qty": F.N_ORDERS * F.N_QTY, "hire": F.MAX_HI
 class Member:
     def __init__(self, path):
         d = np.load(path, allow_pickle=True)
+        self.path = path
         self.card = json.loads(str(d["card"][0]))
+        # Thresholds calibrated on the ENSEMBLE's averaged probabilities, if they have been
+        # computed (calibrate_ensemble.py). Per-member thresholds are tuned against a single
+        # member's sharper outputs and mis-fire on the mixture.
+        self.ens_thresholds = d["m_ens_thresholds"] if "m_ens_thresholds" in d.files else None
         self.unit = MLP.from_state({k[2:]: d[k] for k in d.files if k.startswith("u_")
                                     and k not in ("u_mu", "u_sd")}, UNIT_HEADS)
         self.mkt = MLP.from_state({k[2:]: d[k] for k in d.files if k.startswith("m_")
@@ -62,6 +67,18 @@ class BCPolicy:
     def __init__(self, members, safety=3):
         self.members = [Member(p) for p in members]
         self.safety = int(safety)
+        # The Pokemon ensemble is only well-defined over members that speak the same
+        # distribution: jun177's LogProbabilityEnsemble refuses any member whose config or
+        # tensor schema differs from member 0. Mixing shapes here would not raise -- it would
+        # quietly average two different policies' probabilities -- so check it explicitly.
+        reference = self.members[0]
+        ref_schema = {k: v.shape for k, v in reference.unit.state().items()}
+        ref_schema.update({"m_" + k: v.shape for k, v in reference.mkt.state().items()})
+        for index, member in enumerate(self.members[1:], 1):
+            schema = {k: v.shape for k, v in member.unit.state().items()}
+            schema.update({"m_" + k: v.shape for k, v in member.mkt.state().items()})
+            if schema != ref_schema:
+                raise ValueError(f"ensemble member {index} tensor schema differs from member 0")
 
     # -- unit ops -----------------------------------------------------------
     def _unit_op(self, ctx, u, claimed):
@@ -108,7 +125,9 @@ class BCPolicy:
             phire = c if phire is None else phire + c
         k = len(self.members)
         pord, pqty, phire = pord / k, pqty / k, phire / k
-        th = self.members[0].thresholds
+        th = self.members[0].ens_thresholds
+        if th is None:
+            th = self.members[0].thresholds
         slots = self.members[0].slot_order
 
         fired = []

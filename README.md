@@ -125,6 +125,10 @@ uv run python -m arena match --mode round-robin --n 16         # every registere
 uv run python -m arena match v1 v0 --mode confirm --node barrelaged@barrelagedworkflows-1.tail547ecd.ts.net
 uv run python -m arena serve                                  # dashboard + JSON API on http://127.0.0.1:8765
 uv run python -m arena serve --hub --host 0.0.0.0             # + the continuous ladder (the hub service; see docs/pit.md)
+uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gates" --ttl 3600
+                                                              # pause the ladder and hold it: while a lease is live
+                                                              # resume is refused (--hub URL to lease a remote hub);
+                                                              # release with `arena lease release <id> --resume`
 uv run python -m arena bench v0a                              # out of the ladder (still rated); --undo re-activates
 uv run python -m arena leaderboard                            # markdown/json export -> data/arena/leaderboard.md (+ workshop/notes/leaderboard-internal.md)
 uv run python -m arena champion set v0 --team A               # teams: A | B | org
@@ -164,9 +168,12 @@ Auto-refreshes every 3 s. With `--hub` the same process runs the **continuous la
 least-played active agent anchors a star match vs its most rating-similar active opponents on
 fresh paired seeds, forever; without it the dashboard just watches CLI runs. JSON API for the
 teams/Registrar: `/api/leaderboard`, `/api/games?limit=50&agent=<id>&flagged=1`, `/api/agents`,
-`/api/runs`, `/api/status`, `/api/hub`, `/api/leaderboard.md`, and `POST /api/control/*`
-(pause/resume/config/bench/retire/champion/register — register only takes `git_ref` + a `path`
-under `agents/`, and the agent starts benched; see docs/pit.md "Security"). Service deployment
+`/api/runs`, `/api/status`, `/api/hub`, `/api/leases`, `/api/leaderboard.md`, and
+`POST /api/control/*` (pause/resume/lease/config/bench/retire/champion/register — register only
+takes `git_ref` + a `path` under `agents/`, and the agent starts benched; see docs/pit.md
+"Security"). **Pause leases**: a manual run holds the ladder under a named lease (owner, purpose,
+TTL, explicit renew) and every resume path refuses while it is live — `docs/pit.md` "Pause
+leases", and `docs/pit-host-windows.md` for who runs when on the shared host. Service deployment
 on workflows-box + tailnet URL: **docs/pit.md**.
 
 Leaderboard export: **BT** (Bradley-Terry MM fit over all stored games — the final Kaggle tournament is BT;

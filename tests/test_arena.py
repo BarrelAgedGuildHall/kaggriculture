@@ -6,6 +6,7 @@ arena.paths), so these tests never touch data/arena/. Run: uv run pytest -q test
 from __future__ import annotations
 
 import importlib
+import json
 import os
 import sys
 import tempfile
@@ -435,9 +436,134 @@ def test_hub_plan_round_prefers_least_played_active():
     # pausing is a durable flag file
     assert hub.set_paused(True) is True
     assert hub.is_paused()
+    stamp = hub.PAUSE_FLAG.read_text(encoding="utf-8")
+    assert hub.set_paused(True) is True
+    assert hub.PAUSE_FLAG.read_text(encoding="utf-8") == stamp, \
+        "re-pausing keeps the original 'paused since' stamp (it is evidence for a contaminated arm)"
     assert hub.set_paused(False) is False
     cfg = hub.set_config(workers=3, games_per_pairing=6)
     assert cfg["workers"] == 3 and cfg["games_per_pairing"] == 6
+
+
+# ------------------------------------------------------------------- pause leases (2026-08-21)
+# Defect: the hub ladder resumed underneath a live manual evaluation (an explicit
+# /api/control/resume by another actor while a team measured timing), contaminating the arms.
+
+def test_lease_blocks_resume_until_released():
+    from arena import hub, leases
+    lease = hub.acquire_lease("engineer-b", "expB-303 gate battery", ttl_s=600)
+    try:
+        assert hub.is_paused(), "acquiring a lease pauses the ladder"
+        assert [l["id"] for l in leases.active()] == [lease["id"]]
+        with pytest.raises(leases.LeaseHeld) as e:
+            hub.set_paused(False)
+        assert lease["id"] in str(e.value) and "engineer-b" in str(e.value)
+        assert "expB-303 gate battery" in str(e.value), "the refusal names who is running what"
+        assert hub.is_paused(), "a refused resume must not have touched the flag"
+    finally:
+        hub.release_lease(lease["id"], resume=True)
+    assert not leases.active()
+    assert not hub.is_paused(), "releasing the last lease restores normal resume behaviour"
+
+
+def test_lease_lapses_after_its_ttl(monkeypatch):
+    from arena import hub, leases
+    lease = leases.acquire("modeler", "exp-N1 traces", ttl_s=leases.DEFAULT_TTL_S)
+    hub.set_paused(True)
+    try:
+        with pytest.raises(leases.LeaseHeld):
+            hub.set_paused(False)
+        monkeypatch.setattr(leases, "_epoch", lambda: lease["acquired_at"] + leases.DEFAULT_TTL_S + 1)
+        assert leases.active() == [], "an abandoned lease lapses; it cannot wedge the ladder forever"
+        assert hub.set_paused(False) is False
+        with pytest.raises(KeyError):
+            leases.renew(lease["id"])          # expired leases are not renewable
+    finally:
+        monkeypatch.undo()
+        for l in leases.active():
+            leases.release(l["id"])
+        hub.set_paused(False)
+
+
+def test_lease_renew_extends_from_now(monkeypatch):
+    from arena import leases
+    lease = leases.acquire("ops", "ingestion", ttl_s=600)
+    try:
+        t1 = lease["acquired_at"] + 300
+        monkeypatch.setattr(leases, "_epoch", lambda: t1)
+        renewed = leases.renew(lease["id"], ttl_s=600)
+        assert renewed["renewals"] == 1
+        assert renewed["expires_at"] == pytest.approx(t1 + 600)
+        assert renewed["expires_in_s"] == 600, "renew extends from now, not from the original grant"
+    finally:
+        monkeypatch.undo()
+        leases.release(lease["id"])
+
+
+def test_force_resume_breaks_the_lease_and_is_logged():
+    from arena import hub, leases
+    lease = hub.acquire_lease("architect-b", "expB-306", ttl_s=600)
+    try:
+        with pytest.raises(ValueError, match="actor"):
+            hub.set_paused(False, force=True)       # an override must say who is overriding
+        assert leases.active(), "a rejected force must not break anything"
+        assert hub.set_paused(False, force=True, actor="ceo") is False
+        assert leases.active() == [], "force resume releases the leases it overrides"
+    finally:
+        for l in leases.active():
+            leases.release(l["id"])
+    log = leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()
+    events = [json.loads(ln) for ln in log]
+    assert any(e["event"] == "force-break" and e["actor"] == "ceo" and lease["id"] in e["lease_ids"]
+               for e in events), "every override is on the audit log"
+    assert any(e["event"] == "acquire" and e["lease_id"] == lease["id"] for e in events)
+
+
+def test_lease_requires_owner_and_purpose():
+    from arena import leases
+    with pytest.raises(ValueError, match="owner"):
+        leases.acquire("", "something")
+    with pytest.raises(ValueError, match="purpose"):
+        leases.acquire("engineer", "  ")
+    assert leases.active() == []
+
+
+# The two papercuts the first real users hit (2026-08-21), fixed in serve.py:
+#  - `acquire` returns the id under "id", so callers echo "id" back at renew/release, which
+#    documented only "lease_id";
+#  - a client that read `leases` at one level of /api/status and found nothing concluded the
+#    ladder was free while resume was in fact being refused.
+
+def test_lease_api_accepts_either_id_key():
+    from arena import hub, leases, serve
+    rec = serve.control("lease", {"op": "acquire", "owner": "ops", "purpose": "ingestion",
+                                  "ttl_s": 600})["lease"]
+    try:
+        renewed = serve.control("lease", {"op": "renew", "id": rec["id"], "ttl_s": 600})["lease"]
+        assert renewed["id"] == rec["id"], "the key `acquire` hands back must work on the way in"
+        with pytest.raises(ValueError, match="lease_id"):
+            serve.control("lease", {"op": "release"})
+        out = serve.control("lease", {"op": "release", "id": rec["id"]})
+        assert out["lease"]["id"] == rec["id"] and out["leases"] == []
+    finally:
+        for l in leases.active():
+            leases.release(l["id"])
+        hub.set_paused(False)
+
+
+def test_status_reports_leases_at_both_levels():
+    from arena import hub, leases, serve
+    assert serve.api_status()["lease_held"] is False
+    lease = hub.acquire_lease("modeler", "exp-012b screen", ttl_s=600)
+    try:
+        st = serve.api_status()
+        assert st["lease_held"] is True
+        assert [l["id"] for l in st["leases"]] == [lease["id"]], "top level carries the leases"
+        assert [l["id"] for l in st["hub"]["leases"]] == [lease["id"]], "so does hub state"
+        assert serve.api_leases()["lease_held"] is True
+    finally:
+        hub.release_lease(lease["id"], resume=True)
+    assert serve.api_status()["lease_held"] is False
 
 
 def test_registry_flags_bench_and_retire():
@@ -496,6 +622,28 @@ def test_serve_api_endpoints_and_controls():
         assert r["paused"] is False
         with pytest.raises(urllib.error.HTTPError):
             post("/api/control/bench", {"agent": "no-such-agent"})
+
+        # pause lease over the API: acquire -> resume refused (409) -> release -> resume works
+        r = post("/api/control/lease", {"op": "acquire", "owner": "engineer", "purpose": "timing arm",
+                                        "ttl_s": 600})
+        lease_id = r["lease"]["id"]
+        try:
+            assert r["paused"] is True and len(r["leases"]) == 1
+            assert get("/api/leases")["leases"][0]["id"] == lease_id
+            assert get("/api/status")["hub"]["leases"][0]["owner"] == "engineer"
+            with pytest.raises(urllib.error.HTTPError) as e:
+                post("/api/control/resume", {})
+            assert e.value.code == 409
+            payload = _json.loads(e.value.read())
+            assert payload["leases"][0]["id"] == lease_id and "timing arm" in payload["error"]
+            assert get("/api/hub")["paused"] is True, "the refused resume left the ladder paused"
+            r = post("/api/control/lease", {"op": "renew", "lease_id": lease_id, "ttl_s": 900})
+            assert r["lease"]["renewals"] == 1
+        finally:
+            r = post("/api/control/lease", {"op": "release", "lease_id": lease_id})
+        assert r["leases"] == []
+        r = post("/api/control/resume", {})
+        assert r["paused"] is False
     finally:
         httpd.shutdown()
         httpd.server_close()

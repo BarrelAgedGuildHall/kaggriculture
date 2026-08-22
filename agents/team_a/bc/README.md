@@ -1,33 +1,48 @@
 # Team A — Ensemble Behaviour Cloning
 
 Adaptation of the Ensemble-BC method used in the Pokémon TCG AI Challenge to Kaggriculture.
-Design rationale, what carries over and what does not:
-`workshop/deliverables/2026-08-19-team-a-ensemble-bc/plan.md`.
+The shipped agent is the **rebuild** (exp-007): three members trained on three disjoint chunks
+of a corpus drawn from Kaggle's official daily Top Episodes datasets, merged by averaging
+action probabilities.
 
-## Pipeline
+- Method extraction from the Pokémon source, the Kaggriculture translation and every forced
+  deviation: `workshop/deliverables/2026-08-20-team-a-bc-rebuild/method.md`.
+- Corpus manifest (teacher identity, both ratings, provenance, split, chunk):
+  `.../2026-08-20-team-a-bc-rebuild/corpus-manifest.csv`.
+- The earlier single-teacher line (exp-003..006) is superseded; its corpus was disqualified.
+  Historical rationale: `workshop/deliverables/2026-08-19-team-a-ensemble-bc/plan.md`.
+
+## Pipeline (rebuild)
 
 ```bash
-# 1. index the ladder cheaply (metadata only -- replays are ~30 MB each)
-uv run python scripts/episode_index.py --daily 2026-08-18
-uv run python scripts/episode_index.py --submission 55574890
+# 1. index every episode of the official daily Top Episodes datasets (metadata only --
+#    replays are ~30 MB each). NB: scripts/episode_index.py truncates at 200 ids per day;
+#    artisans/modeler/bench/rebuild/index_days.py follows the page tokens properly.
+python artisans/modeler/bench/rebuild/index_days.py --days 2026-08-15 ... --out index/
 
-# 2. fetch a teacher's winning episodes (artisans/modeler/bench/fetch_teachers.py)
-#    -> warehouse/datasets/kaggriculture/replays/team-a/1.32.7/<episode_id>.json
+# 2. select the corpus: winning seats, top N per day by the winner's rating, engine window
+python artisans/modeler/bench/rebuild/select_corpus.py \
+    --days 2026-08-15 2026-08-16 2026-08-17 2026-08-18 2026-08-19 --per-day-top 112
 
-# 3. extract (obs, action) rows from the teacher's winning seat
-uv run python agents/team_a/bc/extract.py --teacher tetsuya
+# 3. download it, verifying module_version + winner seat on arrival
+python artisans/modeler/bench/rebuild/fetch_corpus.py
 
-# 4. train (pure numpy, ~30 s, 0.74 MB of weights)
-uv run python agents/team_a/bc/train.py \
-    --rows "$GUILDHALL_WAREHOUSE/datasets/kaggriculture/bc-rows/tetsuya-fold0.npz" \
-    --out agents/team_a/bc/weights/tetsuya-a.npz
+# 4+5. extract 3 chunks + shared validation, then train the 3 members (fixed seeds)
+bash artisans/modeler/bench/rebuild/build_members.sh
 
-# 5. evaluate (the gate -- offline accuracy is only a filter)
-uv run python scripts/evaluate.py --agent agents/team_a/bc/main.py \
-    --opponents agent/main.py starter --n 64 --tag exp-005-screen
+# 6. re-tune the market thresholds on the ENSEMBLE's averaged probabilities
+uv run python agents/team_a/bc/calibrate_ensemble.py \
+    --rows "$GUILDHALL_WAREHOUSE/datasets/kaggriculture/bc-rows/rebuild-chunk0.npz"
+
+# 7. evaluate in the Pit (the gate -- offline accuracy is only a filter)
+uv run python -m arena register agents/team_a/bc --name TeamA-EnsembleBC-rebuild-v2 --team A
+uv run python -m arena match TeamA-EnsembleBC-rebuild-v2 TeamA-Farmer-v0 --mode confirm
 
 uv run pytest tests/test_bc_parity.py -q
 ```
+
+Single-teacher training (`extract.py --teacher <name>` → `train.py`) still works and is what
+the older experiments used.
 
 ## Files
 
@@ -40,6 +55,18 @@ uv run pytest tests/test_bc_parity.py -q
 | `policy.py` | inference, ensembling, safety layers, sanitiser |
 | `main.py` | Kaggle entry point (`__file__` is not defined when the framework execs it) |
 | `weights/*.npz` | one file per ensemble member; every `.npz` in the folder is loaded |
+
+## Ensemble contract
+
+Members are merged by **averaging their action probability vectors** over the same legal set,
+then taking the argmax — the Pokémon `LogProbabilityEnsemble` formula
+(`logsumexp_k log p_k − log K` is the same thing in log space). Not an average of logits, not
+weighted. `BCPolicy` refuses members whose tensor schema differs from member 0.
+
+Market orders fire on per-order thresholds. Those must be calibrated on the **ensemble's**
+averaged probabilities (`calibrate_ensemble.py`, stored as `m_ens_thresholds` in member 0),
+not per member: averaging pulls extremes toward the middle, and the observed per-member spread
+reached 0.625 — enough to starve orders like `BUY_ANIMAL` that start the animal economy.
 
 ## Two traps that cost real time
 
