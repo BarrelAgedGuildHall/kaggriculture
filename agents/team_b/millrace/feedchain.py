@@ -844,12 +844,32 @@ def _plan(obs, S, deadline):
         # it, so 89 tile-days a season sat dead. DIG is priced by what the tile
         # unlocks — the best plant we still want, or a site for an animal in
         # hand — so it competes with everything else instead of needing a band.
-        if priced and P["dig"] and weeds:
+        # ---- ruling-03 R-15: DIG a SPENT ongoing tile, do not wait for the weed
+        # An ongoing crop past its terminal production event produces nothing
+        # further (`_daily_refresh_plants`: `production_count > max_yield` is a
+        # no-op), cannot be freed by HARVEST (only non-ongoing tiles go to None)
+        # and is about to weed out anyway — via `consecutive_unwatered >= 2` if
+        # we stop watering, or via `_decay_plants` at the lifespan step the
+        # terminal event just set. Waiting for that costs ~2 tile-days per
+        # retirement for nothing. The spent test is engine-exact and needs no
+        # constant: `_new_plant` gives an ongoing crop `max_lifespan_step = -1`
+        # and ONLY the terminal event (line 802) ever sets it, so `>= 0` on an
+        # ongoing tile means "terminal event has fired"; `yield_units <= 0` then
+        # means the last harvest has already been taken.
+        dig_sites = list(weeds)
+        if priced and P["dig"] and P["dig_terminal"]:
+            for (x, y), t in plants:
+                cd = pc.CROPS.get(t["crop"])
+                if not (cd and cd.get("ongoing")):
+                    continue
+                if t.get("max_lifespan_step", -1) >= 0 and t.get("yield_units", 0) <= 0:
+                    dig_sites.append((x, y))
+        if priced and P["dig"] and dig_sites:
             plant_value = 0.0
             if capex_ok:
                 for crop in ({c for c in plan} if plan else ()):
                     plant_value = max(plant_value, pricer.fresh_plant_value(crop))
-            tasks += pricer.dig_tasks(weeds, plant_value, build_value)
+            tasks += pricer.dig_tasks(dig_sites, plant_value, build_value)
 
     tasks.sort(key=lambda t: t[0])
 
@@ -1174,6 +1194,11 @@ FEEDCHAIN_DEFAULTS = {
     # the object the pricer prices, and standalone it is unpowered ($1.0k
     # against a $7.1k paired SD).
     "dig": False,
+    # ruling-03 R-15: also DIG a SPENT ongoing tile (terminal event fired and
+    # the last harvest taken) instead of waiting ~2 days for it to weed out.
+    # Requires `dig`; the spent test is engine-exact (`max_lifespan_step >= 0`
+    # on an ongoing crop) and carries no constant.
+    "dig_terminal": False,
     # Claim-leak fix: the on-tile loop never checked `claimed`, so two units on
     # one tile both emitted the same action. Every no-op the census reports.
     "dedupe_ontile": False,

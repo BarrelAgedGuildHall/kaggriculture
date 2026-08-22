@@ -24,6 +24,11 @@ POST /api/control/lease  {"op":"acquire","owner":"engineer-b","purpose":"expB-30
                          {"op":"renew","lease_id":"..."} | {"op":"release","lease_id":"...","resume":false}
                          {"op":"list"}
      renew/release take "lease_id"; "id" (the key `acquire` returns it under) is accepted too.
+     "op" is REQUIRED and every control body is key-checked: an unknown key or a missing op is a
+     400, never a 200 that quietly degraded into a read (the ladder looking "free" because the
+     request never happened is the failure mode this exists to remove).
+     `lease_held` reads TRUE when the lease file cannot be read: unknown state is held state, and
+     `lease_state_error` carries the reason.
 POST /api/control/config      {"workers":14,"games_per_pairing":4,"max_opponents":5}
 POST /api/control/bench       {"agent":"v0a","undo":false}      out of the ladder, still rated
 POST /api/control/retire      {"agent":"v0a","undo":false}      out of ladder AND rating fit
@@ -124,19 +129,50 @@ def api_status() -> dict:
         con = store.connect()
         n_games = con.execute("SELECT COUNT(*) FROM games").fetchone()[0]
         con.close()
-    live = leases.active()
     return {"engine": eng.engine_version(), "engine_sha": eng.engine_sha(), "arena_sha": eng.arena_git_sha(),
+            # `arena_sha` can be a *declared* value (KAGGRI_ARENA_SHA, which the hub's systemd unit
+            # pins at deploy time and nothing updates), so it goes stale exactly when the "is the
+            # deploy live?" check needs it. `arena_code_hash` is computed from the arena/*.py on
+            # disk every time, line-ending-normalised, so it can be compared against a clone:
+            #   python -c "from arena import engine; print(engine.arena_code_hash())"
+            "arena_sha_source": eng.arena_sha_source(), "arena_code_hash": eng.arena_code_hash(),
             "arena_dir": str(ARENA_DIR), "n_games": n_games, "live_runs": len(api_runs()["live"]),
             # leases are reported at the top level as well as inside `hub` on purpose: a client
             # reading the wrong level used to see nothing and conclude the ladder was free while
             # `resume` was in fact being refused. `lease_held` is the one-glance answer.
-            "leases": live, "lease_held": bool(live),
+            **leases.status(),
             "hub": hubmod.HUB.status(), "time": time.strftime("%Y-%m-%dT%H:%M:%S")}
 
 
 def api_leases() -> dict:
-    live = leases.active()
-    return {"leases": live, "lease_held": bool(live), "paused": hubmod.is_paused()}
+    return {**leases.status(), "paused": hubmod.is_paused()}
+
+
+# Every accepted key of every control action. A body carrying anything else is a *malformed*
+# request, not a request with extra decoration: on 2026-08-22 a resume-adjacent call with the op
+# under the wrong key returned 200 and an empty lease list, which reads exactly like "the ladder is
+# free". An unknown key now fails with 400 and names itself.
+CONTROL_KEYS: dict[str, set[str]] = {
+    "pause": set(),
+    "resume": {"force", "actor"},
+    "lease": {"op", "owner", "purpose", "ttl_s", "pause", "lease_id", "id", "resume"},
+    "config": {"workers", "games_per_pairing", "max_opponents", "allow_unsafe_register"},
+    "bench": {"agent", "undo"},
+    "retire": {"agent", "undo"},
+    "activate": {"agent"},
+    "champion": {"team", "agent"},
+    "register": {"name", "team", "notes", "git_ref", "path", "code_b64"},
+}
+LEASE_OPS = ("acquire", "renew", "release", "list")
+
+
+def _check_body(action: str, body: dict) -> None:
+    if not isinstance(body, dict):
+        raise ValueError(f"{action}: body must be a JSON object, got {type(body).__name__}")
+    unknown = sorted(set(body) - CONTROL_KEYS[action])
+    if unknown:
+        raise ValueError(f"{action}: unknown request key(s) {', '.join(repr(k) for k in unknown)}; "
+                         f"accepted: {', '.join(sorted(CONTROL_KEYS[action])) or '(none)'}")
 
 
 def _lease_id(body: dict) -> str:
@@ -150,6 +186,9 @@ def _lease_id(body: dict) -> str:
 
 
 def control(action: str, body: dict) -> dict:
+    if action not in CONTROL_KEYS:
+        raise ValueError(f"unknown control action {action!r} (one of: {', '.join(sorted(CONTROL_KEYS))})")
+    _check_body(action, body)
     if action == "pause":
         return {"paused": hubmod.set_paused(True), **api_leases()}
     if action == "resume":
@@ -157,7 +196,13 @@ def control(action: str, body: dict) -> dict:
         paused = hubmod.set_paused(False, force=bool(body.get("force")), actor=body.get("actor", ""))
         return {"paused": paused, **api_leases()}
     if action == "lease":
-        op = body.get("op", "list")
+        # No default op. It used to default to "list", so a body whose op sat under the wrong key
+        # -- or was missing entirely -- silently degraded a mutation into a read that returned 200
+        # and an empty lease list. A caller cannot tell that apart from "the ladder is free".
+        op = body.get("op")
+        if not op:
+            raise ValueError('lease needs an "op": ' + " | ".join(LEASE_OPS)
+                             + ' (e.g. {"op":"acquire","owner":"engineer","purpose":"exp-013 gate"})')
         if op == "list":
             return api_leases()
         if op == "acquire":
@@ -331,7 +376,8 @@ async function tick(){try{const [lb,rs,ag,st]=await Promise.all([j('/api/leaderb
  const lz=hub.leases||[],lp=$('leasepill');lp.style.display=lz.length?'':'none';lp.className='pill warn';
  lp.textContent=lz.length?('LEASED · '+lz.map(l=>`${l.owner}: ${l.purpose} (${Math.round(l.expires_in_s/60)}m)`).join(' · ')):'';
  if(!cfgTouched){$('cfgWorkers').value=hub.config.workers;$('cfgGames').value=hub.config.games_per_pairing;$('cfgOpp').value=hub.config.max_opponents;}
- $('engine').textContent=`engine ${st.engine} · arena ${st.arena_sha} · ${st.n_games} games`;
+ $('engine').textContent=`engine ${st.engine} · arena ${st.arena_sha} (${st.arena_sha_source}) · code ${st.arena_code_hash} · ${st.n_games} games`;
+ if(st.lease_state_error){const p=$('leasepill');p.style.display='';p.className='pill bad';p.textContent='LEASE STATE UNREADABLE — treated as held';}
  $('champs').textContent='champions: '+(Object.entries(lb.champions||{}).map(([t,c])=>`${t}=${short(c)}`).join('  ')||'none');
  $('clock').textContent='updated '+new Date().toLocaleTimeString();
  if(detailAgent)openDetail(detailAgent);}catch(e){const p=$('hubpill');p.textContent='ERROR '+e.message;p.className='pill bad';}}

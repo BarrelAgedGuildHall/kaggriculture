@@ -215,13 +215,18 @@ def test_shipped_entry_carries_the_strawberry_acreage():
 
     `strawberry_tiles` is a fixed constant and therefore a logged §0 violation
     (issue #16): the section-0-clean "mr" rule lost to fixed-16 by 13pp head to
-    head, so the constant ships until expB-304 derives the acreage from
+    head, so the constant ships until expB-304b derives the acreage from
     dispatch-queue pricing. FEEDCHAIN_DEFAULTS stay at 0 so
     `millrace:feedchain` and melonrace@725fcf7 remain byte-identical control
     lineages.
+
+    UPDATED 2026-08-22 (Auditor finding B-1): 16 -> 32, the acreage the Pit
+    gated and promoted as `TeamB-Millrace-s32m6@hddf03d4580`. The old value was
+    still pinned here while the champion ran on 32, which is how main.py came
+    to ship an agent that had never passed a gate.
     """
     src = (REPO_ROOT / "agents" / "team_b" / "millrace" / "main.py").read_text(encoding="utf-8")
-    assert '"strawberry_tiles": 16' in src
+    assert '"strawberry_tiles": 32' in src
     from millrace.feedchain import FEEDCHAIN_DEFAULTS
     assert FEEDCHAIN_DEFAULTS["strawberry_tiles"] == 0
     assert FEEDCHAIN_DEFAULTS["strawberry_rule"] == "fixed"

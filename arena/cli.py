@@ -8,7 +8,7 @@ from pathlib import Path
 
 from . import engine as eng
 from . import registry
-from .paths import ARENA_DIR, DB_PATH, RUNS_DIR
+from .paths import ARENA_DIR, CONFIRM_N, DB_PATH, DEFAULT_GATE_BAND, RUNS_DIR, SEED_BANDS
 
 
 def _p(*a, **k):
@@ -121,10 +121,39 @@ def cmd_leaderboard(args) -> int:
 def cmd_gate(args) -> int:
     from . import gates
     res = gates.evaluate(args.name, team=args.team, db_path=Path(args.db) if args.db else None, opponent=args.vs,
-                         seed_lo=args.seed_lo, seed_hi=args.seed_hi, min_games=args.min_games,
+                         band=args.band, seed_lo=args.seed_lo, seed_hi=args.seed_hi, min_games=args.min_games,
                          p99_limit=args.p99_ms, max_limit=args.max_ms)
     _p(gates.format_result(res))
     return 0 if res["pass"] else 1
+
+
+def cmd_verify(args) -> int:
+    """Orphan-run integrity check: which runs no longer own the games they played (NB-6)."""
+    from . import store
+    con = store.connect(Path(args.db) if args.db else None)
+    rep = store.integrity_report(con)
+    _p(f"runs {len(rep['runs'])}  superseded rows {rep['superseded_total']}  "
+       f"incomplete runs {len(rep['incomplete_runs'])}  orphan run_ids {len(rep['orphan_games'])}")
+    for r in rep["incomplete_runs"]:
+        by = ", ".join(f"{k} ({v})" for k, v in r["superseded_by"].items()) or "unknown (pre-ledger)"
+        _p(f"  ! {r['run_id']} {r['mode']:<11} played {r['n_games']:>4} stored {r['stored']:>4} "
+           f"missing {r['missing']:>4}  taken by: {by}")
+        _p(f"      agents {r['agents']}  started {r['started_at']}")
+    for rid, n in sorted(rep["orphan_games"].items()):
+        _p(f"  ? {n} games carry run_id {rid} with no run row")
+    if args.superseded:
+        for row in store.superseded_rows(con)[: args.superseded]:
+            _p(f"    {row['superseded_at']} {row['run_id']} -> {row['superseded_by_run']}  "
+               f"{row['p0']} vs {row['p1']} seed={row['seed']} result0={row['result0']} "
+               f"money {row['money0']:.0f}/{row['money1']:.0f}")
+    con.close()
+    if rep["ok"]:
+        _p("OK: every run still owns the games it played")
+        return 0
+    _p("NOT OK: a re-run took rows from an earlier run. The earlier measurement is in the "
+       "`superseded` ledger (arena verify --superseded 20); rows recorded before this ledger "
+       "existed are gone.")
+    return 1
 
 
 def cmd_champion(args) -> int:
@@ -226,6 +255,8 @@ def cmd_lease(args) -> int:
             out = _hub_call(args.hub, "/api/control/lease", body)
         if out.get("lease"):
             _p(f"{op}: {out['lease']['id']}")
+        if out.get("lease_state_error"):
+            _p(f"! LEASE STATE UNREADABLE on the hub -- treated as HELD: {out['lease_state_error']}")
         _print_leases(out.get("leases", []))
         _p(f"ladder paused: {out.get('paused')}")
         return 0
@@ -244,7 +275,11 @@ def cmd_lease(args) -> int:
         rec = hubmod.release_lease(args.lease_id, resume=args.resume)
         _p(f"lease {rec['id']} released after {rec['held_for_s'] // 60} min; ladder paused: {hubmod.is_paused()}")
     else:
-        _print_leases(leases.active())
+        st = leases.status()
+        if st["lease_state_error"]:
+            _p(f"! LEASE STATE UNREADABLE -- treated as HELD: {st['lease_state_error']}")
+        else:
+            _print_leases(st["leases"])
         _p(f"ladder paused: {hubmod.is_paused()}")
     return 0
 
@@ -254,7 +289,10 @@ def cmd_info(args) -> int:
     _p(f"store     : {DB_PATH} ({'exists' if DB_PATH.exists() else 'missing'})")
     _p(f"runs dir  : {RUNS_DIR}")
     _p(f"engine    : kaggle-environments {eng.engine_version()} (kaggriculture.py sha {eng.engine_sha()})")
-    _p(f"arena sha : {eng.arena_git_sha()}")
+    _p(f"arena sha : {eng.arena_git_sha()} (from {eng.arena_sha_source()})")
+    _p(f"arena code: {eng.arena_code_hash()}  <- compare with the hub's /api/status to see if a deploy is live")
+    bands = ", ".join(f"{n} {lo}-{hi if hi is not None else ''}" for n, (lo, hi) in SEED_BANDS.items())
+    _p(f"seed bands: {bands}   (gate default: {DEFAULT_GATE_BAND}; override with KAGGRI_SEED_BANDS)")
     from .scheduler import default_workers
     _p(f"workers   : {default_workers()} (cpu_count-2)")
     return 0
@@ -309,13 +347,17 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--quiet", action="store_true")
     s.set_defaults(fn=cmd_leaderboard)
 
-    s = sub.add_parser("gate", help="promotion gate for an agent vs the current champion over the confirm set")
+    s = sub.add_parser("gate", help="promotion gate for an agent vs the current champion over a seed band")
     s.add_argument("name")
     s.add_argument("--team", default="org", choices=("A", "B", "org"))
     s.add_argument("--vs", help="compare against this agent instead of the team champion")
-    s.add_argument("--min-games", type=int, default=400)
-    s.add_argument("--seed-lo", type=int, default=1000)
-    s.add_argument("--seed-hi", type=int, default=1199)
+    s.add_argument("--min-games", type=int, default=None, help=f"default {CONFIRM_N}")
+    s.add_argument("--band", default=DEFAULT_GATE_BAND,
+                   help="seed band: a name from paths.SEED_BANDS (" + ", ".join(sorted(SEED_BANDS))
+                        + ") or an explicit lo-hi range. Pool >=2 disjoint bands before promoting "
+                          "across families and report the between-band spread.")
+    s.add_argument("--seed-lo", type=int, default=None, help="override the band's low seed")
+    s.add_argument("--seed-hi", type=int, default=None, help="override the band's high seed")
     s.add_argument("--p99-ms", type=float, default=150.0)
     s.add_argument("--max-ms", type=float, default=400.0)
     s.add_argument("--db")
@@ -381,7 +423,13 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--hub")
     g.set_defaults(fn=cmd_lease)
 
-    s = sub.add_parser("info", help="paths, engine, workers")
+    s = sub.add_parser("verify", help="integrity: do all runs still own the games they played? (exit 1 if not)")
+    s.add_argument("--db")
+    s.add_argument("--superseded", type=int, default=0, metavar="N",
+                   help="also print the N most recent superseded measurements")
+    s.set_defaults(fn=cmd_verify)
+
+    s = sub.add_parser("info", help="paths, engine, seed bands, workers")
     s.set_defaults(fn=cmd_info)
     return p
 

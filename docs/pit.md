@@ -115,6 +115,42 @@ first instinct is to distrust the lease, not the reading):
   or two arena dirs (`/api/status` → `arena_dir` vs the `ARENA_DIR` your CLI prints from
   `arena info`) before suspecting the lease.
 
+Four more, from the Auditor's review of the lease PR (2026-08-22) — all fixed in code, recorded
+here because each one is a way the ladder could look free when it was not:
+
+- **`op` is required and bodies are key-checked.** `POST /api/control/lease` used to default `op`
+  to `"list"`, so a body with the op under the wrong key (or missing) answered **200 with an empty
+  lease list** — which reads exactly like "no lease held" — instead of doing what was asked. A
+  missing op and any unknown key are now **400** and name themselves. The op key is `op`:
+  `{"op":"acquire",...}`.
+- **Unknown lease state is held state.** A truncated or corrupt `leases.json` used to be swallowed
+  (`except Exception: state = {}`) and reported as *no leases*; truncating the file under a live
+  lease flipped resume from 409 to 200. Now every read of an unreadable file raises, `lease_held`
+  reads **true**, `/api/status` carries `lease_state_error`, and the dashboard shows a red pill.
+  The only way through is a deliberate force-resume with an actor, which **quarantines** the file
+  (renames it `leases.json.corrupt-<ts>`, never deletes it) and logs `state-quarantined`.
+- **A lease implies a paused ladder.** The hub loop checked the pause flag only, so a lease held
+  over an un-paused ladder (a `--no-pause` acquire, a flag deleted by hand) had nothing
+  reconciling the two. It now re-asserts the pause and writes a `reconciled-pause` row.
+- **Concurrent lease writes are serialised** in-process (the hub is a threading server) and the
+  temp file is uniquely named. Across processes the write is still last-writer-wins, so the
+  runbook's "verify your lease is listed after acquiring" step stands.
+
+**Is the deploy live?** `arena_sha` in `/api/status` may be a *declared* value: on the Pit host the
+hub runs from an untarred tree with no `.git`, so it comes from `KAGGRI_ARENA_SHA` in the systemd
+unit — written once at deploy time and updated by nothing (it read `12a5398` for days while the
+running code was well past it, and it is stamped on every game row). `/api/status` therefore also
+carries `arena_sha_source` (`env` = declared, `git`, `none`) and **`arena_code_hash`** — a
+line-ending-normalised sha256 over `arena/*.py` computed from disk. Compare it with your clone:
+
+```bash
+uv run python -m arena info | grep 'arena code'          # local
+curl -s $PIT/api/status | python -c "import json,sys; print(json.load(sys.stdin)['arena_code_hash'])"
+```
+
+Equal hashes mean the host is running your code, whatever the shas say. When you ship, update
+`KAGGRI_ARENA_SHA` in the unit too, so stored rows stay attributable.
+
 `register` requires `git_ref` + a `path` under the repo's `agents/` tree (the hub fetches the
 ref from origin — needs git access on the hub machine) and the new agent starts **benched**:
 someone must explicitly activate it before the ladder will play it. Teams' flow: commit the
@@ -210,7 +246,23 @@ use the API's `code_b64`/local-path form.
   other games it excluded on those seeds. Screen/confirm/gate remain CLI commands
   (`arena match --mode screen|confirm|round-robin`, `arena gate`). Promotion is still gate-based:
   0 crashes, 0 timeouts, p99 ≤ 150 ms, Wilson lower bound > 50 % vs the team champion over the
-  confirm set (seeds 1000–1199, 400 games).
+  gate's band (default `confirm` = seeds 1000–1199, 400 games).
+- **Seed bands are declared, and every gate states the one it used.** `paths.SEED_BANDS` names
+  them (`screen` 0–199, `confirm` 1000–1199, `ladder` 2000+); `arena gate --band` takes a name or
+  an explicit `lo-hi`, `arena match --seeds <band>` takes the same names, and
+  `KAGGRI_SEED_BANDS="confirm=3000-3199,confirmB=4000-4199"` rotates or adds bands without a code
+  change. This exists because a single hardcoded confirm band is a **shared blind spot**: on
+  2026-08-21 a +17.2pp read on 1000–1199 pooled to level (53.0 % [44.3–61.7]) over three disjoint
+  bands, and every gate in the org's history had inherited the same 200 seeds. Pool ≥ 2 disjoint
+  bands before comparing across families and report the between-band spread beside the CI.
+- **`arena verify` — do the runs still own their games?** `game_id` is
+  `sha1(p0|p1|seed|engine)` and rows upsert, which is what lets a clean node run supersede a noisy
+  local one and remote deltas merge. The cost is that re-running a pairing takes the earlier run's
+  rows: on 2026-08-21 run `20260821-080254-e57458` recorded `n_games=400` with **zero** games left
+  in the store. Replaced rows from a *different* run are now copied into the `superseded` ledger
+  first, and `arena verify` (exit 1 on failure, `--superseded N` to print the lost measurements)
+  reports every run whose games no longer add up plus any game whose `run_id` has no run row.
+  Run it before quoting a stored run, and after importing a remote delta.
 - Seat note (Auditor, 2026-08-19): the seat asymmetry the side-swap cancels comes from
   `_end_of_day` drawing weed-spawn randomness sequentially per farm index from one shared RNG —
   not from action resolution order.

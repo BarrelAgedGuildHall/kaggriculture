@@ -67,11 +67,15 @@ def set_paused(paused: bool, *, force: bool = False, actor: str = "") -> bool:
         if not PAUSE_FLAG.exists():     # keep the original timestamp: "paused since" is evidence
             PAUSE_FLAG.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
     else:
-        held = leases.active()
-        if held and not force:
-            raise leases.LeaseHeld(held, action="resume")
-        if held:
+        if force:
+            # break_all is the only path that may pass an unreadable lease state, and it
+            # quarantines the file under the actor's name when it does.
             leases.break_all(actor, reason="force-resume")
+        else:
+            # raises LeaseHeld, or LeaseStateUnreadable (a LeaseHeld) if the state is unknown
+            held = leases.active(action="resume")
+            if held:
+                raise leases.LeaseHeld(held, action="resume")
         PAUSE_FLAG.unlink(missing_ok=True)
     return is_paused()
 
@@ -92,9 +96,28 @@ def acquire_lease(owner: str, purpose: str, ttl_s: int = leases.DEFAULT_TTL_S,
 def release_lease(lease_id: str, resume: bool = False) -> dict:
     """Release a lease. Does NOT resume unless asked -- and then only if no lease remains."""
     rec = leases.release(lease_id)
-    if resume and not leases.active():
+    if resume and not leases.status()["lease_held"]:
         set_paused(False)
     return rec
+
+
+def reconcile_pause() -> bool:
+    """A live lease means "the ladder must not play" -- re-assert the pause if it does not hold.
+
+    The hub loop used to check the pause flag only, so a lease held over an un-paused ladder (a
+    lease taken with `pause=False`, a flag deleted by hand, two arena dirs) had nothing reconciling
+    the two: the leaseholder believed it had exclusivity while the hub dealt games underneath it.
+    Returns True when it had to pause. An unreadable lease file counts as held (leases.status()).
+    """
+    held = leases.status()
+    if not held["lease_held"] or is_paused():
+        return False
+    leases.log_event("reconciled-pause", {
+        "reason": "lease held while the ladder was not paused",
+        "lease_ids": [l["id"] for l in held["leases"]],
+        "state_error": held["lease_state_error"]})
+    set_paused(True)
+    return True
 
 
 def _ladder_counts_and_seed() -> tuple[dict, int]:
@@ -144,7 +167,9 @@ class Hub:
             st = dict(self._state)
         st["paused"] = is_paused()
         st["config"] = config()
-        st["leases"] = leases.active()
+        # status() must never raise on a bad lease file -- but it must not report "free" either:
+        # leases.status() reads an unreadable state as HELD and carries the fault forward.
+        st.update(leases.status())
         return st
 
     def _set(self, **kw):
@@ -166,6 +191,8 @@ class Hub:
     def _loop(self):
         while not self._stop.is_set():
             try:
+                if reconcile_pause():
+                    self._set(phase="paused", round=None)
                 if is_paused():
                     self._set(phase="paused", round=None)
                     self._stop.wait(3.0)
