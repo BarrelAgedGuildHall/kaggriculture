@@ -81,13 +81,16 @@ def set_paused(paused: bool, *, force: bool = False, actor: str = "") -> bool:
 
 
 def acquire_lease(owner: str, purpose: str, ttl_s: int = leases.DEFAULT_TTL_S,
-                  pause: bool = True) -> dict:
+                  pause: bool = True, shared: bool = False) -> dict:
     """Take a pause lease and (by default) pause the ladder in the same step.
 
     The ladder finishes the round it is already playing, so the caller must wait for
     `status()['phase'] == 'paused'` before it starts measuring anything time-sensitive.
+
+    Exclusive unless `shared` -- a second holder raises `leases.LeaseConflict` (HTTP 409) and the
+    ladder is left exactly as it was, because the pause only happens after the lease is granted.
     """
-    rec = leases.acquire(owner, purpose, ttl_s)
+    rec = leases.acquire(owner, purpose, ttl_s, shared=shared)
     if pause:
         set_paused(True)
     return rec

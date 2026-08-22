@@ -61,6 +61,21 @@ on 2026-08-21 the ladder was resumed by another actor in the middle of a live ti
 contaminated its arms. A **lease** makes the pause owned: while any lease is live, every resume
 path (API, dashboard button, CLI, an import of `arena.hub`) refuses with the lease list.
 
+**A lease is exclusive, and it also holds off other operatives' runs** (2026-08-22). The first
+version did neither, and that cost a battery: on 2026-08-21 21:08–22:00 MDT `engineer-b` held a
+lease for the expB-304a gate battery, `modeler` took a *second* one 15 minutes later and started
+its own battery on the same 16 cores. One arm ran at load 36.67 and recorded 16 spurious
+timeouts, p99 68.7 ms and a 2647 ms worst turn, for an agent that measures p99 7.2 ms quiesced —
+and the arena scores an over-budget turn as a **loss** regardless of bank. So now:
+
+- a second `acquire` is refused with **409**, naming the holder, their purpose and the release
+  command (`--shared` opts two non-measuring holds into coexistence; a shared lease still cannot
+  be taken beside an exclusive one, nor an exclusive beside a shared one);
+- `arena match` and `arena gate` **refuse to start** while somebody else holds a lease
+  (exit code 3, `REFUSED: …`). Pass `--lease <id>` — or export `KAGGRI_LEASE=<id>` once for the
+  whole battery — so your own lease is not read as foreign. `--ignore-lease` is the deliberate
+  override and is written to `lease-log.jsonl` as `guard-ignored`.
+
 ```bash
 # before a timing arm / gate battery / any measured manual run on the Pit host
 uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gate battery" --ttl 3600
@@ -70,6 +85,11 @@ uv run python -m arena lease acquire --owner modeler --purpose "exp-N1 traces" \
 uv run python -m arena lease list
 uv run python -m arena lease renew  <lease-id> --ttl 3600     # nothing auto-renews
 uv run python -m arena lease release <lease-id> --resume      # --resume restarts the ladder
+
+# then run everything under it (the guard sees the declaration and lets you through)
+export KAGGRI_LEASE=<lease-id>
+uv run python -m arena match cand champ --mode confirm
+uv run python -m arena gate cand --team B
 ```
 
 or over HTTP:
@@ -88,8 +108,14 @@ Rules that make it work:
   arm too (standing rule: an arm across a pause flip is discarded).
 - **TTL, not forever.** Default 1 h, max 6 h; a crashed run's lease lapses instead of wedging the
   ladder. Renew explicitly while you are still measuring — nothing renews itself.
-- **Release when done** (`--resume` to restart the ladder in the same step). Leases are not
-  exclusive of each other: if both teams hold one, the ladder stays down until both release.
+- **Release when done** (`--resume` to restart the ladder in the same step). Only shared leases
+  can coexist; when several are live the ladder stays down until every one of them is released.
+- **The guard is not a substitute for the lease.** It only knows about leases in the arena dir it
+  runs against (plus `--lease-hub URL` / `KAGGRI_PIT_HUB`, which fails closed if the hub cannot be
+  read). Take the lease on the host the games actually run on: `arena match --node` forwards
+  `--lease`/`--ignore-lease` so the node-side guard checks the *hub's* lease file, which is the
+  one that matters. The hub ladder itself is exempt — it is held off by the pause flag, which
+  `hub.reconcile_pause()` re-asserts whenever a lease is live.
 - **Overrides are possible but named and logged**: `POST /api/control/resume
   {"force":true,"actor":"ceo"}` breaks (releases) the leases it overrides and writes a
   `force-break` row to `lease-log.jsonl`. Use it only for a stale lease whose owner is gone —

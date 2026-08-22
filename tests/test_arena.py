@@ -823,14 +823,19 @@ def test_force_resume_quarantines_an_unreadable_lease_file():
 
 def test_lease_writes_are_serialised_and_use_unique_temp_files():
     """F3: read-modify-write with a fixed .tmp name under a threading server. 12 concurrent
-    acquires must all survive."""
+    acquires must all survive.
+
+    Written with `shared=True` since exclusivity landed -- the point of the test is the *write*
+    storm (no lost update, no stray temp file), not how many holders the policy allows. The
+    exclusivity policy has its own tests below.
+    """
     import threading as th
     from arena import leases
     errors, ids = [], []
 
     def take(i):
         try:
-            ids.append(leases.acquire(f"owner{i}", f"purpose {i}", ttl_s=120)["id"])
+            ids.append(leases.acquire(f"owner{i}", f"purpose {i}", ttl_s=120, shared=True)["id"])
         except Exception as exc:               # noqa: BLE001 - reported below
             errors.append(exc)
 
@@ -845,6 +850,7 @@ def test_lease_writes_are_serialised_and_use_unique_temp_files():
         assert {l["id"] for l in leases.active()} == set(ids), "no acquire may be lost to a race"
         assert not list(leases.LEASES_PATH.parent.glob(leases.LEASES_PATH.name + ".tmp*")), \
             "temp files are cleaned up and uniquely named"
+        assert not leases.LOCK_PATH.exists(), "the cross-process lock is always released"
     finally:
         for l in leases.active():
             leases.release(l["id"])
@@ -1071,3 +1077,265 @@ def test_import_records_supersession_across_stores(tmp_path):
     old = store.superseded_rows(local)
     assert len(old) == 1 and old[0]["run_id"] == "local-run" and old[0]["p99_0"] == 900.0
     local.close()
+
+
+# ------------------------------------------- lease exclusivity (incident 2026-08-21 21:08-22:00)
+# engineer-b held a lease for the expB-304a gate battery; modeler took a SECOND one 15 minutes
+# later and started its own battery on the same 16-core host. One arm ran at load 36.67 and
+# recorded 16 spurious timeouts, p99 68.7 ms and a 2647 ms worst turn for an agent that measures
+# p99 7.2 ms quiesced -- and an over-budget turn is scored a LOSS regardless of bank. The lease
+# API allowed it by design: a lease only blocked the ladder, never another operative.
+
+def test_a_second_lease_is_refused_and_names_the_holder():
+    from arena import hub, leases
+    first = hub.acquire_lease("engineer-b", "expB-304a gate battery", ttl_s=600)
+    try:
+        with pytest.raises(leases.LeaseConflict) as e:
+            leases.acquire("modeler", "D-1/D-2/D-3 exp-013 halt diagnostics", ttl_s=600)
+        msg = str(e.value)
+        assert first["id"] in msg and "engineer-b" in msg, "the refusal says who to ask"
+        assert "expB-304a gate battery" in msg, "and what they are running"
+        assert "arena lease release" in msg, "and how to proceed"
+        assert [l["id"] for l in leases.active()] == [first["id"]], \
+            "a refused acquire creates nothing"
+        assert isinstance(e.value, leases.LeaseHeld), "so the HTTP layer answers 409"
+        events = [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+        ref = [ev for ev in events if ev["event"] == "acquire-refused"]
+        assert ref and ref[-1]["owner"] == "modeler" and first["id"] in ref[-1]["held_by"], \
+            "and the refusal itself is evidence, on the lease log"
+    finally:
+        hub.release_lease(first["id"], resume=True)
+    second = leases.acquire("modeler", "exp-013 diagnostics", ttl_s=600)   # released: next in
+    leases.release(second["id"])
+
+
+def test_shared_leases_coexist_but_never_with_an_exclusive_one():
+    from arena import leases
+    a = leases.acquire("ops", "daily ingestion window", ttl_s=600, shared=True)
+    try:
+        b = leases.acquire("registrar", "log tidy", ttl_s=600, shared=True)
+        assert {l["id"] for l in leases.active()} == {a["id"], b["id"]}
+        assert all(l["shared"] for l in leases.active())
+        with pytest.raises(leases.LeaseConflict, match="exclusive lease"):
+            leases.acquire("engineer-b", "expB-305 gate battery", ttl_s=600)
+        leases.release(b["id"])
+        with pytest.raises(leases.LeaseConflict):
+            leases.acquire("engineer-b", "expB-305 gate battery", ttl_s=600)
+    finally:
+        for l in leases.active():
+            leases.release(l["id"])
+    excl = leases.acquire("engineer-b", "expB-305 gate battery", ttl_s=600)
+    try:
+        assert excl["shared"] is False, "exclusive is the default"
+        with pytest.raises(leases.LeaseConflict, match="shared lease"):
+            leases.acquire("ops", "ingestion", ttl_s=600, shared=True)
+    finally:
+        leases.release(excl["id"])
+
+
+def test_an_expired_lease_does_not_block_the_next_one(monkeypatch):
+    """Exclusivity must not turn an abandoned lease into a wedge: expiry still wins."""
+    from arena import leases
+    old = leases.acquire("modeler", "abandoned battery", ttl_s=60)
+    monkeypatch.setattr(leases, "_epoch", lambda: old["acquired_at"] + 61)
+    try:
+        fresh = leases.acquire("engineer", "gate run", ttl_s=600)
+        assert [l["id"] for l in leases.active()] == [fresh["id"]]
+    finally:
+        monkeypatch.undo()
+        for l in leases.active():
+            leases.release(l["id"])
+
+
+def test_two_client_race_leaves_exactly_one_holder():
+    """The race the incident could have been: N clients acquire at once, one wins.
+
+    Same machinery as the F3 write-storm test (12 threads through the whole public path), but
+    asserting the *policy*: 1 lease granted, 11 refusals, and the file still parses."""
+    import threading as th
+    from arena import leases
+    granted, refused, other = [], [], []
+    start = th.Barrier(12)
+
+    def take(i):
+        start.wait(timeout=30)
+        try:
+            granted.append(leases.acquire(f"racer{i}", f"battery {i}", ttl_s=120)["id"])
+        except leases.LeaseConflict as exc:
+            refused.append(exc)
+        except Exception as exc:                   # noqa: BLE001 - reported below
+            other.append(exc)
+
+    threads = [th.Thread(target=take, args=(i,)) for i in range(12)]
+    try:
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join(timeout=60)
+        assert not other, other
+        assert len(granted) == 1, f"exactly one client may hold the Pit, got {granted}"
+        assert len(refused) == 11
+        assert [l["id"] for l in leases.active()] == granted
+        assert not leases.LOCK_PATH.exists()
+    finally:
+        for l in leases.active():
+            leases.release(l["id"])
+
+
+# argv: <owner> <gate path>. The gate is a real barrier: every child announces itself, then
+# spins until the parent opens the gate, so all of them are inside `acquire` at once. Without it
+# python's own startup cost (~200 ms, and unequal) staggers the children and the race never runs.
+TWO_PROCESS_RACE = '''
+import os, sys, time
+sys.path.insert(0, {repo!r})
+import arena.leases as L
+gate = sys.argv[2]
+open(gate + ".ready-" + sys.argv[1], "w").close()
+deadline = time.time() + 120
+while not os.path.exists(gate) and time.time() < deadline:
+    time.sleep(0.002)
+try:
+    print("OK " + L.acquire(sys.argv[1], "race", ttl_s=120)["id"])
+except L.LeaseConflict:
+    print("CONFLICT")
+'''
+
+
+def test_two_process_race_leaves_exactly_one_holder(tmp_path):
+    """The threading test cannot see the cross-process window: `_LOCK` is per-process, and two
+    shells on the Pit host each read "no leases" and each wrote themselves in. That is what the
+    O_EXCL lock file closes, and only real processes prove it."""
+    import subprocess
+    import time as _t
+    from arena import leases
+    prog = TWO_PROCESS_RACE.format(repo=str(REPO))
+    env = dict(os.environ, KAGGRI_ARENA_DIR=str(ARENA_DIR))
+    gate = tmp_path / "go"
+    n = 4
+    procs = [subprocess.Popen([sys.executable, "-c", prog, f"proc{i}", str(gate)],
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+             for i in range(n)]
+    try:
+        deadline = _t.time() + 120
+        while len(list(tmp_path.glob("go.ready-*"))) < n and _t.time() < deadline:
+            _t.sleep(0.02)
+        assert len(list(tmp_path.glob("go.ready-*"))) == n, "all clients must be armed first"
+        gate.write_text("go", encoding="utf-8")            # they all enter acquire() together
+        outs = [p.communicate(timeout=120) for p in procs]
+        for p, (_, err) in zip(procs, outs):
+            assert p.returncode == 0, err
+        verdicts = [out.strip().split()[0] for out, _ in outs]
+        assert verdicts.count("OK") == 1, f"exactly one process may win: {verdicts}"
+        assert verdicts.count("CONFLICT") == n - 1
+        assert len(leases.active()) == 1
+    finally:
+        for p in procs:
+            if p.poll() is None:
+                p.kill()
+        for l in leases.active():
+            leases.release(l["id"])
+        leases.LOCK_PATH.unlink(missing_ok=True)
+
+
+def test_a_stale_lock_file_is_broken_rather_than_wedging_the_arena(monkeypatch):
+    """A crashed holder must not lock the Pit out of its own state file forever."""
+    from arena import leases
+    leases.LOCK_PATH.write_text("pid 999999 acquire (crashed)\n", encoding="utf-8")
+    monkeypatch.setattr(leases, "LOCK_STALE_S", 0.0)
+    try:
+        rec = leases.acquire("engineer", "after a crash", ttl_s=60)
+        assert leases.active()[0]["id"] == rec["id"]
+        events = [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+        assert any(e["event"] == "lock-broken" for e in events), "and it says so in the log"
+    finally:
+        monkeypatch.undo()
+        for l in leases.active():
+            leases.release(l["id"])
+        leases.LOCK_PATH.unlink(missing_ok=True)
+
+
+def test_a_live_lock_fails_closed_instead_of_writing_anyway(monkeypatch):
+    from arena import leases
+    leases.LOCK_PATH.write_text("pid 999999 acquire\n", encoding="utf-8")
+    monkeypatch.setattr(leases, "LOCK_WAIT_S", 0.05)
+    try:
+        with pytest.raises(leases.LeaseLockTimeout) as e:
+            leases.acquire("engineer", "blocked", ttl_s=60)
+        assert isinstance(e.value, leases.LeaseHeld), "unknown state is HELD state -> 409"
+        assert leases.status()["lease_held"] is False, \
+            "a jammed lock must not invent a lease; only the mutation is refused"
+    finally:
+        monkeypatch.undo()
+        leases.LOCK_PATH.unlink(missing_ok=True)
+
+
+# ------------------------------------------------- the run-start guard: `match`/`gate` refuse
+# `acquire` stops a second *lease*; the contamination only needed a second *run*.
+
+def test_match_and_gate_refuse_to_start_under_a_foreign_lease():
+    from arena import cli, leases
+    lease = leases.acquire("engineer-b", "expB-304a confirm arm", ttl_s=600)
+    try:
+        with pytest.raises(leases.LeaseHeld) as e:
+            leases.guard_run("match", detail="probe")
+        assert lease["id"] in str(e.value) and "--ignore-lease" in str(e.value)
+        assert cli.main(["match", "random", "pass", "--n", "2", "--steps", "8"]) == cli.REFUSED_EXIT
+        assert cli.main(["gate", "random", "--vs", "pass"]) == cli.REFUSED_EXIT
+        events = [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+        refusals = [ev for ev in events if ev["event"] == "guard-refused"]
+        assert {r["action"] for r in refusals} >= {"match", "gate"}
+    finally:
+        leases.release(lease["id"])
+
+
+def test_the_guard_lets_the_leaseholder_through_by_id_and_by_env(monkeypatch):
+    from arena import leases
+    lease = leases.acquire("engineer", "my own battery", ttl_s=600)
+    try:
+        assert [l["id"] for l in leases.guard_run("match", lease_id=lease["id"])] == [lease["id"]]
+        monkeypatch.setenv(leases.LEASE_ENV, lease["id"])
+        assert leases.guard_run("gate"), "the env fallback carries the same declaration"
+        monkeypatch.setenv(leases.LEASE_ENV, "someone-elses-id")
+        with pytest.raises(leases.LeaseHeld):
+            leases.guard_run("gate")
+    finally:
+        monkeypatch.delenv(leases.LEASE_ENV, raising=False)
+        leases.release(lease["id"])
+
+
+def test_ignore_lease_is_allowed_but_recorded():
+    from arena import leases
+    lease = leases.acquire("modeler", "long unmeasured training", ttl_s=600)
+    try:
+        seen = leases.guard_run("match", ignore=True, detail="screen v0a v1")
+        assert [l["id"] for l in seen] == [lease["id"]]
+        events = [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+        ig = [e for e in events if e["event"] == "guard-ignored"]
+        assert ig and ig[-1]["detail"] == "screen v0a v1" and lease["id"] in ig[-1]["lease_ids"], \
+            "an override leaves a trace, so contaminated timing can be voided afterwards"
+    finally:
+        leases.release(lease["id"])
+
+
+def test_the_guard_runs_free_when_nobody_holds_the_pit():
+    from arena import leases
+    assert leases.active() == []
+    assert leases.guard_run("match") == []
+
+
+def test_the_guard_fails_closed_on_an_unreadable_lease_file():
+    from arena import leases
+    leases.LEASES_PATH.write_text('{"leases": {"x": ', encoding="utf-8")
+    try:
+        with pytest.raises(leases.LeaseStateUnreadable):
+            leases.guard_run("match")
+    finally:
+        leases.LEASES_PATH.unlink(missing_ok=True)
+
+
+def test_the_guard_fails_closed_when_a_declared_hub_cannot_be_read():
+    """The remote check is opt-in precisely so it can fail closed: an unreachable hub is not
+    evidence that the host it runs is free."""
+    from arena import leases
+    with pytest.raises(leases.LeaseCheckFailed, match="treated as held"):
+        leases.guard_run("match", hub_url="http://127.0.0.1:9")   # discard port: never listening

@@ -37,9 +37,15 @@ lease appears; check `curl $PIT/api/leases` before launching a long job.
 
 ```bash
 uv run python -m arena lease acquire --owner <you> --purpose "<exp id + what>" --ttl 3600
+export KAGGRI_LEASE=<lease-id>   # every match/gate in this shell runs under your own lease
 curl -s $PIT/api/hub | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['phase'], d['paused'])"
 uptime                      # 1-min loadavg must be < ~0.5 before the first game
 ```
+
+Since 2026-08-22 the lease is a real lock, not a warning light: a second `acquire` is refused
+(409), and `arena match` / `arena gate` refuse to start (exit 3) while somebody else holds one.
+You no longer have to *notice* a foreign lease — but you do have to declare your own with
+`--lease <id>` or `KAGGRI_LEASE`, or the guard will read it as somebody else's.
 
 - Wait for `phase: paused` — the ladder finishes the round it is already in.
 - **Gate on loadavg, never on `pgrep -f <pattern>`.** A waiter written as
@@ -50,8 +56,15 @@ uptime                      # 1-min loadavg must be < ~0.5 before the first game
 - Record `load_before` for every arm. `load_after` is meaningless (your own workers drive it).
 - Re-check `paused` **at the end** of each arm. An arm that spans a pause flip is discarded —
   with a lease held, a flip means someone forced it, and `data/arena/lease-log.jsonl` says who.
-- Contended runs that only need money numbers belong in a side DB (`arena match --db ...`):
-  money is bit-identical under load, so there is no reason to pollute the hub's timing rows.
+- Contended runs belong in a side DB (`arena match --db ...`) so contention can never reach the
+  promotion store's timing rows.
+- **"Money is bit-identical under load" is NOT true of every agent.** It holds for a purely
+  deterministic policy, and Team A's are. It does **not** hold for any agent whose chassis
+  branches on the wall clock — Team B's millrace lineage discards its planned action and emits
+  the precomputed fallback whenever a turn exceeds its own 250 ms budget
+  (`agents/team_b/millrace/chassis.py`), so under load it plays *different moves* and banks
+  different money on an identical seed (observed by the Modeler, 2026-08-21). Treat a contended
+  run's **money** as suspect too for any agent with a self-imposed deadline.
 
 ## When you are finished
 

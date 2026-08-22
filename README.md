@@ -127,9 +127,14 @@ uv run python -m arena match v1 v0 --mode confirm --node barrelaged@barrelagedwo
 uv run python -m arena serve                                  # dashboard + JSON API on http://127.0.0.1:8765
 uv run python -m arena serve --hub --host 0.0.0.0             # + the continuous ladder (the hub service; see docs/pit.md)
 uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gates" --ttl 3600
-                                                              # pause the ladder and hold it: while a lease is live
-                                                              # resume is refused (--hub URL to lease a remote hub);
+                                                              # pause the ladder and hold it EXCLUSIVELY: resume is
+                                                              # refused, a second acquire is refused (409), and
+                                                              # match/gate refuse to start for anyone else (exit 3).
+                                                              # --hub URL to lease a remote hub; --shared to allow
+                                                              # other non-measuring holds alongside;
                                                               # release with `arena lease release <id> --resume`
+export KAGGRI_LEASE=<lease-id>                                # ...then match/gate know the lease is yours
+                                                              # (or pass --lease <id>; --ignore-lease overrides, logged)
 uv run python -m arena bench v0a                              # out of the ladder (still rated); --undo re-activates
 uv run python -m arena leaderboard                            # markdown/json export -> data/arena/leaderboard.md (+ workshop/notes/leaderboard-internal.md)
 uv run python -m arena champion set v0 --team A               # teams: A | B | org

@@ -7,12 +7,41 @@ import sys
 from pathlib import Path
 
 from . import engine as eng
-from . import registry
+from . import leases, registry
 from .paths import ARENA_DIR, CONFIRM_N, DB_PATH, DEFAULT_GATE_BAND, RUNS_DIR, SEED_BANDS
 
 
 def _p(*a, **k):
     print(*a, **k, flush=True)
+
+
+def _guard(args, action: str, detail: str) -> None:
+    """Refuse to start while somebody else holds the Pit (arena/leases.py `guard_run`).
+
+    Two operatives measuring on one host is the whole defect: on 2026-08-21 a second battery ran
+    through a live one and cost it 16 spurious timeout-losses, which the arena scores as losses
+    regardless of bank. A lease that stops the ladder but not the other operative is a warning
+    light, not a lock.
+    """
+    seen = leases.guard_run(action, lease_id=args.lease, hub_url=args.lease_hub,
+                            ignore=args.ignore_lease, detail=detail)
+    if seen and args.ignore_lease:
+        _p(f"! --ignore-lease: starting anyway while {len(seen)} lease(s) are live "
+           f"({', '.join(l['id'] for l in seen)}); this is on the lease log and any timing "
+           f"measured now is contestable")
+    elif seen:
+        _p(f"lease {seen[0]['id']} (yours) is live: {seen[0]['purpose']}")
+
+
+def _add_lease_guard_args(s) -> None:
+    s.add_argument("--lease", default=None,
+                   help=f"the pause lease you hold (env {leases.LEASE_ENV}); the run refuses to "
+                        "start while anyone ELSE holds one")
+    s.add_argument("--lease-hub", default=None,
+                   help=f"also check this hub's leases before starting, e.g. http://HOST:8765 "
+                        f"(env {leases.HUB_ENV}); fails closed if it cannot be read")
+    s.add_argument("--ignore-lease", action="store_true",
+                   help="start even though someone else holds a lease (written to the lease log)")
 
 
 def cmd_register(args) -> int:
@@ -89,6 +118,7 @@ def _summarize_match(res: dict) -> None:
 
 
 def cmd_match(args) -> int:
+    _guard(args, "match", f"{args.mode} {' '.join(args.agents)}"[:200])
     if args.node:
         from .remote import run_remote
         return run_remote(args)
@@ -119,6 +149,9 @@ def cmd_leaderboard(args) -> int:
 
 
 def cmd_gate(args) -> int:
+    # A gate read taken while another battery is on the host reports that battery's contention:
+    # `gates.evaluate` takes p99/max as the MAX over stored games, so it can only get worse.
+    _guard(args, "gate", f"{args.name} vs {args.vs or args.team}")
     from . import gates
     res = gates.evaluate(args.name, team=args.team, db_path=Path(args.db) if args.db else None, opponent=args.vs,
                          band=args.band, seed_lo=args.seed_lo, seed_hi=args.seed_hi, min_games=args.min_games,
@@ -230,14 +263,15 @@ def _print_leases(leaseset: list[dict]) -> None:
     if not leaseset:
         _p("no pause lease held (the ladder may be resumed)")
         return
-    _p(f"{'lease id':<40} {'owner':<14} {'left':>6} {'held':>6}  purpose")
+    _p(f"{'lease id':<40} {'owner':<14} {'mode':<9} {'left':>6} {'held':>6}  purpose")
     for l in leaseset:
-        _p(f"{l['id']:<40} {l['owner']:<14} {l['expires_in_s'] // 60:>5}m {l['held_for_s'] // 60:>5}m  {l['purpose']}")
+        mode = "shared" if l.get("shared") else "exclusive"
+        _p(f"{l['id']:<40} {l['owner']:<14} {mode:<9} {l['expires_in_s'] // 60:>5}m "
+           f"{l['held_for_s'] // 60:>5}m  {l['purpose']}")
 
 
 def cmd_lease(args) -> int:
     """Pause leases: mutual exclusion between a manual run and the hub ladder (arena/leases.py)."""
-    from . import leases
     op = args.op
     if op == "acquire" and args.ttl is None:
         args.ttl = leases.DEFAULT_TTL_S
@@ -247,7 +281,8 @@ def cmd_lease(args) -> int:
         else:
             body = {"op": op}
             if op == "acquire":
-                body.update(owner=args.owner, purpose=args.purpose, ttl_s=args.ttl, pause=not args.no_pause)
+                body.update(owner=args.owner, purpose=args.purpose, ttl_s=args.ttl,
+                            pause=not args.no_pause, shared=args.shared)
             elif op == "renew":
                 body.update(lease_id=args.lease_id, ttl_s=args.ttl)
             else:
@@ -262,10 +297,14 @@ def cmd_lease(args) -> int:
         return 0
     from . import hub as hubmod
     if op == "acquire":
-        rec = hubmod.acquire_lease(args.owner, args.purpose, ttl_s=args.ttl, pause=not args.no_pause)
-        _p(f"lease {rec['id']} held by {rec['owner']} for {rec['ttl_s'] // 60} min: {rec['purpose']}")
+        rec = hubmod.acquire_lease(args.owner, args.purpose, ttl_s=args.ttl,
+                                   pause=not args.no_pause, shared=args.shared)
+        _p(f"lease {rec['id']} held by {rec['owner']} for {rec['ttl_s'] // 60} min "
+           f"({'SHARED' if rec['shared'] else 'exclusive'}): {rec['purpose']}")
         _p("the ladder will not resume until it is released or lapses; renew with "
            f"`arena lease renew {rec['id']}`")
+        _p(f"pass --lease {rec['id']} (or export {leases.LEASE_ENV}={rec['id']}) to your "
+           "`arena match`/`arena gate` runs so the guard knows the lease is yours")
         st = hubmod.HUB.status()
         _p(f"ladder paused: {hubmod.is_paused()} (hub phase {st['phase']!r}; wait for 'paused' before measuring)")
     elif op == "renew":
@@ -337,6 +376,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--node", help="run on a remote node (ssh alias/host) and import the results back")
     s.add_argument("--remote-workers", type=int, help="workers on the node (default: its cpu_count-2)")
     s.add_argument("--quiet", action="store_true")
+    _add_lease_guard_args(s)
     s.set_defaults(fn=cmd_match)
 
     s = sub.add_parser("leaderboard", help="BT + Elo + head-to-head -> data/arena/leaderboard.md/json (+ workshop)")
@@ -361,6 +401,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--p99-ms", type=float, default=150.0)
     s.add_argument("--max-ms", type=float, default=400.0)
     s.add_argument("--db")
+    _add_lease_guard_args(s)
     s.set_defaults(fn=cmd_gate)
 
     s = sub.add_parser("champion", help="champion get [--team T] | champion set <agent> --team T")
@@ -402,11 +443,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("lease", help="pause leases: hold the ladder while a manual run measures")
     ls = s.add_subparsers(dest="op", required=True)
-    g = ls.add_parser("acquire", help="pause the ladder and hold it under a named lease")
+    g = ls.add_parser("acquire", help="pause the ladder and hold it under a named, EXCLUSIVE lease")
     g.add_argument("--owner", required=True, help="who is running it, e.g. engineer-b")
     g.add_argument("--purpose", required=True, help="what is measured, e.g. 'expB-303 gate battery'")
     g.add_argument("--ttl", type=int, default=None, help=f"seconds (default {3600}, max {6 * 3600}); renew to extend")
     g.add_argument("--no-pause", action="store_true", help="take the lease without pausing (already paused)")
+    g.add_argument("--shared", action="store_true",
+                   help="allow other SHARED leases alongside this one. Only for a hold that "
+                        "measures nothing; a measured run must stay exclusive (default)")
     g.add_argument("--hub", help="operate on a remote hub, e.g. http://HOST:8765")
     g.set_defaults(fn=cmd_lease)
     g = ls.add_parser("list", help="show live leases")
@@ -434,9 +478,19 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+REFUSED_EXIT = 3        # distinct from a gate failure (1) and an argparse error (2)
+
+
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
-    return args.fn(args)
+    try:
+        return args.fn(args)
+    except leases.LeaseHeld as exc:
+        # A refusal is an ordinary outcome of a shared host, not a crash: print the reason (it
+        # names the holder and how to proceed) rather than a traceback, and use its own exit code
+        # so a battery script can tell "somebody else is on the box" from "the gate failed".
+        _p(f"REFUSED: {exc}")
+        return REFUSED_EXIT
 
 
 if __name__ == "__main__":

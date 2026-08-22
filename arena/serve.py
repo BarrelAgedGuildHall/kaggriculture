@@ -23,6 +23,8 @@ POST /api/control/pause | resume                    durable pause flag (survives
 POST /api/control/lease  {"op":"acquire","owner":"engineer-b","purpose":"expB-303 gates","ttl_s":3600}
                          {"op":"renew","lease_id":"..."} | {"op":"release","lease_id":"...","resume":false}
                          {"op":"list"}
+     acquire is EXCLUSIVE: a second one answers 409 naming the holder. {"shared":true} opts in to
+     coexistence (shared+shared only) -- for a hold that measures nothing.
      renew/release take "lease_id"; "id" (the key `acquire` returns it under) is accepted too.
      "op" is REQUIRED and every control body is key-checked: an unknown key or a missing op is a
      400, never a 200 that quietly degraded into a read (the ladder looking "free" because the
@@ -155,7 +157,7 @@ def api_leases() -> dict:
 CONTROL_KEYS: dict[str, set[str]] = {
     "pause": set(),
     "resume": {"force", "actor"},
-    "lease": {"op", "owner", "purpose", "ttl_s", "pause", "lease_id", "id", "resume"},
+    "lease": {"op", "owner", "purpose", "ttl_s", "pause", "shared", "lease_id", "id", "resume"},
     "config": {"workers", "games_per_pairing", "max_opponents", "allow_unsafe_register"},
     "bench": {"agent", "undo"},
     "retire": {"agent", "undo"},
@@ -206,9 +208,12 @@ def control(action: str, body: dict) -> dict:
         if op == "list":
             return api_leases()
         if op == "acquire":
+            # exclusive unless the caller opts in -- a second acquire raises LeaseConflict, which
+            # is a LeaseHeld and so answers 409 with the holder in the body (see do_POST).
             rec = hubmod.acquire_lease(body.get("owner", ""), body.get("purpose", ""),
                                        ttl_s=int(body.get("ttl_s") or leases.DEFAULT_TTL_S),
-                                       pause=body.get("pause", True) is not False)
+                                       pause=body.get("pause", True) is not False,
+                                       shared=bool(body.get("shared")))
             return {"lease": rec, "hub": hubmod.HUB.status(), **api_leases()}
         if op == "renew":
             return {"lease": leases.renew(_lease_id(body), body.get("ttl_s")), **api_leases()}
@@ -333,7 +338,7 @@ function h2hTable(lb){const ids=lb.table.map(r=>r.agent);if(!ids.length)return '
  ids.forEach(a=>{h+=`<tr><td class="l" title="${esc(a)}">${esc(short(a))}</td>`;ids.forEach(b=>{if(a===b){h+='<td class="h2h">—</td>';return;}const c=(lb.h2h[a]||{})[b];h+=c?`<td class="h2h ${c.ci_lo>0.5?'ok':c.ci_hi<0.5?'bad':''}">${(100*c.rate).toFixed(0)}% [${(100*c.ci_lo).toFixed(0)}–${(100*c.ci_hi).toFixed(0)}] n=${c.n}</td>`:'<td class="h2h">·</td>';});h+='</tr>';});return h+'</table>';}
 function runsBlock(rs,hub){let h='';
  if(hub&&(hub.leases||[]).length){h+='<div class="small warn">pause lease held — resume is refused until it is released or lapses:</div>';
-  hub.leases.forEach(l=>{h+=`<div class="small warn">· <b>${esc(l.owner)}</b> — ${esc(l.purpose)} · ${Math.round(l.expires_in_s/60)} min left · held ${Math.round(l.held_for_s/60)} min · <span class="mono">${esc(l.id)}</span> <span class="res">(release: <span class="mono">arena lease release ${esc(l.id)}</span>)</span></div>`;});}
+  hub.leases.forEach(l=>{h+=`<div class="small warn">· <b>${esc(l.owner)}</b> — ${esc(l.purpose)} · ${l.shared?'shared':'EXCLUSIVE'} · ${Math.round(l.expires_in_s/60)} min left · held ${Math.round(l.held_for_s/60)} min · <span class="mono">${esc(l.id)}</span> <span class="res">(release: <span class="mono">arena lease release ${esc(l.id)}</span>)</span></div>`;});}
  if(hub){const r=hub.round;h+=`<div class="small">hub: <b class="${hub.paused?'warn':hub.running?'ok':'res'}">${hub.paused?'PAUSED':(hub.running?hub.phase:'not running (dashboard-only)')}</b> · rounds ${hub.rounds_played} · cfg ${hub.config.workers||'auto'}w / ${hub.config.games_per_pairing}g / ${hub.config.max_opponents}opp${hub.last_error?` · <span class="bad">${esc(hub.last_error)}</span>`:''}</div>`;
   if(r)h+=`<div class="small">round ${esc(r.run_id)}: anchor <b>${esc(short(r.anchor))}</b> (${r.anchor_games} ladder games) vs ${r.opponents.map(short).map(esc).join(', ')} · seeds ${esc(r.seeds)}</div>`;}
  if(!rs.live.length)h+='<div class="small">no match playing right now</div>';
