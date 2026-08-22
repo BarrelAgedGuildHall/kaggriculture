@@ -62,6 +62,18 @@ def main(argv=None):
                          "requires --critic factored")
     ap.add_argument("--critic-alpha-aux", type=float, default=0.1,
                     help="weight on the critic's auxiliary regression loss")
+    # --- C-4: freeze a rollout batch for offline critic work ---------------------------------
+    ap.add_argument("--dump-batch", default=None, metavar="DIR",
+                    help="write the iteration's rollout batch to DIR/batch-iter<NNN>.npz -- obs "
+                         "(x, order_mask), actions + old log-probs, the critic's per-row target, "
+                         "line targets and aux labels, the pre-update value and raw advantage, and "
+                         "the per-episode (seed, seat, opponent, R, R_opp) columns. Frozen BEFORE "
+                         "the update epochs touch it, so it is what the critic actually saw. Read "
+                         "it back with agents.team_a.ppo.train.read_batch")
+    ap.add_argument("--dump-batch-iters", type=int, nargs="+", default=[0], metavar="IT",
+                    help="which iterations to dump (default: 0 only). One iteration's `x` alone "
+                         "runs to ~150 MB, so dumping every iteration of a long run is a disk "
+                         "decision, not a default")
     args = ap.parse_args(argv)
 
     if args.critic_aux and args.critic != "factored":
@@ -82,7 +94,8 @@ def main(argv=None):
               unit_temperature=args.unit_temperature,
               alpha=args.alpha, critic_kind=args.critic,
               critic_aux=tuple(args.critic_aux), critic_alpha_aux=args.critic_alpha_aux,
-              snapshot_every=args.snapshot_every)
+              snapshot_every=args.snapshot_every,
+              dump_dir=args.dump_batch, dump_iters=args.dump_batch_iters)
     run.total_iters = args.iters
     Path(args.out, "config.json").write_text(json.dumps(vars(args), indent=1), encoding="utf-8")
     t0 = time.perf_counter()
