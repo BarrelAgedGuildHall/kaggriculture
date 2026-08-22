@@ -58,6 +58,14 @@ Engine: kaggle-environments 1.32.7.
 from __future__ import annotations
 
 import math
+import os
+
+# expB-304b-seeds / R-51: `MILLRACE_SEEDLOG=1` records one row per seed-buy
+# decision into the agent's own state, so a stock-out can be attributed to a
+# cause instead of guessed at. OFF by default and read once at import, so the
+# shipped build carries no per-turn cost and no behaviour change (proved by
+# `identity_check.py` on the gate's own seeds).
+_SEEDLOG = bool(os.environ.get("MILLRACE_SEEDLOG"))
 
 try:  # package context (repo tools/tests: agents/team_b on sys.path)
     from . import probe_core as pc  # vendored frozen chassis constants/helpers
@@ -394,6 +402,9 @@ def _plan(obs, S, deadline):
         st["gross_today"] += model.marginal_revenue(item, n)  # M5b income ledger
 
     budget = money - P["cash_reserve"] + int(0.8 * expected_rev)
+    # expB-304b-seeds: the day's opening purse, kept so a seed stock-out can be
+    # split into "there was never the cash" and "an earlier row spent it".
+    budget_open = budget
     capex_ok = day < P["capex_stop_day"] and not endgame
     shed_room = 100 - sum(shed.values())
 
@@ -542,6 +553,12 @@ def _plan(obs, S, deadline):
             if mr_tile(want_melon - 1) / acts_per_cycle > hurdle:
                 break
             want_melon -= 1
+    elif P["melon_rule"] == "uncapped":
+        # expB-304b-caps / R-47: the constant DELETED, not replaced. The ask
+        # becomes the structural site budget (every tile we could plant on
+        # today), so `melon_tiles` cannot bind. Identity against the champion
+        # on the gate's seeds decides whether the constant was ever doing work.
+        want_melon = crop_counts.get("MELON", 0) + len(empties)
     else:
         want_melon = P["melon_tiles"]
     st["want_melon"] = want_melon
@@ -583,6 +600,9 @@ def _plan(obs, S, deadline):
             if s_tile(want_straw - 1) / s_acts > hurdle_s:
                 break
             want_straw -= 1
+    elif P["strawberry_rule"] == "uncapped":
+        # expB-304b-caps / R-47, same probe on the strawberry cap.
+        want_straw = n_straw + len(empties)
     else:
         want_straw = P["strawberry_tiles"]
     # structural replant window: a strawberry planted on day d first yields at
@@ -602,6 +622,9 @@ def _plan(obs, S, deadline):
     def buy_seeds():
         nonlocal budget
         if not capex_ok:
+            if _SEEDLOG:
+                st.setdefault("seedlog", []).append(
+                    {"day": day, "hour": hour, "gate": "capex_stop"})
             return
         need = {
             "WHEAT": 0 if seeds.get("WHEAT", 0) > 8 else max(0, want_wheat - crop_counts.get("WHEAT", 0) - seeds.get("WHEAT", 0)),
@@ -609,12 +632,31 @@ def _plan(obs, S, deadline):
             "MELON": max(0, (want_melon if melon_window else 0) - crop_counts.get("MELON", 0) - seeds.get("MELON", 0)),
             "STRAWBERRY": max(0, (want_straw if straw_window else 0) - n_straw - seeds.get("STRAWBERRY", 0)),
         }
-        for crop, k in need.items():
-            k = min(k, 10, max(0, budget) // pc.CROPS[crop]["seed"])
-            if k > 0 and len(orders) < 10:
+        for crop, want_k in need.items():
+            px = pc.CROPS[crop]["seed"]
+            budget_in = budget
+            k = min(want_k, 10, max(0, budget) // px)
+            slot = len(orders)
+            placed = k > 0 and slot < 10
+            if placed:
                 orders.append(["BUY_SEED", crop, int(k)])
-                budget -= k * pc.CROPS[crop]["seed"]
-                st["cogs_today"] += k * pc.CROPS[crop]["seed"]  # expB-302 ledger
+                budget -= k * px
+                st["cogs_today"] += k * px  # expB-302 ledger
+            if _SEEDLOG:
+                st.setdefault("seedlog", []).append({
+                    "day": day, "hour": hour, "crop": crop,
+                    "need": int(want_k), "k": int(k), "placed": bool(placed),
+                    "slot": int(slot), "budget": float(budget_in),
+                    "budget_open": float(budget_open),
+                    "expected_rev": float(expected_rev),
+                    "money": float(money), "px": int(px),
+                    "held": int(seeds.get(crop, 0)),
+                    "standing": int(crop_counts.get(crop, 0)),
+                    "want": int(want_straw if crop == "STRAWBERRY" else
+                                want_melon if crop == "MELON" else -1),
+                    "window": bool(straw_window if crop == "STRAWBERRY" else
+                                   melon_window if crop == "MELON" else True),
+                })
 
     # ---- M5b hire-depth controller (expB-221; spec M5 rule, live inputs) ----
     # hands = clamp(min(queue_need, cash_cap), 6, 14): queue_need converts the
@@ -1172,12 +1214,15 @@ FEEDCHAIN_DEFAULTS = {
     "melon_replant": False,
     # expB-220: "mr" sizes melon acreage by marginal revenue per productive
     # action vs lambda (no tile-count constant); "fixed" uses melon_tiles.
+    # expB-304b-caps / R-47: "uncapped" deletes the constant outright (ask =
+    # the structural site budget) — the identity probe for "does the cap bind".
     "melon_rule": "fixed",
     # expB-221 (M5b): hire depth from the income/queue rule instead of the
     # fixed hands_target. beta/gamma per spec M5 (expB-209 fits them).
     # expB-303: STRAWBERRY acreage. "fixed" = the sweep's arm (0 = shipped
     # 725fcf7 behaviour, the crop is never planted); "mr" sizes it by marginal
     # revenue per productive action against lambda_opp, no tile-count constant.
+    # "uncapped" (expB-304b-caps / R-47) deletes strawberry_tiles the same way.
     "strawberry_tiles": 0,
     "strawberry_rule": "fixed",
     "m5b_hire": False,
