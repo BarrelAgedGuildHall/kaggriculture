@@ -16,6 +16,7 @@ Kaggler's entry for the Kaggle **Kaggriculture** simulation competition
 | `scripts/make_submission.py` | Build `dist/main.py` (or `dist/submission.tar.gz`) and verify it plays standalone in a fresh venv. |
 | `scripts/engine_watch.py` | Exit 1 if PyPI has a newer `kaggle-environments` than our pin (daily cron / CI). |
 | `arena/` | **The internal arena** — registry, paired-seed scheduler, SQLite store, BT/Elo leaderboard, gates, remote runs. See "Arena" below. |
+| `tools/` | **Shared measurement tooling** — both teams read the same books. `pnl_census.py` (per-line income statement + terminal balance sheet, `docs/tools/pnl-census.md`), `agent_spec.py` (one agent-spec grammar). |
 | `docs/engine/` | Copies of the engine's `README.md` (rules), `AGENTS.md` (API), `kaggriculture.json` (config) and `VERSION.md` (pinned version + sha256 + parity evidence). |
 | `tests/` | `pytest` smoke tests (engine pin, determinism, replay checker, packaging) + `test_arena.py`. |
 | `data/` | Git-ignored: replays (`data/replays/official`, `data/replays/local`), index, anything large. |
