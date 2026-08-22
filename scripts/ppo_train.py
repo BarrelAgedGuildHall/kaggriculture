@@ -36,26 +36,36 @@ def main(argv=None):
     ap.add_argument("--seed-base", type=int, default=5000)
     ap.add_argument("--steps", type=int, default=720)
     ap.add_argument("--snapshot-every", type=int, default=5)
+    ap.add_argument("--phase", default="P0", choices=["P0", "P1"],
+                    help="P0 = market heads (exp-011); P1 = + market trunk + unit heads")
+    ap.add_argument("--base-npz", default=None, help="starting weights (pi0 for exp-013)")
+    ap.add_argument("--unit-subsample", type=float, default=0.25)
+    ap.add_argument("--alpha-aux", type=float, default=0.0,
+                    help="BC-auxiliary weight; the target is the FROZEN MIXTURE, never pi0")
+    ap.add_argument("--aux-rows", nargs="*", default=[],
+                    help="corpus row .npz chunks for the BC-auxiliary states")
+    ap.add_argument("--pfsp", action="store_true", help="PFSP opponent sampling + snapshots")
     args = ap.parse_args(argv)
 
-    run = Run(args.out, opponents=args.opponents, replicates=args.replicates,
+    run = Run(args.out, base_npz=args.base_npz, opponents=args.opponents,
+              replicates=args.replicates,
               seeds_per_iter=args.seeds_per_iter, workers=args.workers, lr=args.lr,
               clip=args.clip, epochs=args.epochs, minibatch=args.minibatch,
               entropy=args.entropy, kl_target=args.kl_target, temperature=args.temperature,
-              temp_final=args.temp_final, seed_base=args.seed_base, steps=args.steps)
+              temp_final=args.temp_final, seed_base=args.seed_base, steps=args.steps,
+              phase=args.phase, unit_subsample=args.unit_subsample,
+              alpha_aux=args.alpha_aux, aux_rows=args.aux_rows, pfsp=args.pfsp,
+              snapshot_every=args.snapshot_every)
     run.total_iters = args.iters
     Path(args.out, "config.json").write_text(json.dumps(vars(args), indent=1), encoding="utf-8")
     t0 = time.perf_counter()
     for it in range(args.iters):
         row = run.iteration(it)
         print(json.dumps(row), flush=True)
-        from agents.team_a.ppo.train import save_member
         if (it + 1) % args.snapshot_every == 0 or it == args.iters - 1:
-            save_member(run.base_npz, run.trainer.mkt,
-                        Path(args.out) / "ckpt" / f"iter{it + 1:03d}.npz")
+            run.snapshot(it)
         if args.minutes and (time.perf_counter() - t0) / 60.0 >= args.minutes:
-            save_member(run.base_npz, run.trainer.mkt,
-                        Path(args.out) / "ckpt" / f"iter{it + 1:03d}.npz")
+            run.snapshot(it)
             print(json.dumps({"stopped": "wall-clock budget", "iters_done": it + 1}), flush=True)
             break
     return 0

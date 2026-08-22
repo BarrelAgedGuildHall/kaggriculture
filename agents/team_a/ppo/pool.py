@@ -39,10 +39,14 @@ def _run_rollout(job):
     from . import harness as H
     _init()
     t0 = time.perf_counter()
-    turns, us, them = H.rollout(job["seed"], job["seat"], job["actor"], job["opponent"],
-                                job["rng_seed"], temperature=job.get("temperature", 1.0),
-                                safety=job.get("safety", 3), steps=job.get("steps", 720))
-    return {"turns": turns, "R": us, "R_opp": them, "seed": job["seed"], "seat": job["seat"],
+    turns, urows, us, them = H.rollout(
+        job["seed"], job["seat"], job["actor"], job["opponent"], job["rng_seed"],
+        temperature=job.get("temperature", 1.0), safety=job.get("safety", 3),
+        steps=job.get("steps", 720), record_units=job.get("record_units", False),
+        unit_subsample=job.get("unit_subsample", 1.0),
+        unit_temperature=job.get("unit_temperature"))
+    return {"turns": turns, "unit_rows": urows, "R": us, "R_opp": them,
+            "seed": job["seed"], "seat": job["seat"],
             "opponent_id": job.get("opponent_id", ""), "wall_s": time.perf_counter() - t0}
 
 

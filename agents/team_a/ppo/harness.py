@@ -28,7 +28,11 @@ from .bcpath import P, WEIGHTS_DIR            # noqa: E402
 
 REWARD_SCALE = 50_000.0
 BASE_MEMBERS = sorted(str(p) for p in WEIGHTS_DIR.glob("*.npz"))
-PI0_MEMBERS = [str(WEIGHTS_DIR / "rebuild-m0.npz")]
+# `pi0` is the distilled single net accepted in exp-012b. It lives outside the repo (weights
+# are git-ignored), so the path is an environment knob rather than a constant -- and it
+# defaults to member 0, which is what exp-011 ran on, so an unset variable degrades to the
+# documented exp-011 configuration instead of silently loading the wrong policy.
+PI0_MEMBERS = [os.environ.get("PI0_NPZ") or str(WEIGHTS_DIR / "rebuild-m0.npz")]
 
 
 def make_policy(spec, safety=3, greedy=True, temperature=1.0, seed=0, record=False):
@@ -76,10 +80,13 @@ def play(seed, seat, actor, opponent, steps=720):
 
 
 def rollout(seed, seat, actor_members, opp_members, rng_seed, temperature=1.0,
-            safety=3, steps=720):
-    """One recorded episode. Returns (turns, R_actor, R_opp)."""
+            safety=3, steps=720, record_units=False, unit_subsample=1.0,
+            unit_temperature=None):
+    """One recorded episode. Returns (turns, unit_rows, R_actor, R_opp)."""
     actor = RecordingPolicy(actor_members, safety=safety, greedy=False,
-                            temperature=temperature, seed=rng_seed, record=True)
+                            temperature=temperature, seed=rng_seed, record=True,
+                            record_units=record_units, unit_subsample=unit_subsample,
+                            unit_temperature=unit_temperature)
     opp = make_policy(opp_members, safety=safety, greedy=True)
     r_us, r_them, _ = play(seed, seat, actor, opp, steps=steps)
-    return actor.turns, r_us, r_them
+    return actor.turns, actor.unit_rows, r_us, r_them

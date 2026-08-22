@@ -51,9 +51,14 @@ def dists(mkt, mmu, msd, x, order_mask, th_logit, temperature=1.0, cache=False):
         out, cch = mkt.forward(xn, cache=True)
     else:
         out, cch = mkt.forward(xn), None
-    z_fire = (out["orders"].astype(np.float64) - th_logit[None, :]) / temperature
+    z1 = out["orders"].astype(np.float64) - th_logit[None, :]
+    z_fire = z1 / temperature
     p_fire = 1.0 / (1.0 + np.exp(-np.clip(z_fire, -30.0, 30.0)))
     p_fire = np.where(np.asarray(order_mask) > 0, p_fire, 0.0)
+    # the same head at T = 1: the deployed sharpness, which is what the KL anchor to the
+    # frozen mixture must be measured at (the mixture has no temperature knob)
+    p_fire1 = 1.0 / (1.0 + np.exp(-np.clip(z1, -30.0, 30.0)))
+    p_fire1 = np.where(np.asarray(order_mask) > 0, p_fire1, 0.0)
 
     zq = out["qty"].reshape(-1, N_ORDERS, N_QTY).astype(np.float64) / temperature
     zq = zq - zq.max(axis=2, keepdims=True)
@@ -64,8 +69,41 @@ def dists(mkt, mmu, msd, x, order_mask, th_logit, temperature=1.0, cache=False):
     zh = zh - zh.max(axis=1, keepdims=True)
     eh = np.exp(zh)
     p_hire = eh / np.maximum(eh.sum(axis=1, keepdims=True), 1e-12)
+    zq1 = out["qty"].reshape(-1, N_ORDERS, N_QTY).astype(np.float64)
+    zh1 = out["hire"].astype(np.float64)
     return {"p_fire": p_fire, "p_qty": p_qty, "p_hire": p_hire,
+            "p_fire1": p_fire1, "p_qty1": _softmax(zq1), "p_hire1": _softmax(zh1),
             "z_orders": out["orders"], "cache": cch}
+
+
+def _softmax(z):
+    z = z - z.max(axis=-1, keepdims=True)
+    e = np.exp(z)
+    return e / np.maximum(e.sum(axis=-1, keepdims=True), 1e-12)
+
+
+def mixture_dists(members, x, order_mask, th_logit):
+    """The frozen 3-member mixture's market distributions, at T = 1.
+
+    Formed exactly as `BCPolicy._market` forms them (probabilities averaged over members),
+    with the calibrated threshold folded into the order head as the same constant logit
+    offset the actor uses -- so the anchor and the policy are the same parameterisation and
+    their KL is a drift measure rather than a reparameterisation artefact.
+    """
+    acc = None
+    for m in members:
+        o = m.mkt.forward((np.asarray(x, dtype=np.float32) - m.mmu) / m.msd)
+        q = o["qty"].reshape(len(np.atleast_2d(x)), N_ORDERS, N_QTY).astype(np.float64)
+        p = {"orders": 1.0 / (1.0 + np.exp(-np.clip(o["orders"].astype(np.float64), -30, 30))),
+             "qty": _softmax(q), "hire": _softmax(o["hire"].astype(np.float64))}
+        acc = p if acc is None else {k: acc[k] + p[k] for k in acc}
+    k = float(len(members))
+    pord = np.clip(acc["orders"] / k, 1e-9, 1 - 1e-9)
+    zf = np.log(pord / (1 - pord)) - th_logit[None, :]
+    p_fire = 1.0 / (1.0 + np.exp(-np.clip(zf, -30.0, 30.0)))
+    return {"p_fire1": np.where(np.asarray(order_mask) > 0, p_fire, 0.0),
+            "p_qty1": acc["qty"] / k, "p_hire1": acc["hire"] / k,
+            "p_ord_mean": acc["orders"] / k}
 
 
 def logprobs(d, fire, qty_idx, hire_idx):

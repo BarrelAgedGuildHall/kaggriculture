@@ -23,13 +23,24 @@ from __future__ import annotations
 import numpy as np
 
 from . import market_head as MH
+from . import unit_head as UH
 from .bcpath import F, P
 
 
 class RecordingPolicy(P.BCPolicy):
-    """`greedy=True` reproduces `BCPolicy` decisions exactly (see market_head docstring)."""
+    """`greedy=True` reproduces `BCPolicy` decisions exactly (see market_head docstring).
 
-    def __init__(self, members, safety=3, greedy=False, temperature=1.0, seed=0, record=True):
+    Phase P1 (`record_units=True`) adds the unit path: the op head and its conditional
+    argument heads are sampled and recorded the same way the market factors are, with the
+    same executed-vs-emitted discipline. Unit rows outnumber market rows by ~7x, so they are
+    subsampled at `unit_subsample` (spec section 2.4: the advantage is shared across a turn's
+    factors, so uniformly dropping factors is an unbiased, rescaled gradient estimator).
+    The subsampling draw uses its own rng, so turning it up or down does not change a single
+    action the policy takes on a given seed.
+    """
+
+    def __init__(self, members, safety=3, greedy=False, temperature=1.0, seed=0, record=True,
+                 record_units=False, unit_subsample=1.0, unit_temperature=None):
         super().__init__(members, safety=safety)
         if len(self.members) != 1:
             # Folding the calibrated threshold into a logit offset is exact for one member
@@ -42,10 +53,83 @@ class RecordingPolicy(P.BCPolicy):
         self.th_logit = MH.logit(np.asarray(th, dtype=np.float64))
         self.greedy = bool(greedy)
         self.temperature = float(temperature)
+        # The unit head gets its own temperature. The market order head measured 0.040
+        # nats/factor at T = 1 (exp-011), which is why T = 2 was needed there to make PPO's
+        # ratio mean anything; the 18-way op head is nowhere near that peaked, and inflating
+        # it to T = 2 makes the sampled actor a different, far worse agent (measured, see the
+        # exp-013 temperature calibration).
+        self.unit_temperature = float(temperature if unit_temperature is None
+                                      else unit_temperature)
         self.rng = np.random.default_rng(seed)
         self.record = bool(record)
-        self.turns = []          # one dict per turn
+        self.record_units = bool(record_units)
+        self.unit_subsample = float(unit_subsample)
+        self.sub_rng = np.random.default_rng(seed + 991)
+        self.turns = []          # one dict per turn (market factors)
+        self.unit_rows = []      # one dict per recorded unit decision
         self._pending = None
+        self._pending_units = []
+
+    # -- the sampled unit emission (phase P1) ---------------------------------
+    def _sample(self, p):
+        """One draw from a 1-D categorical, greedy-or-sampled, sharing the action rng."""
+        if self.greedy:
+            return int(np.argmax(p))
+        return int(min((p.cumsum() < self.rng.random()).sum(), len(p) - 1))
+
+    def _unit_op(self, ctx, u, claimed):
+        if not self.record_units:
+            return super()._unit_op(ctx, u, claimed)
+        m = self.members[0]
+        x = ctx.unit_features(u, claimed)
+        op_mask = ctx.unit_mask(u)
+        crop_mask = ctx.crop_mask()
+        d = UH.dists(m.unit, m.umu, m.usd, x[None, :], op_mask[None, :],
+                     crop_mask[None, :], np.ones((1, F.N_ITEMS), np.float32),
+                     self.unit_temperature)
+        oi = self._sample(d["p_op"][0])
+        name = F.OPS[oi]
+        crop_idx = item_idx = qty_idx = -1
+        item_mask = np.ones(F.N_ITEMS, np.float32)
+
+        if name == "PLANT":
+            crop_idx = self._sample(d["p_crop"][0])
+            op = ["PLANT", F.CROPS[crop_idx]]
+        elif name in ("PICKUP", "PLACE"):
+            item_mask = (ctx.item_mask_pickup() if name == "PICKUP"
+                         else ctx.item_mask_place(u))
+            # re-form the item distribution over the op's own legal set
+            d["p_item"] = UH._masked_softmax(
+                np.where(item_mask[None, :] > 0, d["z_item"], UH.NEG), None,
+                self.unit_temperature)
+            d["z_item"] = np.where(item_mask[None, :] > 0, d["z_item"], UH.NEG)
+            item_idx = self._sample(d["p_item"][0])
+            item = F.ITEMS[item_idx]
+            if name == "PICKUP":
+                qty_idx = self._sample(d["p_qty"][0])
+                n = F.QTY_BUCKETS[qty_idx]
+                op = ["PICKUP", item, int(max(1, min(n, ctx.shed.get(item, 0))))]
+            else:
+                op = ["PLACE", item]
+        else:
+            op = [name]
+
+        if self.record:
+            lo, lc, li, lq = UH.logprobs(d, np.array([oi]), np.array([crop_idx]),
+                                         np.array([item_idx]), np.array([qty_idx]))
+            self._pending_units.append({
+                "u": int(u), "day": int(ctx.day), "hour": int(ctx.hour),
+                "x": np.asarray(x, dtype=np.float32),
+                "op_mask": np.asarray(op_mask, dtype=np.int8),
+                "crop_mask": np.asarray(crop_mask, dtype=np.int8),
+                "item_mask": np.asarray(item_mask, dtype=np.int8),
+                "op_idx": np.int16(oi), "crop_idx": np.int16(crop_idx),
+                "item_idx": np.int16(item_idx), "qty_idx": np.int16(qty_idx),
+                "logp_op": np.float64(lo[0]), "logp_crop": np.float64(lc[0]),
+                "logp_item": np.float64(li[0]), "logp_qty": np.float64(lq[0]),
+                "emitted": list(op),
+            })
+        return op, name not in ("PASS", "NORTH", "SOUTH", "EAST", "WEST")
 
     # -- the sampled emission ------------------------------------------------
     def _market(self, ctx):
@@ -112,9 +196,32 @@ class RecordingPolicy(P.BCPolicy):
             }
         return orders
 
+    def _finish_units(self, action):
+        """executed == emitted, per unit factor, after the wrapper and the sanitiser."""
+        pend, self._pending_units = self._pending_units, []
+        if not pend:
+            return
+        final = [action["farmer"]] + list(action["hands"])
+        keep = self.unit_subsample
+        for rec in pend:
+            u = rec.pop("u")
+            emitted = rec.pop("emitted")
+            got = final[u] if u < len(final) else ["PASS"]
+            same_op = bool(got and got[0] == emitted[0])
+            rec["exec_op"] = np.int8(same_op)
+            arg_ok = same_op and len(got) > 1 and len(emitted) > 1 and got[1] == emitted[1]
+            rec["exec_crop"] = np.int8(arg_ok and emitted[0] == "PLANT")
+            rec["exec_item"] = np.int8(arg_ok and emitted[0] in ("PICKUP", "PLACE"))
+            rec["exec_qty"] = np.int8(arg_ok and emitted[0] == "PICKUP"
+                                      and len(got) > 2 and got[2] == emitted[2])
+            if keep >= 1.0 or self.sub_rng.random() < keep:
+                self.unit_rows.append(rec)
+
     # -- executed-vs-emitted, after the wrapper has had its say ---------------
     def act(self, obs):
         action = super().act(obs)          # unchanged BCPolicy.act -> _market -> safety -> sanitise
+        if self.record and self.record_units:
+            self._finish_units(action)
         if not self.record or self._pending is None:
             return action
         rec = self._pending
