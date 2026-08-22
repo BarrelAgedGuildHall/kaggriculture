@@ -147,6 +147,18 @@ def run_pnl(spec_a: str, spec_b: str, seed: int, steps: int = 720):
         "tile_days_other": {"EMPTY_STRUCT": 0, "WEED": 0, "FALLOW": 0, "LOCKED": 0},
         "daily_tiles": [],
         "hands_by_day": [],
+        # expB-304c: the shed destroys overflow. `DROP` and `_drop_inventories_to_shed`
+        # both compute `room = max(0, capacity - sum(shed))`, `take = min(n, room)`,
+        # and then `del inv[item]` UNCONDITIONALLY -- so anything that did not fit is
+        # gone, silently, with no refusal and no market event. It is invisible to every
+        # revenue-side counter, which is why the census's conservation identity did not
+        # close. Measured by diffing `sum(inventories) + sum(shed)` ACROSS the call, not
+        # by re-deriving the room arithmetic (which reports zero and is wrong).
+        "destroyed": {},                              # item -> units evaporated
+        "destroyed_by_path": {"drop": 0, "end_of_day": 0},
+        "shed_days": [],                              # shed occupancy sampled hourly
+        "shed_full_turns": 0,
+        "placed_animals": {a: 0 for a in K.ANIMALS},
     } for _ in range(2)]
     for pl in P:
         for ln in list(LINE_PRODUCT):
@@ -156,6 +168,34 @@ def run_pnl(spec_a: str, spec_b: str, seed: int, steps: int = 720):
     orig_hire = K._do_hire
     orig_land = K._do_buy_land
     orig_apply = K._apply_unit_action
+    orig_drop_eod = K._drop_inventories_to_shed
+    priv_ids: dict[int, int] = {}
+
+    def _held(private):
+        """Every unit the shed accounting can see: shed + all carried inventories."""
+        out: dict[str, int] = {}
+        for k, v in private["shed"].items():
+            out[k] = out.get(k, 0) + v
+        for iv in private.get("inventories", []):
+            for k, v in iv.items():
+                out[k] = out.get(k, 0) + v
+        return out
+
+    def _charge_destroyed(pid, before, after, path):
+        for item, n in before.items():
+            lost = n - after.get(item, 0)
+            if lost > 0:
+                P[pid]["destroyed"][item] = P[pid]["destroyed"].get(item, 0) + lost
+                P[pid]["destroyed_by_path"][path] += lost
+
+    def patched_drop_eod(private, capacity):
+        pid = priv_ids.get(id(private), -1)
+        if pid < 0:
+            return orig_drop_eod(private, capacity)
+        before = _held(private)
+        r = orig_drop_eod(private, capacity)
+        _charge_destroyed(pid, before, _held(private), "end_of_day")
+        return r
 
     def patched_commit(op, item, price, farm, private, market, shed_capacity=100):
         pid = farm_ids.get(id(farm), -1)
@@ -220,6 +260,10 @@ def run_pnl(spec_a: str, spec_b: str, seed: int, steps: int = 720):
         st = P[pid]
         st["unit_turns"] += 1
         op = action[0] if isinstance(action, list) and action else "PASS"
+        # expB-304c: DROP is the other place the shed evaporates overflow. Same
+        # measurement as the end-of-day path -- diff what the player holds across
+        # the engine's own call.
+        held_pre = _held(private) if op == "DROP" else None
         bucket = BUCKET.get(op, "unknown")
         pos = K._farmer_position(farm, idx)
         px, py = (pos[0], pos[1]) if pos else (-1, -1)
@@ -236,6 +280,10 @@ def run_pnl(spec_a: str, spec_b: str, seed: int, steps: int = 720):
 
         r = orig_apply(farm, private, idx, action, board_size, day, turns_per_day_, shed_capacity)
 
+        if held_pre is not None:
+            _charge_destroyed(pid, held_pre, _held(private), "drop")
+        if sum(private["shed"].values()) >= shed_capacity:
+            st["shed_full_turns"] += 1
         post_pos = K._farmer_position(farm, idx)
         post_tile = farm["tiles"][py][px] if pos else None
         invs = private.get("inventories", [])
@@ -289,6 +337,8 @@ def run_pnl(spec_a: str, spec_b: str, seed: int, steps: int = 720):
             line = action[1] if len(action) >= 2 else None
         elif op == "PLACE":
             line = action[1] if len(action) >= 2 and action[1] in K.ANIMALS else None
+            if line:
+                st["placed_animals"][line] += 1
         elif op in ("BUILD_COOP", "BUILD_PASTURE"):
             line = None  # structure: charged to the animal that lands on it
         elif op == "FEED":
@@ -314,6 +364,7 @@ def run_pnl(spec_a: str, spec_b: str, seed: int, steps: int = 720):
     K._do_hire = patched_hire
     K._do_buy_land = patched_land
     K._apply_unit_action = patched_apply
+    K._drop_inventories_to_shed = patched_drop_eod
     try:
         env = ke.make("kaggriculture", configuration={"episodeSteps": steps, "seed": seed}, debug=False)
         orig_interpreter = env.interpreter
@@ -324,6 +375,13 @@ def run_pnl(spec_a: str, spec_b: str, seed: int, steps: int = 720):
             if farms:
                 for i, f in enumerate(farms):
                     farm_ids[id(f)] = i
+            # `_drop_inventories_to_shed` is handed `private`, not `farm`, so it needs
+            # its own identity map -- rebuilt every step for the same reason farm_ids is.
+            priv_ids.clear()
+            for i in range(len(state)):
+                pv = getattr(state[i].observation, "private", None)
+                if pv is not None:
+                    priv_ids[id(pv)] = i
             return orig_interpreter(state, env_)
 
         env.interpreter = wrapped_interpreter
@@ -340,6 +398,10 @@ def run_pnl(spec_a: str, spec_b: str, seed: int, steps: int = 720):
                 # at mid-day, not at hour 0 (which reads zero).
                 for pi in range(2):
                     P[pi]["hands_by_day"].append(len(env.state[0].observation.farms[pi]["hands"]))
+            # expB-304c: shed occupancy against the 100-unit cap, sampled hourly --
+            # the backpressure policy needs the distribution, not the daily mean.
+            for pi in range(2):
+                P[pi]["shed_days"].append(sum(env.state[pi].observation.private["shed"].values()))
             if step % turns_per_day == 0:
                 farms = env.state[0].observation.farms
                 for pi in range(2):
@@ -505,6 +567,69 @@ def _lambda_block(lines: dict, total_contribution: float, gross_revenue: float,
     }
 
 
+def unit_conservation(st: dict) -> dict:
+    """expB-304c: close the census's unit-conservation identity, per item.
+
+        produced + bought - sold - consumed - terminal_stock - destroyed == 0
+
+    Every term is an exact engine event: `produced` is the units a HARVEST issued
+    (or a COLLECT_FERTILIZER, or a BUY_ANIMAL for a live animal), `consumed` is
+    FERTILIZE for FERTILIZER and PLACE for animals, `terminal_stock` is the shed
+    plus everything still in a pocket at the end, and `destroyed` is the overflow
+    the shed evaporated. Before `destroyed` existed the identity did not close,
+    and the residual was silently distributed over every line's realised revenue
+    -- which is precisely the input expB-304b sorts on (ruling-03 section 3.4
+    reason 4). FEED is not a term: it consumes wheat from a unit's inventory but
+    the engine deletes it there, and that deletion is picked up by the same
+    inventory walk, so it is folded into `consumed` via the wheat residual.
+
+    The identity is reported per item with its residual; `closed` is the count of
+    items whose residual is exactly zero. A non-zero residual is a measurement
+    bug, not an economic finding, and must be read as one.
+    """
+    term = st["terminal"]
+    stock: dict[str, int] = {}
+    for k, v in term["shed"].items():
+        stock[k] = stock.get(k, 0) + v
+    for k, v in term["carried"].items():
+        stock[k] = stock.get(k, 0) + v
+
+    rows = {}
+    items = set(st["harvest_units"]) | set(st["destroyed"]) | set(stock) \
+        | set(st["buy_product"]) | set(st["buy_animal"]) | {"FERTILIZER"}
+    for item in sorted(items):
+        produced = st["harvest_units"].get(item, 0)
+        if item == "FERTILIZER":
+            produced += st["fert_collected"]
+        bought = st["buy_product"].get(item, {}).get("units", 0) \
+            + st["buy_animal"].get(item, {}).get("units", 0)
+        sold = st["sales"].get(item, {}).get("units", 0)
+        consumed = 0
+        if item == "FERTILIZER":
+            consumed = sum(st["fertilize_on"].values())
+        elif item in st["placed_animals"]:
+            consumed = st["placed_animals"][item]
+        elif item == "WHEAT":
+            consumed = sum(st["feed_events"].values())
+        destroyed = st["destroyed"].get(item, 0)
+        end = stock.get(item, 0)
+        residual = produced + bought - sold - consumed - end - destroyed
+        rows[item] = {"produced": produced, "bought": bought, "sold": sold,
+                      "consumed": consumed, "terminal_stock": end,
+                      "destroyed": destroyed, "residual": residual}
+    return {
+        "per_item": rows,
+        "destroyed_units": sum(st["destroyed"].values()),
+        "destroyed_by_path": dict(st["destroyed_by_path"]),
+        "residual_abs": sum(abs(r["residual"]) for r in rows.values()),
+        "items_closed": sum(1 for r in rows.values() if r["residual"] == 0),
+        "items": len(rows),
+        "shed_mean": round(statistics.fmean(st["shed_days"]), 2) if st["shed_days"] else None,
+        "shed_max": max(st["shed_days"]) if st["shed_days"] else None,
+        "shed_full_turns": st["shed_full_turns"],
+    }
+
+
 def income_statement(st: dict) -> dict:
     """Turn one player's raw census into a per-line income statement.
 
@@ -608,6 +733,7 @@ def income_statement(st: dict) -> dict:
     total_contribution = sum(v["contribution"] for v in lines.values())
     return {
         "lines": lines,
+        "conservation": unit_conservation(st),
         "gross_revenue": round(gross_revenue, 2),
         "total_contribution": round(total_contribution, 2),
         "fertilizer_allocation": fert_alloc,
