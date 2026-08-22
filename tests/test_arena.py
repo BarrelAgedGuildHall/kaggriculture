@@ -1339,3 +1339,75 @@ def test_the_guard_fails_closed_when_a_declared_hub_cannot_be_read():
     from arena import leases
     with pytest.raises(leases.LeaseCheckFailed, match="treated as held"):
         leases.guard_run("match", hub_url="http://127.0.0.1:9")   # discard port: never listening
+
+
+# --------------------------------------------------- verify baselines (Auditor finding P21-3)
+# `arena verify` exited 1 on every store in the org, mostly for the intended "a clean node run
+# supersedes a noisy local one" reason, so the exit code carried no signal and the real orphans
+# drowned. A per-store baseline makes "new supersessions only" expressible.
+
+def _incomplete_store(tmp_path, name="base.sqlite"):
+    """A store with one run that lost all its games to a later one, plus an orphan run_id."""
+    con = store.connect(tmp_path / name)
+    store.record_run(con, {"run_id": "run-A", "mode": "confirm", "agents": "a,b", "n_games": 4,
+                           "started_at": "2026-08-01T00:00:00"})
+    store.upsert_rows(con, [_row("run-A", seed=s) for s in range(4)])
+    store.upsert_rows(con, [_row("run-B", seed=s) for s in range(4)])     # takes every row
+    store.upsert_rows(con, [_row("run-ghost", seed=99)])                  # no run row at all
+    return con
+
+
+def test_verify_baseline_records_then_reports_only_what_is_new(tmp_path):
+    con = _incomplete_store(tmp_path)
+    rep = store.integrity_report(con)
+    assert not rep["ok"] and len(rep["incomplete_runs"]) == 1 and rep["orphan_games"]
+
+    bpath = store.baseline_path(tmp_path / "base.sqlite")
+    assert bpath.name == "base.sqlite" + store.BASELINE_SUFFIX, "the baseline lives beside its DB"
+    assert store.load_baseline(bpath) is None
+    assert store.compare_baseline(rep, None)["ok"] is False, "no baseline => everything is new"
+
+    store.record_baseline(rep, bpath, note="intended: node run superseded the local one")
+    cmp1 = store.compare_baseline(rep, store.load_baseline(bpath))
+    assert cmp1["ok"] and not cmp1["new_incomplete_runs"] and not cmp1["new_orphan_games"]
+    assert cmp1["accepted_incomplete"] == 1
+    assert cmp1["accepted_orphans"] == len(rep["orphan_games"]) == 2   # run-B and run-ghost
+    assert cmp1["baseline"]["note"].startswith("intended")
+    con.close()
+
+
+def test_verify_baseline_still_flags_a_new_and_a_worsened_finding(tmp_path):
+    con = _incomplete_store(tmp_path)
+    base = store.record_baseline(store.integrity_report(con), store.baseline_path(tmp_path / "base.sqlite"))
+    assert base["incomplete_runs"]["run-A"]["missing"] == 4
+
+    # a NEW run loses its games, and the already-accepted one loses more
+    store.record_run(con, {"run_id": "run-C", "mode": "confirm", "agents": "a,b", "n_games": 2,
+                           "started_at": "2026-08-02T00:00:00"})
+    store.upsert_rows(con, [_row("run-C", seed=s) for s in (10, 11)])
+    store.upsert_rows(con, [_row("run-D", seed=s) for s in (10, 11)])
+    con.execute("UPDATE runs SET n_games = 6 WHERE run_id = 'run-A'")      # it played more
+    con.commit()
+
+    cmp2 = store.compare_baseline(store.integrity_report(con),
+                                  store.load_baseline(store.baseline_path(tmp_path / "base.sqlite")))
+    flagged = {r["run_id"]: r for r in cmp2["new_incomplete_runs"]}
+    assert set(flagged) == {"run-A", "run-C"}, "new runs AND accepted runs that got worse"
+    assert flagged["run-A"]["accepted_missing"] == 4 and flagged["run-A"]["missing"] == 6
+    assert flagged["run-C"]["accepted_missing"] is None
+    assert cmp2["ok"] is False
+    con.close()
+
+
+def test_verify_cli_exit_codes_follow_the_baseline(tmp_path, capsys):
+    from arena import cli
+    db = str(tmp_path / "cli.sqlite")
+    _incomplete_store(tmp_path, "cli.sqlite").close()
+    assert cli.main(["verify", "--db", db]) == 1, "no baseline: the raw answer, as before"
+    assert "no baseline" in capsys.readouterr().out
+    assert cli.main(["verify", "--db", db, "--baseline", "record", "--note", "accepted"]) == 0
+    assert cli.main(["verify", "--db", db]) == 0, "and nothing is new afterwards"
+    out = capsys.readouterr().out
+    assert "OK: nothing new since the baseline" in out and "accepted, not shown above" in out
+    assert cli.main(["verify", "--db", db, "--baseline", "ignore"]) == 1, \
+        "--baseline ignore keeps the unfiltered check available"

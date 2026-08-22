@@ -160,19 +160,61 @@ def cmd_gate(args) -> int:
     return 0 if res["pass"] else 1
 
 
-def cmd_verify(args) -> int:
-    """Orphan-run integrity check: which runs no longer own the games they played (NB-6)."""
+def store_baseline_suffix() -> str:
     from . import store
-    con = store.connect(Path(args.db) if args.db else None)
+    return store.BASELINE_SUFFIX
+
+
+def _print_incomplete(r: dict) -> None:
+    by = ", ".join(f"{k} ({v})" for k, v in r["superseded_by"].items()) or "unknown (pre-ledger)"
+    _p(f"  ! {r['run_id']} {r['mode']:<11} played {r['n_games']:>4} stored {r['stored']:>4} "
+       f"missing {r['missing']:>4}  taken by: {by}")
+    _p(f"      agents {r['agents']}  started {r['started_at']}")
+
+
+def cmd_verify(args) -> int:
+    """Orphan-run integrity check: which runs no longer own the games they played (NB-6).
+
+    With a baseline (P21-3) it answers the useful question instead of the literal one. Exit 1 on
+    every store in the org -- which is what the raw check does, because a clean node run
+    superseding a noisy local one is *intended* -- is an exit code nobody can act on.
+    """
+    from . import store
+    db = Path(args.db) if args.db else None
+    bpath = store.baseline_path(db, Path(args.baseline_file) if args.baseline_file else None)
+    con = store.connect(db)
     rep = store.integrity_report(con)
     _p(f"runs {len(rep['runs'])}  superseded rows {rep['superseded_total']}  "
        f"incomplete runs {len(rep['incomplete_runs'])}  orphan run_ids {len(rep['orphan_games'])}")
-    for r in rep["incomplete_runs"]:
-        by = ", ".join(f"{k} ({v})" for k, v in r["superseded_by"].items()) or "unknown (pre-ledger)"
-        _p(f"  ! {r['run_id']} {r['mode']:<11} played {r['n_games']:>4} stored {r['stored']:>4} "
-           f"missing {r['missing']:>4}  taken by: {by}")
-        _p(f"      agents {r['agents']}  started {r['started_at']}")
-    for rid, n in sorted(rep["orphan_games"].items()):
+
+    if args.baseline == "record":
+        data = store.record_baseline(rep, bpath, note=args.note, db=db or store.DB_PATH)
+        con.close()
+        for r in rep["incomplete_runs"]:
+            _print_incomplete(r)
+        for rid, n in sorted(rep["orphan_games"].items()):
+            _p(f"  ? {n} games carry run_id {rid} with no run row")
+        _p(f"\nrecorded {len(data['incomplete_runs'])} incomplete run(s) and "
+           f"{len(data['orphan_games'])} orphan run_id(s) as ACCEPTED for this store -> {bpath}")
+        _p("later runs of `arena verify` report only what is new or has got worse. Re-record "
+           "deliberately (and say why with --note) whenever you accept a fresh supersession.")
+        return 0
+
+    if args.baseline == "ignore":
+        cmp_ = None
+    else:
+        cmp_ = store.compare_baseline(rep, store.load_baseline(bpath))
+        if cmp_["baseline"] is None:
+            _p(f"(no baseline at {bpath}; every finding counts as new. "
+               "`arena verify --baseline record` accepts the current state.)")
+
+    shown = rep["incomplete_runs"] if cmp_ is None else cmp_["new_incomplete_runs"]
+    orphans = rep["orphan_games"] if cmp_ is None else cmp_["new_orphan_games"]
+    for r in shown:
+        _print_incomplete(r)
+        if r.get("accepted_missing") is not None:
+            _p(f"      WORSE than the baseline: it accepted {r['accepted_missing']} missing")
+    for rid, n in sorted(orphans.items()):
         _p(f"  ? {n} games carry run_id {rid} with no run row")
     if args.superseded:
         for row in store.superseded_rows(con)[: args.superseded]:
@@ -180,8 +222,16 @@ def cmd_verify(args) -> int:
                f"{row['p0']} vs {row['p1']} seed={row['seed']} result0={row['result0']} "
                f"money {row['money0']:.0f}/{row['money1']:.0f}")
     con.close()
-    if rep["ok"]:
-        _p("OK: every run still owns the games it played")
+
+    if cmp_ and cmp_["baseline"] is not None:
+        _p(f"baseline {bpath.name} recorded {cmp_['baseline']['recorded_at']}"
+           + (f" ({cmp_['baseline']['note']})" if cmp_["baseline"].get("note") else "")
+           + f": {cmp_['accepted_incomplete']} incomplete run(s) and {cmp_['accepted_orphans']} "
+             "orphan run_id(s) accepted, not shown above")
+    ok = rep["ok"] if cmp_ is None else cmp_["ok"]
+    if ok:
+        _p("OK: every run still owns the games it played" if cmp_ is None or cmp_["baseline"] is None
+           else "OK: nothing new since the baseline")
         return 0
     _p("NOT OK: a re-run took rows from an earlier run. The earlier measurement is in the "
        "`superseded` ledger (arena verify --superseded 20); rows recorded before this ledger "
@@ -471,6 +521,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--db")
     s.add_argument("--superseded", type=int, default=0, metavar="N",
                    help="also print the N most recent superseded measurements")
+    s.add_argument("--baseline", default="compare", choices=("compare", "record", "ignore"),
+                   help="compare (default): report only findings that are new or worse than the "
+                        "store's accepted baseline; record: accept the current findings; "
+                        "ignore: the raw report, every finding, as before")
+    s.add_argument("--baseline-file", default=None,
+                   help="where the baseline lives (default: <db>" + store_baseline_suffix() + ")")
+    s.add_argument("--note", default="", help="why this baseline was accepted (recorded with it)")
     s.set_defaults(fn=cmd_verify)
 
     s = sub.add_parser("info", help="paths, engine, seed bands, workers")

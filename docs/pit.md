@@ -289,6 +289,23 @@ use the API's `code_b64`/local-path form.
   first, and `arena verify` (exit 1 on failure, `--superseded N` to print the lost measurements)
   reports every run whose games no longer add up plus any game whose `run_id` has no run row.
   Run it before quoting a stored run, and after importing a remote delta.
+
+  **Give each store a baseline first, or the exit code says nothing** (Auditor P21-3). The raw
+  check exits 1 on every store in the org — 2 incomplete runs in engineer's, 10 in modeler's, 4 in
+  engineer-b's on 2026-08-22 — and most of them are the *intended* supersession, with pre-ledger
+  rows reading `taken by: unknown (pre-ledger)`. So:
+
+  ```bash
+  uv run python -m arena verify --baseline record --note "why these are accepted"
+  uv run python -m arena verify            # only what is NEW or has got worse; exit 0 if nothing
+  uv run python -m arena verify --baseline ignore     # the raw, unfiltered check
+  ```
+
+  The baseline is one JSON file per store, written beside it as
+  `<db>.verify-baseline.json` (git-ignored with the rest of `data/arena/`), because it describes
+  that store's history and must not follow the code between clones. A finding is new when the
+  baseline has never seen its `run_id`, or when that run has lost *more* games since — accepting a
+  supersession never blesses the next one. Re-record deliberately, with a `--note` saying why.
 - Seat note (Auditor, 2026-08-19): the seat asymmetry the side-swap cancels comes from
   `_end_of_day` drawing weed-spawn randomness sequentially per farm index from one shared RNG —
   not from action resolution order.
