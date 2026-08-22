@@ -8,6 +8,7 @@ sqlite store as each game finishes; the dashboard's BT/Elo fit reads them live.
 
 Control state lives in data/arena/ so it survives restarts and is shared with the CLI:
   paused          flag file  — hub idles while it exists (durable pause, PTCG-style)
+  leases.json     pause leases — while any is live the ladder may not be resumed (see leases.py)
   hub.json        config     — {"workers": N, "games_per_pairing": G, "max_opponents": K}
   registry.json   active/benched/retired flags decide who plays (arena bench/retire or the UI)
 
@@ -23,7 +24,7 @@ import time
 import uuid
 
 from . import engine as eng
-from . import ratings, registry, store
+from . import leases, ratings, registry, store
 from .paths import ARENA_DIR, LADDER_SEED_BASE, ensure_dirs
 from .scheduler import run_match
 
@@ -53,13 +54,47 @@ def is_paused() -> bool:
     return PAUSE_FLAG.exists()
 
 
-def set_paused(paused: bool) -> bool:
+def set_paused(paused: bool, *, force: bool = False, actor: str = "") -> bool:
+    """Set the durable pause flag. Resuming is refused while a pause lease is live.
+
+    The check lives here rather than in the HTTP layer so that every path -- the API, the
+    dashboard button, the CLI and any script importing the module -- obeys the same rule.
+    `force=True` needs an `actor` and *breaks* the leases it overrides, so the state stays
+    honest: nobody is left believing they hold exclusivity while the ladder plays.
+    """
     ensure_dirs()
     if paused:
-        PAUSE_FLAG.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
+        if not PAUSE_FLAG.exists():     # keep the original timestamp: "paused since" is evidence
+            PAUSE_FLAG.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
     else:
+        held = leases.active()
+        if held and not force:
+            raise leases.LeaseHeld(held, action="resume")
+        if held:
+            leases.break_all(actor, reason="force-resume")
         PAUSE_FLAG.unlink(missing_ok=True)
     return is_paused()
+
+
+def acquire_lease(owner: str, purpose: str, ttl_s: int = leases.DEFAULT_TTL_S,
+                  pause: bool = True) -> dict:
+    """Take a pause lease and (by default) pause the ladder in the same step.
+
+    The ladder finishes the round it is already playing, so the caller must wait for
+    `status()['phase'] == 'paused'` before it starts measuring anything time-sensitive.
+    """
+    rec = leases.acquire(owner, purpose, ttl_s)
+    if pause:
+        set_paused(True)
+    return rec
+
+
+def release_lease(lease_id: str, resume: bool = False) -> dict:
+    """Release a lease. Does NOT resume unless asked -- and then only if no lease remains."""
+    rec = leases.release(lease_id)
+    if resume and not leases.active():
+        set_paused(False)
+    return rec
 
 
 def _ladder_counts_and_seed() -> tuple[dict, int]:
@@ -109,6 +144,7 @@ class Hub:
             st = dict(self._state)
         st["paused"] = is_paused()
         st["config"] = config()
+        st["leases"] = leases.active()
         return st
 
     def _set(self, **kw):
