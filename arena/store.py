@@ -16,6 +16,7 @@ already stored.
 from __future__ import annotations
 
 import csv
+import json
 import sqlite3
 import time
 from pathlib import Path
@@ -143,6 +144,84 @@ def integrity_report(con: sqlite3.Connection) -> dict:
         "orphan_games": orphan_games,
         "superseded_total": con.execute("SELECT COUNT(*) FROM superseded").fetchone()[0],
         "ok": not incomplete and not orphan_games,
+    }
+
+
+# ------------------------------------------------------------------ verify baselines (P21-3)
+# `arena verify` exits 1 on every store in the org, and mostly for the *intended* reason: a clean
+# node run superseding a noisy local one is exactly what the upsert is for, and every row recorded
+# before the ledger existed reads "unknown (pre-ledger)". Measured on 2026-08-22: 2 incomplete
+# runs in engineer's store, 10 in modeler's, 4 in engineer-b's. An exit code that is always 1
+# cannot gate anything, so the real orphans drown.
+#
+# A baseline is the accepted answer for ONE store, kept beside it (it describes that store's
+# history, so it must not follow the code around). `compare` then reports only what is new or has
+# got worse, which is the question an operator actually has.
+BASELINE_SUFFIX = ".verify-baseline.json"
+
+
+def baseline_path(db_path: Path | None = None, override: Path | None = None) -> Path:
+    if override:
+        return Path(override)
+    db = Path(db_path) if db_path else DB_PATH
+    return db.with_name(db.name + BASELINE_SUFFIX)
+
+
+def record_baseline(report: dict, path: Path, note: str = "", db: Path | None = None) -> dict:
+    """Freeze the current findings as accepted. Nothing else is stored: the point is to answer
+    "is this finding new?", not to duplicate the ledger."""
+    data = {
+        "recorded_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "db": str(db or DB_PATH),
+        "note": note,
+        "incomplete_runs": {r["run_id"]: {"n_games": r["n_games"], "stored": r["stored"],
+                                          "missing": r["missing"]}
+                            for r in report["incomplete_runs"]},
+        "orphan_games": dict(report["orphan_games"]),
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+    return data
+
+
+def load_baseline(path: Path) -> dict | None:
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return None
+    data = json.loads(raw)                 # a corrupt baseline must fail loudly, not silently
+    if not isinstance(data, dict):
+        raise ValueError(f"{path}: baseline must be a JSON object, got {type(data).__name__}")
+    data.setdefault("incomplete_runs", {})
+    data.setdefault("orphan_games", {})
+    return data
+
+
+def compare_baseline(report: dict, baseline: dict | None) -> dict:
+    """Split a report into what the baseline already accepted and what is new.
+
+    "New" is either a run/run_id the baseline never saw, or one whose loss got *bigger* since --
+    a re-run that took another 200 games from an already-accepted run is a new event, not the old
+    one. Nothing is ever un-flagged: an accepted finding is still printed, just as accepted.
+    """
+    accepted_runs = (baseline or {}).get("incomplete_runs", {})
+    accepted_orphans = (baseline or {}).get("orphan_games", {})
+    new_runs, new_orphans = [], {}
+    for r in report["incomplete_runs"]:
+        was = accepted_runs.get(r["run_id"])
+        if was is None or r["missing"] > int(was.get("missing", 0)):
+            new_runs.append(dict(r, accepted_missing=None if was is None else int(was.get("missing", 0))))
+    for rid, n in report["orphan_games"].items():
+        was = accepted_orphans.get(rid)
+        if was is None or n > int(was):
+            new_orphans[rid] = n
+    return {
+        "baseline": baseline,
+        "new_incomplete_runs": new_runs,
+        "new_orphan_games": new_orphans,
+        "accepted_incomplete": len(report["incomplete_runs"]) - len(new_runs),
+        "accepted_orphans": len(report["orphan_games"]) - len(new_orphans),
+        "ok": not new_runs and not new_orphans,
     }
 
 

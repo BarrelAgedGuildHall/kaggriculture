@@ -129,15 +129,27 @@ uv run python -m arena match v1 v0 --mode confirm --node barrelaged@barrelagedwo
 uv run python -m arena serve                                  # dashboard + JSON API on http://127.0.0.1:8765
 uv run python -m arena serve --hub --host 0.0.0.0             # + the continuous ladder (the hub service; see docs/pit.md)
 uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gates" --ttl 3600
-                                                              # pause the ladder and hold it: while a lease is live
-                                                              # resume is refused (--hub URL to lease a remote hub);
+                                                              # pause the ladder and hold it EXCLUSIVELY: resume is
+                                                              # refused, a second acquire is refused (409), and
+                                                              # match/gate refuse to start for anyone else (exit 3).
+                                                              # --hub URL to lease a remote hub; --shared to allow
+                                                              # other non-measuring holds alongside;
                                                               # release with `arena lease release <id> --resume`
+export KAGGRI_LEASE=<lease-id>                                # ...then match/gate know the lease is yours
+                                                              # (or pass --lease <id>; --ignore-lease overrides, logged).
+                                                              # A run that declares NO lease takes one for itself and
+                                                              # releases it when it ends (--no-lease opts out, loudly);
+                                                              # `source scripts/lease.sh` for the EXIT-trap helper that
+                                                              # releases on Ctrl-C too. See docs/pit.md "Pause leases".
 uv run python -m arena bench v0a                              # out of the ladder (still rated); --undo re-activates
 uv run python -m arena leaderboard                            # markdown/json export -> data/arena/leaderboard.md (+ workshop/notes/leaderboard-internal.md)
 uv run python -m arena champion set v0 --team A               # teams: A | B | org
 uv run python -m arena gate v1 --team A                       # PASS/FAIL vs team A's champion on the confirm band (1000-1199)
 uv run python -m arena gate v1 --team A --band 3000-3199      # ... on a second, disjoint band: pool >=2 before promoting
 uv run python -m arena verify --superseded 20                 # integrity: does every run still own the games it played?
+uv run python -m arena verify --baseline record --note "..."  # accept this store's current findings; afterwards plain
+                                                              # `arena verify` reports only what is new or worse
+                                                              # (--baseline ignore for the raw, unfiltered check)
 uv run python -m arena retire v0                              # drop from the rating fit (rows kept); --undo
 uv run python -m arena relabel old@4c859c9 new@12a5398        # rename an id across the registry AND its game
                                                               # rows in one transaction (game ids are recomputed);

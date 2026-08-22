@@ -113,3 +113,56 @@ def bands_of(seeds) -> list[str]:
 def ensure_dirs() -> None:
     for d in (ARENA_DIR, AGENTS_DIR, REPLAYS_DIR, RUNS_DIR, PROGRESS_DIR):
         d.mkdir(parents=True, exist_ok=True)
+
+
+# ------------------------------------------------------- probe isolation (Auditor L-3, 2026-08-22)
+# A probe script whose docstring said "set KAGGRI_ARENA_DIR" but which did not set it itself was
+# run the obvious way and mutated a real arena dir: it wrote leases.json, lease-log.jsonl and --
+# through set_paused(True) -- a `paused` flag. In that checkout the cost was a stray file. Run on
+# the Pit host, the same invocation pauses the LIVE LADDER, and nothing resumes it.
+#
+# So: anything that exercises control state (leases, pause, registry writes) for testing must
+# prove it is pointed at a scratch dir first. "Pointed" means KAGGRI_ARENA_DIR was set
+# deliberately -- inheriting the default is exactly the accident.
+
+SCRATCH_MARKER = ".scratch-arena"
+# What makes a directory somebody's real arena rather than a scratch one.
+LIVE_ARENA_MARKS = ("arena.sqlite", "registry.json", "hub.json", "paused", "leases.json")
+
+
+class LiveArenaRefused(RuntimeError):
+    """A probe/self-test asked to operate on a real arena directory."""
+
+
+def arena_dir_is_explicit() -> bool:
+    return bool((os.environ.get("KAGGRI_ARENA_DIR") or "").strip())
+
+
+def require_scratch_arena(purpose: str = "this script") -> Path:
+    """Refuse unless ARENA_DIR is a deliberately-pointed, empty-of-live-state directory.
+
+    Call it at the top of any probe, before touching the arena. Returns the directory, and marks
+    it so a repeat run of the same probe is not mistaken for a live arena.
+    """
+    hint = (f"Set KAGGRI_ARENA_DIR to a throwaway directory before importing arena, e.g.\n"
+            f"    os.environ['KAGGRI_ARENA_DIR'] = tempfile.mkdtemp(prefix='probe-')\n"
+            f"or in the shell:  KAGGRI_ARENA_DIR=$(mktemp -d) uv run python <script>")
+    if not arena_dir_is_explicit():
+        raise LiveArenaRefused(
+            f"{purpose} refuses to run against the default arena dir ({ARENA_DIR}) -- on the Pit "
+            f"host that is the live ladder's control state, and a probe that pauses it has no way "
+            f"to know it did. {hint}")
+    if ARENA_DIR.resolve() == (DATA_DIR / "arena").resolve():
+        raise LiveArenaRefused(
+            f"{purpose} refuses to run against this checkout's own arena dir ({ARENA_DIR}), "
+            f"however it was pointed there. {hint}")
+    if (ARENA_DIR / SCRATCH_MARKER).exists():
+        return ARENA_DIR
+    live = [m for m in LIVE_ARENA_MARKS if (ARENA_DIR / m).exists()]
+    if live:
+        raise LiveArenaRefused(
+            f"{purpose} refuses to run against {ARENA_DIR}: it holds live arena state "
+            f"({', '.join(live)}). {hint}")
+    ensure_dirs()
+    (ARENA_DIR / SCRATCH_MARKER).write_text(f"scratch arena for {purpose}\n", encoding="utf-8")
+    return ARENA_DIR

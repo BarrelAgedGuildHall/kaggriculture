@@ -37,8 +37,28 @@ lease appears; check `curl $PIT/api/leases` before launching a long job.
 
 ```bash
 uv run python -m arena lease acquire --owner <you> --purpose "<exp id + what>" --ttl 3600
+export KAGGRI_LEASE=<lease-id>   # every match/gate in this shell runs under your own lease
 curl -s $PIT/api/hub | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['phase'], d['paused'])"
 uptime                      # 1-min loadavg must be < ~0.5 before the first game
+```
+
+Since 2026-08-22 the lease is a real lock, not a warning light: a second `acquire` is refused
+(409), and `arena match` / `arena gate` refuse to start (exit 3) while somebody else holds one.
+You no longer have to *notice* a foreign lease — but you do have to declare your own with
+`--lease <id>` or `KAGGRI_LEASE`, or the guard will read it as somebody else's.
+
+A run that declares no lease **takes one for itself** and releases it when it ends, so two
+leaseless runs can no longer collide either. That is a floor, not a substitute for this
+checklist: a per-run lease does not cover the gaps between your runs, and it does not wait for
+`phase: paused` before the games start. Take the arm's lease yourself, wait for the ladder to be
+quiet, and export `KAGGRI_LEASE`.
+
+If the arm is driven by a script, take the lease through `scripts/lease.sh` so a Ctrl-C or a
+failed command still releases it:
+
+```bash
+source scripts/lease.sh
+kaggri_lease_acquire <you> "<exp id + what>" 3600     # + trap … EXIT INT TERM
 ```
 
 - Wait for `phase: paused` — the ladder finishes the round it is already in.
@@ -50,8 +70,22 @@ uptime                      # 1-min loadavg must be < ~0.5 before the first game
 - Record `load_before` for every arm. `load_after` is meaningless (your own workers drive it).
 - Re-check `paused` **at the end** of each arm. An arm that spans a pause flip is discarded —
   with a lease held, a flip means someone forced it, and `data/arena/lease-log.jsonl` says who.
-- Contended runs that only need money numbers belong in a side DB (`arena match --db ...`):
-  money is bit-identical under load, so there is no reason to pollute the hub's timing rows.
+- Contended runs belong in a side DB (`arena match --db ...`) so contention can never reach the
+  promotion store's timing rows.
+- **"Money is bit-identical under load" is NOT true of every agent** — it is a property of the
+  *agent*, not of the engine, and it only holds for a policy with no wall-clock branch. Two
+  families in this repo have one, and under load they play **different moves** and bank different
+  money on an identical seed (observed by the Modeler on melonrace, 2026-08-21):
+  - `agents/team_b/{millrace,routed}/chassis.py` — the M0 chassis throws the whole planned action
+    away and emits the precomputed fallback when a turn exceeds its own 250 ms budget
+    (`deadline_s=0.25`). All-or-nothing, so one slow turn changes everything after it.
+  - `agents/team_a/{v0,v0a,v0b}.py` — bails out of the greedy assignment loop at
+    `PLANNING_BUDGET_S = 0.30` and emits the partial plan.
+
+  Team A's EnsembleBC line has no such branch, which is why every check of the claim happened to
+  pass. **Before quoting a contended run's money, check the agent for a self-imposed deadline.**
+  This is a live competition risk as well as a measurement one: Kaggle's sandbox is 1.6 vCPU, so
+  a self-imposed budget can fire there even when nothing is wrong.
 
 ## When you are finished
 
@@ -62,6 +96,10 @@ uv run python -m arena lease release <lease-id> --resume
 Renew (`arena lease renew <id>`) rather than letting a lease lapse mid-battery: an expired lease
 stops blocking the ladder silently, and the next arm is contaminated without anyone doing
 anything wrong.
+
+And release it from a **trap**, not from the last line of the script. Three separate evenings
+have now ended with a lease held by a process that died — `scripts/lease.sh` (shell),
+`with arena.leases.held(...)` (Python), `try/finally` (PowerShell).
 
 ## Conflicts
 
