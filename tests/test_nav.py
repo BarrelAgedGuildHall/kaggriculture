@@ -257,6 +257,163 @@ def test_an_unobserved_side_is_a_fallback_and_says_so(perturbed_episode):
     assert isinstance(sheet.diagnostics["curve_confidence"], float)
 
 
+# ------------------------------------------------------- read provenance (R-52, schema 2)
+def _one_sided_curve(product="MELON", base=200, i0=10000, points=24, slope=0.9):
+    """A curve fitted ONLY on the glut side -- the shape of every product we exclusively sell.
+
+    This is MELON's situation as the b0 census measured it: a fixed 30 units/season town sink
+    and both seats selling into it, so the pool is only ever walked UP and nothing is ever
+    observed below `I0`.
+    """
+    cs = nav.CurveSet()
+    for k in range(points):
+        inv = i0 + 4 * k
+        price = max(1, int(round(base - slope * (inv - i0))))
+        market = {"inventory": {p: (inv if p == product else i0) for p in nav.rules.PRODUCTS},
+                  "prices": {p: (price if p == product else base) for p in nav.rules.PRODUCTS}}
+        cs.observe(market, step=k)
+    return cs
+
+
+def test_a_one_sided_fit_reports_the_unobserved_side_as_base_fallback():
+    """R-52 N-1/N-2: the aggregate `confidence` is high while the scarcity side is empty, and
+    a read there is the flat `base` -- optimistic, and previously indistinguishable from a
+    fitted read. `price_at` is unchanged; `price_at_marked` says which it was."""
+    curve = _one_sided_curve().curves["MELON"]
+
+    assert curve.confidence > 0.5, "the aggregate flag is exactly the one that cannot see this"
+    assert curve.side_confidence("above") > 0.5
+    assert curve.side_confidence("below") == 0.0          # the invariant callers may gate on
+    assert curve.side_reach("below") is None
+    assert curve.side_reach("above") > 0
+
+    price, provenance = curve.price_at_marked(curve.i0 - 50)
+    assert provenance == "base_fallback"
+    assert nav.read_is_void(provenance)
+    assert price == float(curve.base) == curve.price_at(curve.i0 - 50)   # numbers unchanged
+
+    inside = curve.i0 + int(curve.side_reach("above") // 2)
+    assert curve.price_at_marked(inside)[1] == "fitted"
+    far = curve.i0 + int(4 * curve.side_reach("above"))
+    assert curve.price_at_marked(far)[1] == "extrapolated"
+    assert not nav.read_is_void("extrapolated")            # provisional, but still evidence
+
+
+def test_price_at_marked_never_changes_a_price(episode):
+    """Additive only: Team A consumes `nav`, so the marked read must be the same number."""
+    navobj = _fit_over_episode(episode)
+    for product in ("WHEAT", "EGG", "MILK"):
+        curve = navobj.curves[product]
+        for d in (-500, -60, -1, 0, 1, 60, 500):
+            assert curve.price_at_marked(curve.i0 + d)[0] == curve.price_at(curve.i0 + d)
+
+
+def test_aggregate_reads_leave_the_worst_class_behind():
+    """R-52 item 3: `marginal_revenue`/`marginal_cost`/`priced_units`/`units_above` record the
+    worst class they touched and the units in each, analytically -- no per-unit walk."""
+    curve = _one_sided_curve().curves["MELON"]
+    reach = curve.side_reach("above")
+
+    curve.marginal_revenue(curve.i0 + 4, 8)
+    assert curve.last_read["provenance"] == "fitted"
+    assert sum(curve.last_read["units_by_class"].values()) == pytest.approx(8)
+
+    curve.marginal_revenue(curve.i0 - 40, 20)              # entirely on the unobserved side
+    assert curve.last_read["provenance"] == "base_fallback"
+    assert curve.last_read["units_by_class"]["base_fallback"] == pytest.approx(20)
+
+    curve.marginal_cost(curve.i0 + 2, 40)                  # buying walks it back down past I0
+    assert curve.last_read["provenance"] == "base_fallback"
+    classes = curve.last_read["units_by_class"]
+    assert sum(classes.values()) == pytest.approx(40)
+    assert classes["fitted"] > 0 and classes["base_fallback"] > 0   # both sides, split exactly
+
+    curve.marginal_revenue(curve.i0 + int(3 * reach), 5)
+    assert curve.last_read["provenance"] == "extrapolated"
+
+
+def test_the_drain_variant_marks_the_side_it_pushed_the_query_onto():
+    """R-52 N-3 and the b0 MELON failure channel, in one test.
+
+    `sheet.take(variant="drain", future=True)` subtracts the remaining town drain, which pushes
+    the query BELOW `I0` -- the side a sell-only product never observes. The same take under
+    `walk` stays on the fitted side. So the drain-aware read is the one almost guaranteed to
+    land where there is no fit, and it must say so: before R-52 the pool's only flag was the
+    aggregate confidence, which is high here, and the read came back as a flat curve at `base`
+    with nothing to distinguish it (b0 scored those pairs as misses instead of voiding them).
+    """
+    from nav.book import DemandBook
+    from nav.sheet import LiquidationPool
+
+    curves = _one_sided_curve()
+    curve = curves["MELON"]
+    book = DemandBook()
+    book.observe({"unlocked_shops": []}, 0)
+    market = {"inventory": {p: curve.i0 for p in nav.rules.PRODUCTS},
+              "prices": {p: int(curve.base) for p in nav.rules.PRODUCTS}}
+
+    assert book.remaining_drain("MELON", 0, TERMINAL_INDEX) > 0, "no drain, no channel"
+
+    walk = LiquidationPool(curves, book, market, step=0, variant="walk")
+    walk.take("MELON", 6, future=True)
+    assert walk.provenance == "fitted"
+    assert not walk.provisional
+
+    drain = LiquidationPool(curves, book, market, step=0, variant="drain")
+    cursor = drain.cursor()
+    drain.take("MELON", 6, future=True)
+    assert drain.inv["MELON"] < curve.i0, "the drain adjustment did not move the query"
+    assert drain.provenance_since(cursor) == "base_fallback"
+    assert drain.provisional
+    assert curve.confidence > 0.5, "and the pre-R-52 flag stays silent through all of it"
+
+
+def test_sheet_propagates_the_worst_provenance(episode):
+    """R-52 item 4/5: `Line.provisional` follows the read that line made, the worst class folds
+    up through the sheet, and `void` is on the telemetry row for the analysis to enforce."""
+    navobj = _fit_over_episode(episode, upto=6 * TURNS_PER_DAY)
+    sheet = navobj.sheet(variant="drain")
+
+    assert sheet.provenance in nav.PROVENANCE_ORDER
+    assert sheet.provenance == max((l.provenance for l in sheet.lines),
+                                   key=nav.PROVENANCE_ORDER.index)
+    for line in sheet.lines:
+        assert line.provisional == nav.read_is_provisional(line.provenance)
+        assert line.void == nav.read_is_void(line.provenance)
+    assert sheet.void == any(l.void for l in sheet.lines)
+    assert sheet.provisional == any(l.provisional for l in sheet.lines)
+
+    payload = json.loads(json.dumps(sheet.as_dict()))
+    assert payload["schema_version"] == nav.SCHEMA_VERSION == 2
+    assert payload["provenance"] == sheet.provenance
+    assert payload["void"] == sheet.void
+    assert set(payload["line_provenance"]) == {l.name for l in sheet.lines}
+    assert payload["diagnostics"]["read_provenance"] == sheet.provenance
+
+
+def test_a_line_that_reads_nothing_claims_no_evidence(episode):
+    """`land` never touches a curve, so it must not inherit another line's provenance -- the
+    old flag was pass-cumulative and every line after the first hole was flagged."""
+    navobj = _fit_over_episode(episode, upto=6 * TURNS_PER_DAY)
+    sheet = navobj.sheet(variant="drain")
+    land = sheet.line("land")
+    assert land.provenance == "none"
+    assert not land.provisional and not land.void
+
+
+def test_provenance_of_a_well_observed_curve_is_fitted(episode):
+    """Nothing regresses on a curve that has been walked: an in-range read is `fitted`, the
+    sheet is not void, and both sides carry evidence."""
+    navobj = _fit_over_episode(episode)
+    curve = navobj.curves["WHEAT"]
+    assert curve.side_confidence("below") > 0.0
+    assert curve.side_reach("below") > 0
+    inside = curve.i0 - max(1, int(curve.side_reach("below") // 2))
+    assert curve.price_at_marked(inside)[1] in ("observed", "fitted")
+    curve.marginal_revenue(inside, 10)
+    assert not nav.read_is_void(curve.last_read)
+
+
 def test_tripwire_stays_quiet_on_ordinary_episodes(episode):
     navobj = _fit_over_episode(episode)
     assert navobj.curves.tripwire() == {}

@@ -59,13 +59,57 @@ it used.
 
 ### The fallback ladder (a mark never silently becomes a guess)
 
-* `confidence == 0` on the side a mark needs (no points observed there yet) ⇒ `price_at`
-  returns `base` and the mark is flagged `provisional`.
+* `side_confidence(side) == 0` (no points observed on that side yet) ⇒ `price_at` returns
+  `base`, the read is `base_fallback` and every mark resting on it is `provisional`.
 * A partially fitted curve is used as fitted; the fit's RMSE and out-of-sample residual are in
   `CurveSet.diagnostics()`.
 * Worth knowing: in a *quiet* episode nobody pushes a pool into glut, so the **above-I0 side
   is often unobserved** and a future sale marked there marks at `base` — optimistically.
   `scripts/nav_tripwire.py` prints exactly which pools that applies to.
+
+### What backed a read — provenance, and the VOID clause (schema 2, ruling-05 R-52)
+
+The fallback above is **not a symmetric loss of accuracy**: a flat curve at `base` says "sell
+as much as you like, no price impact", which biases every acreage and capital decision toward
+over-production. Until schema 2 nothing in the return value distinguished it from a fitted
+read, the one flag we had (`provisional`) was keyed on the curve's **aggregate** confidence
+and so could not see a per-side hole, and the `drain` variant — which subtracts the remaining
+town drain — is the read most likely to land on the unobserved side of a product we only sell.
+
+```python
+curve.side_confidence("below")     # 0.0  <=> a read there is base_fallback
+curve.side_reach("above")          # largest |inv - I0| ever observed on that side, or None
+curve.price_at_marked(inv)         # (price, provenance) -- price_at is unchanged
+curve.last_read                    # {"provenance": worst class, "units_by_class": {...}}
+sheet.line("crop").provenance      # worst class that line's reads touched
+sheet.provenance, sheet.void       # folded up; both on `as_dict()`
+```
+
+| provenance | meaning | evidence? |
+|---|---|---|
+| `observed` | an exact recorded `(inventory, price)` point | yes |
+| `fitted` | the side has a fit and the query is within `EXTRAPOLATION_FACTOR × side_reach` | yes |
+| `extrapolated` | past that — the fit speaking outside the range it was fitted on | weak → `provisional` |
+| `base_fallback` | the side has **no** fit; the answer is the flat `base` | **no** → `provisional`, `void` |
+| `floor` | the curve has no `base` yet; the answer is `PRICE_FLOOR` | **no** → `provisional`, `void` |
+
+> **The VOID clause.** Any offline projection, back-test or calibration pair whose read touched
+> `base_fallback` is **VOID**: excluded from the denominator, reported as a separate count,
+> never scored as a miss. A model cannot be refuted on data where it was never consulted.
+>
+> **The shipped-decision clause.** No irreversible action — a purchase, a plant, a hire — may
+> be taken on a `base_fallback` read. Fall back to the corner rule and the
+> optionality-preserving side.
+
+Both are clauses for the *caller*: `nav` states the class and reports it, and decides nothing.
+`nav.read_is_void(x)` accepts a class name, a `last_read`, a `Line` or a `(value, provenance)`
+pair, so an analysis script can hand it whatever it happens to be holding.
+
+`Line.provisional` is now keyed on the read that line actually made rather than on the pass so
+far, so a line that read nothing (`land`) reports `provenance == "none"` and is not flagged.
+Measured on a starter-mirror episode (seed 7, 31 sample points per variant): every dollar
+value, line and curve diagnostic is bit-identical to schema 1, while 23 of 30 `drain` sheets
+that schema 1 called clean are now correctly flagged provisional, and none lost a flag.
 
 ## The engine-bump tripwire
 
@@ -112,7 +156,14 @@ imports the package standalone in the fresh venv before playing the episode.
 > `nav.source_hash()` in the agent's registry notes at registration time.
 
 `SCHEMA_VERSION` bumps when a mark's *meaning* changes; `Sheet.as_dict()` carries it, so any
-telemetry row or experiment result can be attributed to the version that produced it.
+telemetry row or experiment result can be attributed to the version that produced it. It is
+defined in `nav/sheet.py` beside the dataclass that stamps it and re-exported as
+`nav.SCHEMA_VERSION`, so the two cannot drift apart.
+
+| schema | change |
+|---|---|
+| 1 | the S-1 sheet as lifted from exp-N1 |
+| 2 | R-52 read provenance: `Line.provisional` keyed on the read, `provenance`/`void` added. No mark's *value* changed — only what the sheet says about the evidence behind it. |
 
 ## Terminal identity
 
@@ -137,3 +188,10 @@ special-casing check, purity, online/offline replay equality, opponent-sheet equ
 the opponent's own public lines, exact flow inference, the demand book against
 `probe_core._drain_per_day` and against the engine's actual drain, λ handling, isolation
 (runtime half is stdlib-only), vendorability, and the runtime budget.
+
+Read provenance adds: a one-sided fit reports the unobserved side as `base_fallback` while its
+aggregate confidence stays high (the defect the old flag could not see); `price_at_marked`
+never changes a price; aggregate reads leave the worst class and the units in each class
+behind; the `drain` variant is shown pushing the query onto the unobserved side while the same
+`walk` take stays fitted (the b0 MELON channel); the worst class folds up through the sheet
+into `provenance`/`void` on the telemetry row; and a line that reads nothing claims nothing.
