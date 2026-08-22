@@ -58,13 +58,20 @@ You no longer have to *notice* a foreign lease — but you do have to declare yo
   with a lease held, a flip means someone forced it, and `data/arena/lease-log.jsonl` says who.
 - Contended runs belong in a side DB (`arena match --db ...`) so contention can never reach the
   promotion store's timing rows.
-- **"Money is bit-identical under load" is NOT true of every agent.** It holds for a purely
-  deterministic policy, and Team A's are. It does **not** hold for any agent whose chassis
-  branches on the wall clock — Team B's millrace lineage discards its planned action and emits
-  the precomputed fallback whenever a turn exceeds its own 250 ms budget
-  (`agents/team_b/millrace/chassis.py`), so under load it plays *different moves* and banks
-  different money on an identical seed (observed by the Modeler, 2026-08-21). Treat a contended
-  run's **money** as suspect too for any agent with a self-imposed deadline.
+- **"Money is bit-identical under load" is NOT true of every agent** — it is a property of the
+  *agent*, not of the engine, and it only holds for a policy with no wall-clock branch. Two
+  families in this repo have one, and under load they play **different moves** and bank different
+  money on an identical seed (observed by the Modeler on melonrace, 2026-08-21):
+  - `agents/team_b/{millrace,routed}/chassis.py` — the M0 chassis throws the whole planned action
+    away and emits the precomputed fallback when a turn exceeds its own 250 ms budget
+    (`deadline_s=0.25`). All-or-nothing, so one slow turn changes everything after it.
+  - `agents/team_a/{v0,v0a,v0b}.py` — bails out of the greedy assignment loop at
+    `PLANNING_BUDGET_S = 0.30` and emits the partial plan.
+
+  Team A's EnsembleBC line has no such branch, which is why every check of the claim happened to
+  pass. **Before quoting a contended run's money, check the agent for a self-imposed deadline.**
+  This is a live competition risk as well as a measurement one: Kaggle's sandbox is 1.6 vCPU, so
+  a self-imposed budget can fire there even when nothing is wrong.
 
 ## When you are finished
 
