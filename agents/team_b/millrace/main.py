@@ -55,8 +55,17 @@ from feedchain import make_feedchain_agent
 #   ongoing_water_span   R3: service an ongoing crop to its last production eve,
 #                        not to max_yield_day (the age-12.9 strawberry weed
 #                        mode). STRAWBERRY has first == maxday == 10.
-_AGENT = make_feedchain_agent({"melon_replant": True, "melon_rule": "mr",
-                               "strawberry_tiles": 16,
+# expB-303b / ruling-03 R-17 + R-23: the combined promotion arm. `melon_rule`
+# leaves the expB-220 marginal-revenue rule for a fixed 6 tiles: the rule
+# prices a lagged, sink-limited pool at spot and over-plants melon to ~11.4
+# standing tiles (35% of the tile budget) against a town drain of ~1/day.
+# Reallocating those tile-days to strawberry won 70.65% pooled, n=800.
+# Both are QUANTITY constants under the new spec section 6.5 (neither
+# dollars nor days, invariant to price level); named runtime reference =
+# town drain rate / units per tile-day; re-test trigger = expB-304b.
+_AGENT = make_feedchain_agent({"melon_replant": True, "melon_rule": "fixed",
+                               "melon_tiles": 6,
+                               "strawberry_tiles": 32,
                                "dispatch": "priced", "dig": True,
                                "dedupe_ontile": True,
                                "ongoing_water_span": True})
