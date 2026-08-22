@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import shutil
 import time
-from pathlib import Path
+from pathlib import Path  # noqa: F401  (type annotations + relabel's db_path)
 
 from . import engine as eng
 from .paths import AGENTS_DIR, BUILTIN_AGENTS, REGISTRY_PATH, REPO_ROOT, ensure_dirs
@@ -222,6 +222,70 @@ def get_champion(team: str, reg: dict | None = None) -> dict | None:
     reg = reg if reg is not None else load()
     cid = reg["champions"].get(team)
     return reg["agents"].get(cid) if cid else None
+
+
+def relabel(spec: str, new_id: str, db_path: Path | None = None, dry_run: bool = False) -> dict:
+    """Rename a registered agent id everywhere at once: registry entry, champion pointers,
+    the snapshot on disk, and every games/runs row that names it.
+
+    Ids are immutable by design (same bytes -> same id), and this does not change that: it
+    exists for the case where the *label* was wrong -- the same agent registered under a git
+    sha that has since been rebased, say -- and re-registering would orphan the games already
+    played. Orphaning is the failure this prevents: the rows would keep pointing at an id no
+    longer in the registry, and the leaderboard would quietly drop a thousand measurements.
+
+    The sqlite rewrite is one transaction and the registry is written with an atomic replace
+    AFTER it commits, so a crash leaves either the old state or the new one -- never a
+    registry that has moved on from its own rows. The snapshot rename is undone if the
+    transaction fails.
+    """
+    if "@" not in new_id:
+        raise ValueError(f"new id must look like name@sha, got {new_id!r}")
+    reg = load()
+    agent = dict(resolve(spec, reg))
+    old_id = agent["id"]
+    if old_id == new_id:
+        raise ValueError(f"{old_id} is already the id")
+    if new_id in reg["agents"]:
+        raise ValueError(f"{new_id} is already registered -- ids are immutable, pick another")
+
+    from . import store
+    con = store.connect(db_path)
+    try:
+        n_games = store.count_games_for(con, old_id)
+        if dry_run:
+            return {"old": old_id, "new": new_id, "games": n_games, "dry_run": True,
+                    "champions": [t for t, c in reg["champions"].items() if c == old_id]}
+
+        name, sha = new_id.split("@", 1)
+        old_path = AGENTS_DIR / agent["entry"] if agent.get("entry") else None
+        new_entry = agent.get("entry")
+        renamed = None
+        if old_path is not None and old_path.exists() and old_id in str(agent["entry"]):
+            new_entry = agent["entry"].replace(old_id, new_id)
+            new_path = AGENTS_DIR / new_entry
+            if new_path.exists():
+                raise ValueError(f"{new_path} already exists -- refusing to overwrite a snapshot")
+            old_path.rename(new_path)
+            renamed = (new_path, old_path)
+
+        try:
+            moved = store.relabel_agent(con, old_id, new_id)
+        except Exception:
+            if renamed:
+                renamed[0].rename(renamed[1])          # put the snapshot back
+            raise
+
+        agent.update(id=new_id, name=name, sha=sha, entry=new_entry, relabelled_from=old_id)
+        del reg["agents"][old_id]
+        reg["agents"][new_id] = agent
+        champions = [t for t, c in reg["champions"].items() if c == old_id]
+        for team in champions:
+            reg["champions"][team] = new_id
+        save(reg)                                       # atomic replace, after the commit
+        return {"old": old_id, "new": new_id, "champions": champions, "dry_run": False, **moved}
+    finally:
+        con.close()
 
 
 def set_retired(spec: str, retired: bool = True) -> dict:
