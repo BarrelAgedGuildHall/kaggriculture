@@ -40,6 +40,19 @@ from __future__ import annotations
 
 import numpy as np
 
+from .bcpath import F
+
+# The nine shared market pools, in the engine's own order. Identical to
+# `kaggriculture.PRODUCTS` and to `z["products"]` in Ops' S-2 label shard, which is what makes
+# a rollout-computed label and an S-2 corpus label the same column.
+PRODUCTS = tuple(F.PRODUCTS)
+N_PRODUCTS = len(PRODUCTS)
+_PIDX = {p: i for i, p in enumerate(PRODUCTS)}
+
+# Per-product flow rows, matching S-2's `p{i}_sold` / `p{i}_sold_floored` / `p{i}_bought`.
+FLOWS = ("sold", "sold_floored", "bought")
+_FIDX = {name: i for i, name in enumerate(FLOWS)}
+
 # The exact cash decomposition. Sum(LINES) + starting money == final bank.
 LINES = (
     "sell_staple",        # SELL revenue: WHEAT, CARROT
@@ -142,15 +155,40 @@ class Accountant:
         _install(K)
         self.tot = np.zeros((2, N_LINES), dtype=np.float64)
         self.units = np.zeros((2, N_LINES), dtype=np.int64)
+        # (seat, flow, product) running unit counts -- the S-2 flow block, computed live.
+        self.prod = np.zeros((2, len(FLOWS), N_PRODUCTS), dtype=np.int64)
+        self.price_floor = float(getattr(K, "PRICE_FLOOR", 1))
+        self.start_money = None
         self._fmap = {}
+        self._on_step = []
 
     # -- wiring ---------------------------------------------------------------
+    def on_step(self, fn):
+        """Register `fn(state, env, acc)`, called at the START of every interpreter call.
+
+        The one patch point stays the one patch point: an auxiliary recorder that needs a
+        per-step snapshot (market inventory, unlocked shops, the running flow tally) hangs off
+        this instead of monkeypatching the engine a second time -- which is the data race the
+        module docstring exists to prevent.
+        """
+        self._on_step.append(fn)
+        return self
+
     def attach(self, env):
         inner = env.interpreter
 
         def interpreter(state, env_):
             farms = state[0].observation["farms"]
             self._fmap = {id(f): i for i, f in enumerate(farms)}
+            if self.start_money is None and len(farms) == 2:
+                # Captured rather than assumed: `startingMoney` is configuration, and the
+                # residual assertion is worthless if its constant can drift from the engine's.
+                # `len(farms) == 2` because `env.reset` runs the interpreter once on a state
+                # whose observation has no farms yet -- that call must not be mistaken for the
+                # first turn (it is also why `Recorder` dedupes on the step index).
+                self.start_money = [float(f["money"]) for f in farms]
+            for fn in self._on_step:
+                fn(state, env_, self)
             return inner(state, env_)
 
         env.interpreter = interpreter
@@ -170,6 +208,18 @@ class Accountant:
         p = self._fmap.get(id(farm))
         if p is None:
             return
+        j = _PIDX.get(item)
+        if j is not None:
+            # S-2 flow semantics, verbatim: a SELL at the $1 floor pays the seller but adds no
+            # market supply, so `sold_floored` is the part of `net_true` no inventory-based
+            # observer can ever recover. `_commit_unit` is called once per UNIT, so these are
+            # unit counts, not order counts.
+            if op == "SELL":
+                self.prod[p, _FIDX["sold"], j] += 1
+                if price <= self.price_floor:
+                    self.prod[p, _FIDX["sold_floored"], j] += 1
+            elif op == "BUY_PRODUCT":
+                self.prod[p, _FIDX["bought"], j] += 1
         i = line_of(op, item)
         if i is None:
             return
@@ -181,6 +231,18 @@ class Accountant:
         """Lines for `seat`, ordered as LINES, in dollars (revenue +, cost -)."""
         return self.tot[seat].copy()
 
-    def residual(self, seat, bank, starting_money=3000.0):
-        """bank - (startingMoney + sum(lines)). Zero on a correct decomposition."""
+    def residual(self, seat, bank, starting_money=None):
+        """bank - (startingMoney + sum(lines)). Zero on a correct decomposition.
+
+        `starting_money` defaults to the value observed at the first interpreter call, so the
+        identity is checked against the engine's own configuration rather than a constant in this
+        file that an engine rebalance could silently invalidate.
+        """
+        if starting_money is None:
+            starting_money = (self.start_money[seat] if self.start_money is not None else 3000.0)
         return float(bank) - (float(starting_money) + float(self.tot[seat].sum()))
+
+    def net_units(self, seat):
+        """(9,) units this seat SOLD minus BOUGHT over the episode -- S-2's `net_true`."""
+        return (self.prod[seat, _FIDX["sold"], :]
+                - self.prod[seat, _FIDX["bought"], :]).astype(np.int64)

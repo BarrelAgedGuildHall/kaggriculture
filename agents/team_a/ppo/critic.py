@@ -66,7 +66,12 @@ class ScalarCritic:
         self.mu = np.zeros(in_dim, np.float32)
         self.sd = np.ones(in_dim, np.float32)
 
-    def fit_norm(self, x, target_lines=None):
+    # `target_lines` / `aux` are accepted and ignored so the two critics are interchangeable at
+    # every call site -- exp-013b's control arm must run the SAME loop as exp-014, or the critic
+    # is not the one variable it is advertised as.
+    aux_dims = {}
+
+    def fit_norm(self, x, target_lines=None, aux=None):
         self.mu = x.mean(0).astype(np.float32)
         self.sd = np.maximum(x.std(0), 1e-3).astype(np.float32)
 

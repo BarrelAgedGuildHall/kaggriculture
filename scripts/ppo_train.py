@@ -13,7 +13,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-from agents.team_a.ppo.train import Run  # noqa: E402
+from agents.team_a.ppo import auxlabels as AUX  # noqa: E402
+from agents.team_a.ppo.train import AUX_DIMS, Run  # noqa: E402
 
 
 def main(argv=None):
@@ -47,7 +48,28 @@ def main(argv=None):
     ap.add_argument("--unit-temperature", type=float, default=1.0,
                     help="FIXED sampling temperature of the unit head (never annealed)")
     ap.add_argument("--pfsp", action="store_true", help="PFSP opponent sampling + snapshots")
+    # --- the alpha pilot / exp-014 knobs (halt ruling R-2.2, R-4.4; addendum-01 A-4) ---------
+    ap.add_argument("--alpha", type=float, default=0.0,
+                    help="training return is R_us - ALPHA * R_them. 0 = the founder's standing "
+                         "money directive (the pilot's control arm); 1 = pure margin. Logged on "
+                         "every row like the engine pin -- numbers do not carry across a reward.")
+    ap.add_argument("--critic", default="scalar", choices=["scalar", "factored"],
+                    help="scalar = exp-013b's control; factored = exp-014's ONE variable")
+    ap.add_argument("--critic-aux", nargs="*", default=[],
+                    choices=sorted(AUX_DIMS), metavar="HEAD",
+                    help="auxiliary supervised heads on the critic trunk, rollout-computed "
+                         "(addendum-01 A-4.1). Excluded from value() by construction; "
+                         "requires --critic factored")
+    ap.add_argument("--critic-alpha-aux", type=float, default=0.1,
+                    help="weight on the critic's auxiliary regression loss")
     args = ap.parse_args(argv)
+
+    if args.critic_aux and args.critic != "factored":
+        ap.error("--critic-aux requires --critic factored (a scalar critic has no aux heads)")
+    missing = [k for k in args.critic_aux if k not in AUX.available()]
+    if missing:
+        ap.error(f"auxiliary head(s) {missing} have no label implementation in this process "
+                 "(nav needs S-1's nav.py -- see agents/team_a/ppo/auxlabels.py:set_nav_fn)")
 
     run = Run(args.out, base_npz=args.base_npz, opponents=args.opponents,
               replicates=args.replicates,
@@ -58,6 +80,8 @@ def main(argv=None):
               phase=args.phase, unit_subsample=args.unit_subsample,
               alpha_aux=args.alpha_aux, aux_rows=args.aux_rows, pfsp=args.pfsp,
               unit_temperature=args.unit_temperature,
+              alpha=args.alpha, critic_kind=args.critic,
+              critic_aux=tuple(args.critic_aux), critic_alpha_aux=args.critic_alpha_aux,
               snapshot_every=args.snapshot_every)
     run.total_iters = args.iters
     Path(args.out, "config.json").write_text(json.dumps(vars(args), indent=1), encoding="utf-8")

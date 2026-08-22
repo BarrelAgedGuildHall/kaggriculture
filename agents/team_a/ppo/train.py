@@ -43,6 +43,7 @@ from pathlib import Path
 
 import numpy as np
 
+from . import auxlabels as AUX
 from . import critic as CRITIC
 from . import harness as H
 from . import lines as LINES
@@ -56,9 +57,10 @@ REWARD_SCALE = 50_000.0
 TRAIN_SEED_BASE = 5000
 EPS0 = 0.05                    # PFSP floor on the even-matchup weight
 
-# Auxiliary supervised heads available to the factored critic (exp-014). Widths are the
-# 9 products of `lines`/S-2; `nav` is the NAV(lambda=15) mark block from exp-N1's nav_probe.
-AUX_DIMS = {"opp_net": 9, "headroom": 9, "nav": 4}
+# Auxiliary supervised heads available to the factored critic (exp-014). Declared once, in
+# `auxlabels.py`, beside the code that produces them -- two declarations is how a width and a label
+# quietly stop matching.
+AUX_DIMS = AUX.AUX_DIMS
 
 
 def save_member(src_npz, mkt, out_path, unit=None):
@@ -95,6 +97,28 @@ def stack_batch(results):
     }
     turn_key = [(e, int(t["day"]), int(t["hour"])) for e, t in zip(ep_of_row, turns)]
     return b, np.asarray(ep_of_row), {k: i for i, k in enumerate(turn_key)}
+
+
+def stack_aux(results, names):
+    """Concatenate the per-episode auxiliary label blocks in the same row order as `stack_batch`.
+
+    Returns `None` when no episode carries labels, which is what makes the aux path optional: a
+    `FactoredCritic` with no aux targets in a batch simply contributes no aux gradient that step
+    (`critic.FactoredCritic.update`), so exp-013b's control arm and an aux-less exp-014 run the
+    same code with no special-casing.
+    """
+    if not names:
+        return None
+    out = {}
+    for k in names:
+        parts = []
+        for r in results:
+            a = (r.get("aux") or {}).get(k)
+            if a is None:
+                return None
+            parts.append(np.asarray(a, dtype=np.float32))
+        out[k] = np.concatenate(parts, axis=0)
+    return out
 
 
 def stack_units(results, turn_ix):
@@ -281,10 +305,15 @@ class Run:
             aux_dims={k: AUX_DIMS[k] for k in self.critic_aux},
             alpha_aux=critic_alpha_aux)
         self.record_lines = (self.critic.kind == "factored")
+        self.aux_names = (self.critic_aux if self.critic.kind == "factored" else ())
         self.critic_ready = False
 
         # the frozen 3-member mixture: KL anchor + BC-auxiliary reference (addendum 01 2.1)
         self.mixture = [P.Member(p) for p in H.BASE_MEMBERS]
+        # A SECOND, untouched load of the arm's starting weights. `self.member` is handed to the
+        # trainers and is mutated in place, so it cannot serve as the iteration-0 reference;
+        # addendum-01 A-1.5's liveness instrument needs a policy that never moves.
+        self.iter0 = [P.Member(self.base_npz)]
         self.aux = None
         self.alpha_aux = float(alpha_aux)
         if self.alpha_aux and aux_rows:
@@ -379,14 +408,45 @@ class Run:
                                    "unit_temperature": self.unit_temperature,
                                    "record_units": self.phase != "P0",
                                    "unit_subsample": self.unit_subsample,
+                                   "record_lines": self.record_lines,
+                                   "aux_names": self.aux_names,
                                    "steps": self.steps})
         return js
 
     def temperature(self, it):
+        """Linear over the arm's OWN iteration budget (addendum-01 A-1.3).
+
+        `--temperature == --temp-final` makes it flat, which is what the alpha pilot runs: an
+        anneal expressed as a fraction of a notional budget the run will not reach is a constant
+        wearing a schedule's clothes, and exp-013 proved it by living 100% of its six iterations
+        at T = 1.977 of a nominal 2.0 -> 1.0 ramp.
+        """
         if self.total_iters <= 1:
             return self.temp0
         f = min(1.0, it / max(1, self.total_iters - 1))
         return self.temp0 + f * (self.temp1 - self.temp0)
+
+    def kl_to_iter0(self, b, ub, n=4096):
+        """A-1.5 liveness: KL(pi_t || pi_arm-iteration-0) per head group, T = 1 both sides.
+
+        The pilot's third outcome ("inert") turns on this number: if T = 1.0 leaves too little
+        market-head exploration for 19 iterations to move anything, three flat arms are evidence
+        about the *schedule*, not about the reward, and the escalation is exploration rather than
+        a reward decision. Without this instrument those two cases are indistinguishable after
+        the fact -- which is exactly the position exp-013 left us in.
+        """
+        rng = np.random.default_rng(7)
+        idx = rng.choice(len(b["x"]), size=min(n, len(b["x"])), replace=False)
+        mb = slice_batch(b, idx)
+        ref = MH.mixture_dists(self.iter0, mb["x"], mb["order_mask"], self.th_logit)
+        out = {"mkt": round(self.trainer.kl_to(mb, ref), 6), "unit": 0.0}
+        if ub is not None and self.unit_trainer is not None:
+            uidx = rng.choice(len(ub["x"]), size=min(n, len(ub["x"])), replace=False)
+            umb = slice_batch(ub, uidx)
+            uref = UH.mixture_dists(self.iter0, umb["x"], umb["op_mask"],
+                                    umb["crop_mask"], umb["item_mask"])
+            out["unit"] = round(self.unit_trainer.kl_to(umb, uref), 6)
+        return out
 
     def iteration(self, it):
         t0 = time.perf_counter()
@@ -433,8 +493,13 @@ class Run:
             ub, u_ep, u_mkt_row = stack_units(results, turn_ix)
         self.trainer.temperature = self.temperature(it)
         line_target_row = (line_target_ep[ep_of_row] if line_target_ep is not None else None)
+        # Auxiliary labels are already per-ROW (one per recorded market turn), not per episode:
+        # `opp_net` and `headroom` are suffix sums evaluated AT the turn's own step, so indexing
+        # them by `ep_of_row` the way the episode-level targets are would hand every turn in an
+        # episode the same label and destroy the entire signal.
+        aux_row = stack_aux(results, self.aux_names)
         if not self.critic_ready:
-            self.critic.fit_norm(b["x"], line_target_row)
+            self.critic.fit_norm(b["x"], line_target_row, aux_row)
             self.critic_ready = True
         target_row = target_ep[ep_of_row]
         v = self.critic.value(b["x"])
@@ -468,7 +533,8 @@ class Run:
                     agg.setdefault(k, []).append(val)
                 cst = self.critic.update(
                     mb["x"], target_row[idx],
-                    target_lines=(None if line_target_row is None else line_target_row[idx]))
+                    target_lines=(None if line_target_row is None else line_target_row[idx]),
+                    aux=(None if aux_row is None else {k: v[idx] for k, v in aux_row.items()}))
                 for k in ("critic_loss", "aux_loss", "gnorm_critic", "gnorm_critic_aux"):
                     agg.setdefault(k, []).append(cst[k])
             if ub is not None:
@@ -528,9 +594,12 @@ class Run:
         for h in ("mkt", "unit"):
             self.kl_below[h] = self.kl_below[h] + 1 if below[h] else 0
 
+        kl_iter0 = self.kl_to_iter0(b, ub)
         row = {
             "iter": it, "episodes": len(results), "phase": self.phase,
             "alpha": self.alpha, "critic": self.critic.kind,
+            "critic_aux": list(self.aux_names),
+            "aux_label_source": ("rollout" if self.aux_names else None),
             "money_mean": float(R.mean()), "money_sd": float(R.std(ddof=1)),
             "opp_money_mean": float(R_opp.mean()),
             "extraction_mean": float((R + R_opp).mean()),
@@ -553,6 +622,10 @@ class Run:
             "gnorm_share_mkt": _shares(agg), "gnorm_share_unit": _shares(uagg) if uagg else {},
             "kl_below_kl0_iters": dict(self.kl_below),
             "kl_below_kl0_report": (self.kl_below["mkt"] >= 3 or self.kl_below["unit"] >= 3),
+            # addendum-01 A-1.5: distance travelled from THIS ARM's iteration-0 policy. The
+            # "inert" verdict is market-group < 0.2 * kappa = 0.004 nats/decision in every arm.
+            "kl_from_iter0": kl_iter0,
+            "kl_from_iter0_inert": bool(kl_iter0["mkt"] < 0.2 * self.kl_target),
             "critic_ev_lines": (self.critic.explained_var(b["x"], line_target_row)
                                 if line_target_row is not None else None),
             "rows": int(n), "unit_rows": int(len(ub["x"])) if ub is not None else 0,

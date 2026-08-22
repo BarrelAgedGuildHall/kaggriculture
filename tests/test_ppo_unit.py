@@ -46,7 +46,7 @@ def _f64(mlp):
 @pytest.fixture(scope="module")
 def rollout_rows():
     from agents.team_a.ppo import harness as H
-    turns, urows, _r, _ro = H.rollout(11, 0, [M0], "pi0", 5, temperature=2.0, steps=240,
+    turns, urows, _r, _ro, _l, _a = H.rollout(11, 0, [M0], "pi0", 5, temperature=2.0, steps=240,
                                       record_units=True, unit_subsample=1.0)
     assert urows, "phase P1 recorded no unit rows"
     return turns, urows

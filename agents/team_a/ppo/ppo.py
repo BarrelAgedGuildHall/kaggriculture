@@ -286,6 +286,25 @@ class MarketPPO:
             self.beta = max(self.beta / 2.0, 1e-3)
         return self.beta
 
+    def kl_to(self, b, anchor_d):
+        """KL(pi || anchor) as a pure diagnostic. No step, no state change, grads discarded.
+
+        addendum-01 A-1.5's liveness instrument -- `KL(pi_t || pi_arm-iteration-0)` -- is the
+        statistic the KL penalty already computes, against a different reference. Reusing the
+        penalty's own code path is deliberate: a second implementation would drift from it and
+        the two KL numbers on the row would stop being comparable, which is the whole point of
+        logging them side by side. Evaluated at T = 1 on both sides (R-5.3), because
+        `loss_grads` builds the anchor comparison from the `*1` distributions.
+        """
+        beta0, self.beta = self.beta, 1.0
+        try:
+            lp = self.old_logprobs(b, clone_mlp(self.mkt))
+            _, st = self.loss_grads(b, np.zeros(len(b["x"]), dtype=np.float64), lp,
+                                    anchor_d=anchor_d)
+        finally:
+            self.beta = beta0
+        return float(st.get("kl", 0.0))
+
 
 class UnitPPO:
     """Phase P1: the unit net's four action heads. The unit TRUNK stays frozen.
@@ -421,6 +440,17 @@ class UnitPPO:
         elif kl < 0.5 * kl_target:
             self.beta = max(self.beta / 2.0, 1e-3)
         return self.beta
+
+    def kl_to(self, b, anchor_d):
+        """The unit-head twin of `MarketPPO.kl_to` (addendum-01 A-1.5). Diagnostic only."""
+        beta0, self.beta = self.beta, 1.0
+        try:
+            lp = self.old_logprobs(b, clone_mlp(self.unit))
+            _, st = self.loss_grads(b, np.zeros(len(b["x"]), dtype=np.float64), lp,
+                                    anchor_d=anchor_d)
+        finally:
+            self.beta = beta0
+        return float(st.get("kl", 0.0))
 
 
 def _cat_grad(p, idx, coef):

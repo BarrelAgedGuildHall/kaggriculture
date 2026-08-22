@@ -40,8 +40,8 @@ def main(argv=None):
 
     xs, masks = [], []
     for i in range(args.episodes):
-        turns, _, _ = H.rollout(9000 + i, i % 2, [m0], "pi0", 1234 + i,
-                                temperature=1.0, steps=args.steps)
+        turns = H.rollout(9000 + i, i % 2, [m0], "pi0", 1234 + i,
+                          temperature=1.0, steps=args.steps)[0]
         xs.append(np.stack([t["x"] for t in turns]))
         masks.append(np.stack([t["order_mask"] for t in turns]))
     x, mask = np.concatenate(xs), np.concatenate(masks)

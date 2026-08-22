@@ -57,7 +57,7 @@ def fixture():
         trainer.anchor.heads[k][1] = (trainer.anchor.heads[k][1]
                                       + rng.normal(0, 0.05, trainer.anchor.heads[k][1].shape))
 
-    turns, _u, _r, _ro = H.rollout(5, 0, [str(WEIGHTS_DIR / "rebuild-m0.npz")], "pi0", 3,
+    turns, _u, _r, _ro, _l, _a = H.rollout(5, 0, [str(WEIGHTS_DIR / "rebuild-m0.npz")], "pi0", 3,
                                    temperature=2.0, steps=240)
     turns = [turns[i] for i in rng.choice(len(turns), size=48, replace=False)]
     b = {"x": np.stack([t["x"] for t in turns]),

@@ -22,9 +22,11 @@ if str(REPO_ROOT) not in sys.path:
 
 from arena import engine as arena_engine      # noqa: E402  (quiet kaggle_environments import)
 
+from . import auxlabels as AUX                # noqa: E402
 from . import bcpath                          # noqa: E402,F401
+from . import lines as LINES                  # noqa: E402
 from .actor import RecordingPolicy            # noqa: E402
-from .bcpath import P, WEIGHTS_DIR            # noqa: E402
+from .bcpath import F, P, WEIGHTS_DIR         # noqa: E402
 
 REWARD_SCALE = 50_000.0
 BASE_MEMBERS = sorted(str(p) for p in WEIGHTS_DIR.glob("*.npz"))
@@ -57,15 +59,32 @@ def _callable(pol):
     return fn
 
 
-def play(seed, seat, actor, opponent, steps=720):
-    """Play one episode. `actor` sits in `seat`. Returns (reward_actor, reward_opp, steps)."""
+def engine_module():
+    """The kaggriculture module itself (not the `kaggle_environments` wrapper)."""
+    arena_engine.import_engine()
+    from kaggle_environments.envs.kaggriculture import kaggriculture as K
+    return K
+
+
+def play(seed, seat, actor, opponent, steps=720, instrument=None):
+    """Play one episode. `actor` sits in `seat`. Returns (reward_actor, reward_opp, steps).
+
+    `instrument` is an optional `lines.Accountant`: attached to the env and entered around
+    `env.run`, it is observational only (`tests/test_ppo_lines.py` pins byte-identical banks with
+    and without it), so the training and evaluation paths stay the same episode.
+    """
     ke = arena_engine.import_engine()
     env = ke.make("kaggriculture", configuration={"seed": int(seed), "episodeSteps": int(steps)},
                   debug=False)
     agents = [None, None]
     agents[seat] = _callable(actor)
     agents[1 - seat] = _callable(opponent)
-    env.run(agents)
+    if instrument is not None:
+        instrument.attach(env)
+        with instrument:
+            env.run(agents)
+    else:
+        env.run(agents)
     last = env.steps[-1]
     money = [float(last[0]["observation"]["farms"][i]["money"]) for i in (0, 1)]
     rewards = [float(last[i]["reward"]) for i in (0, 1)]
@@ -81,12 +100,43 @@ def play(seed, seat, actor, opponent, steps=720):
 
 def rollout(seed, seat, actor_members, opp_members, rng_seed, temperature=1.0,
             safety=3, steps=720, record_units=False, unit_subsample=1.0,
-            unit_temperature=None):
-    """One recorded episode. Returns (turns, unit_rows, R_actor, R_opp)."""
+            unit_temperature=None, record_lines=False, aux_names=()):
+    """One recorded episode. Returns (turns, unit_rows, R_actor, R_opp, lines, aux).
+
+    `record_lines` attaches `lines.Accountant`, giving exp-014's factored critic its exactly
+    decomposed terminal-bank target; `aux_names` additionally computes the rollout-side auxiliary
+    labels (`auxlabels.py`, ratified by addendum-01 A-4.1). Both are off by default, so exp-013b's
+    scalar-critic control runs the identical code path with the identical cost.
+    """
     actor = RecordingPolicy(actor_members, safety=safety, greedy=False,
                             temperature=temperature, seed=rng_seed, record=True,
                             record_units=record_units, unit_subsample=unit_subsample,
                             unit_temperature=unit_temperature)
     opp = make_policy(opp_members, safety=safety, greedy=True)
-    r_us, r_them, _ = play(seed, seat, actor, opp, steps=steps)
-    return actor.turns, actor.unit_rows, r_us, r_them
+    aux_names = tuple(aux_names or ())
+    acc = rec = None
+    if record_lines or aux_names:
+        K = engine_module()
+        acc = LINES.Accountant(K)
+        if aux_names:
+            rec = AUX.Recorder(K, want_nav=("nav" in aux_names))
+            acc.on_step(rec)
+    r_us, r_them, _ = play(seed, seat, actor, opp, steps=steps, instrument=acc)
+
+    ep_lines = None
+    if acc is not None and record_lines:
+        ep_lines = acc.totals(seat)
+        # The decomposition is only a decomposition if it closes. A rollout whose lines do not sum
+        # to the bank would hand the factored critic a silently mis-attributed target, so it fails
+        # the episode rather than training on it. `tests/test_ppo_lines.py` pins the identity
+        # offline; this is the same assertion on the live training path, where what it catches is
+        # an engine bump adding a cash path.
+        resid = acc.residual(seat, r_us)
+        if abs(resid) > 1e-6:
+            raise RuntimeError(f"line identity broken on seed={seed} seat={seat}: "
+                               f"residual {resid:.6f}")
+    ep_aux = None
+    if rec is not None:
+        wanted = [int(t["day"]) * F.TURNS_PER_DAY + int(t["hour"]) for t in actor.turns]
+        ep_aux = rec.labels(acc, seat, aux_names, wanted)
+    return actor.turns, actor.unit_rows, r_us, r_them, ep_lines, ep_aux
