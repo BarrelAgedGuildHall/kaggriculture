@@ -49,6 +49,8 @@ from instrument import load_agent, classify, MOVES, MOVE_D  # noqa: E402
 
 SHED_TILES = [(4, 4), (5, 4), (4, 5), (5, 5)]
 ANIMAL_NAMES = ("GOOSE", "COW", "SHEEP")
+# tile ops chargeable to the plant standing on the tile (ruling-03 1.5 spend ledger)
+TILE_OPS = ("PLANT", "WATER", "FERTILIZE", "HARVEST")
 
 
 def _dist(a, b):
@@ -141,6 +143,34 @@ def noop_cause(K, op_action, pos, tile, inv, shed, seeds, board):
     return f"other_{op.lower()}"
 
 
+def plant_events_realised(K, crop, age_days):
+    """How many production events a PLANT tile of `crop` has actually realised by
+    the time it is `age_days` old, derived from the engine's own refresh rule.
+
+    `_daily_refresh_plants(farm, current_day=D)` produces for the day D+1 board:
+    with `k = (D + 1) - planted_day - first_yield_day`, an event lands when
+    `k >= 0 and k % interval == 0 and k // interval + 1 <= max_yield`. A tile
+    killed during the refresh at D is killed by the `consecutive_unwatered >= 2`
+    branch, which `continue`s BEFORE the production block — so day D itself
+    yields nothing and the last day that could have produced is D - 1, i.e.
+    k runs up to `K_max = D - planted_day - first_yield_day = age_days - first`.
+
+    Non-ongoing crops never enter that block at all (`if not ongoing: continue`):
+    their yield comes from WATER inside `[(max_yield_day+1)//2 .. max_yield_day]`
+    and is realised only by a HARVEST, which removes the tile. A non-ongoing tile
+    that is still on the board has therefore realised NOTHING, whatever its age.
+    """
+    cd = K.CROPS[crop]
+    if not cd["ongoing"]:
+        return 0, cd["max_yield"], False, None
+    k_max = age_days - cd["first_yield_day"]
+    if k_max < 0:
+        return 0, cd["max_yield"], True, None
+    events = min(cd["max_yield"], k_max // cd["interval"] + 1)
+    last_event_age = cd["first_yield_day"] + (events - 1) * cd["interval"]
+    return events, cd["max_yield"], True, last_event_age
+
+
 def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
                 census_targets=None):
     ke = import_engine()
@@ -165,6 +195,11 @@ def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
     weed_kills = [0, 0]
     weed_detail = [[], []]
     lifespan_weeds = [0, 0]
+    # ruling-03 section 1.5: every PLANT -> WEED transition, classified. `spend`
+    # tracks the productive actions charged to the tile currently standing at a
+    # position so lambda can be charged per R-13(b) (post-terminal actions only).
+    weed_events = [[], []]
+    spend = [dict(), dict()]        # (x, y) -> {"planted_day", "crop", "acts": [(day, op)], "h23": [(day, op)]}
     melon_planted = [0, 0]
     unit_days = [0, 0]
     cum_sales = [dict(), dict()]
@@ -263,6 +298,15 @@ def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
                 # executed/noop attribution; counted separately.
                 if step % turns_per_day == turns_per_day - 1 and ua[0] != "PASS":
                     acts[pi]["hour23_unmeasured"] = acts[pi].get("hour23_unmeasured", 0) + 1
+                    # An hour-23 action cannot be verified as executed (the
+                    # end-of-day refresh lands in the same step), but it was
+                    # EMITTED and it cost a unit-turn, so it is carried as the
+                    # upper bound of the tile's lambda charge.
+                    if ua[0] in TILE_OPS and ui < len(pre_pos):
+                        hx, hy = pre_pos[ui]
+                        rec = spend[pi].get((hx, hy))
+                        if rec is not None:
+                            rec["h23"].append((day, ua[0]))
                     continue
                 px, py = pre_pos[ui]
                 pre_tile = pre_farms[pi]["tiles"][py][px]
@@ -282,6 +326,18 @@ def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
                         acts[pi]["move_exec"] += 1
                     else:
                         acts[pi]["productive"] += 1
+                        # ruling-03 section 1.5 spend ledger: a PLANT opens a new
+                        # tile-life at this position; every later tile op is
+                        # charged to it until the tile leaves the board.
+                        if ua[0] == "PLANT":
+                            spend[pi][(px, py)] = {
+                                "planted_day": day,
+                                "crop": (ua[1] if len(ua) > 1 else None),
+                                "acts": [(day, "PLANT")], "h23": []}
+                        elif ua[0] in TILE_OPS:
+                            rec = spend[pi].get((px, py))
+                            if rec is not None:
+                                rec["acts"].append((day, ua[0]))
                         if ua[0] == "PLANT" and len(ua) > 1 and ua[1] == "MELON":
                             melon_planted[pi] += 1
                         if ua[0] == "COLLECT_FERTILIZER":
@@ -295,21 +351,59 @@ def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
                                        pre_priv[pi]["shed"], pre_priv[pi]["seeds"], board)
                     noops[pi][cause] = noops[pi].get(cause, 0) + 1
 
-            # weed-out vs decay detection (any turn)
+            # weed-out vs decay detection (any turn), classified per ruling-03 1.5
             for y in range(board):
                 for x in range(board):
                     pre_t = pre_farms[pi]["tiles"][y][x]
                     post_t = post_farms[pi]["tiles"][y][x]
-                    if (isinstance(pre_t, dict) and pre_t.get("kind") == "PLANT"
-                            and isinstance(post_t, dict) and post_t.get("kind") == "WEED"):
-                        if hour == turns_per_day - 1 and not pre_t["watered_today"] and pre_t["consecutive_unwatered"] >= 1:
-                            weed_kills[pi] += 1
-                            weed_detail[pi].append({
-                                "day": day, "pos": [x, y], "crop": pre_t["crop"],
-                                "age": day - pre_t["planted_day"],
-                                "yield": pre_t.get("yield_units", 0)})
-                        else:
-                            lifespan_weeds[pi] += 1
+                    if not (isinstance(pre_t, dict) and pre_t.get("kind") == "PLANT"):
+                        continue
+                    if not (isinstance(post_t, dict) and post_t.get("kind") == "WEED"):
+                        continue
+                    crop = pre_t["crop"]
+                    age = day - pre_t["planted_day"]
+                    unwatered = (hour == turns_per_day - 1 and not pre_t["watered_today"]
+                                 and pre_t["consecutive_unwatered"] >= 1)
+                    events, max_yield, ongoing, last_event_age = plant_events_realised(K, crop, age)
+                    # R-13: a post-terminal ongoing-crop weed is a RETIREMENT.
+                    # A lifespan-decay kill of an ongoing crop is a retirement by
+                    # construction -- `max_lifespan_step` is only ever set on an
+                    # ongoing tile at its terminal production event (_new_plant
+                    # leaves it at -1) -- so the two tests must agree, and the
+                    # instrument reports it when they do not rather than picking.
+                    retired = bool(ongoing and events >= max_yield)
+                    decay_implies_retired = bool(ongoing and not unwatered)
+                    rec = spend[pi].pop((x, y), None)
+                    acts_total = len(rec["acts"]) if rec else None
+                    acts_h23 = len(rec["h23"]) if rec else None
+                    if rec is not None and last_event_age is not None:
+                        cutoff = pre_t["planted_day"] + last_event_age
+                        acts_post = sum(1 for d, _ in rec["acts"] if d > cutoff)
+                        acts_post_h23 = sum(1 for d, _ in rec["h23"] if d > cutoff)
+                    else:
+                        # no realised event => every action on the tile is
+                        # post-last-event and is charged in full (R-13(b))
+                        acts_post, acts_post_h23 = acts_total, acts_h23
+                    ev = {"day": day, "pos": [x, y], "crop": crop, "age": age,
+                          "yield": pre_t.get("yield_units", 0),
+                          "path": "unwatered" if unwatered else "lifespan_decay",
+                          "ongoing": ongoing, "events_realised": events,
+                          "max_yield": max_yield,
+                          "class": "RETIREMENT" if retired else "LOSS",
+                          "decay_implies_retired": decay_implies_retired,
+                          "acts": acts_total, "acts_h23": acts_h23,
+                          "acts_post_terminal": acts_post,
+                          "acts_post_terminal_h23": acts_post_h23,
+                          "seed_cost": K.CROPS[crop]["seed"],
+                          "spend_tracked": rec is not None}
+                    weed_events[pi].append(ev)
+                    if unwatered:
+                        weed_kills[pi] += 1
+                        weed_detail[pi].append({
+                            "day": day, "pos": [x, y], "crop": crop,
+                            "age": age, "yield": pre_t.get("yield_units", 0)})
+                    else:
+                        lifespan_weeds[pi] += 1
 
         # ---- end-of-day: close feed records ---------------------------------
         if hour == turns_per_day - 1:
@@ -387,6 +481,12 @@ def run_episode(agent_a: str, agent_b: str, seed: int, steps: int,
             "weed_kills_unwatered": weed_kills[pi],
             "weed_kill_detail": weed_detail[pi],
             "weeds_lifespan_decay": lifespan_weeds[pi],
+            # ruling-03 section 1.5 / R-13: every PLANT -> WEED transition with
+            # age at death, events realised vs max_yield and the RETIREMENT/LOSS
+            # verdict. `retired_tiles` is R-13(a)'s separate counter.
+            "weed_events": weed_events[pi],
+            "retired_tiles": sum(1 for e in weed_events[pi] if e["class"] == "RETIREMENT"),
+            "weed_losses": sum(1 for e in weed_events[pi] if e["class"] == "LOSS"),
             "fertilizer_available_days": fert[pi]["available_days"],
             "fertilizer_collected_days": fert[pi]["collected_days"],
             "fertilizer_collect_rate": round(fert[pi]["collected_days"] / max(1, fert[pi]["available_days"]), 4),
