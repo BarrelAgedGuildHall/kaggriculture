@@ -176,6 +176,12 @@ class FeedRouter(Router):
     `plan` is a copy of Router.plan with the pick call swapped — the base
     stays frozen because the expB-201 champion arm binds to it."""
 
+    def _is_urgent(self, prio, key, ctx):
+        """Is this task irrecoverable if skipped? The band answer (kept for the
+        control lineage) is the keep-alive band; `pricer.PricedRouter` overrides
+        it with an explicit engine-truth key set."""
+        return prio <= URGENT_PRIO
+
     def plan(self, day, units, busy, actions, tasks, ctx):
         quads = ctx["quads"]
         if day != self.day:
@@ -204,7 +210,7 @@ class FeedRouter(Router):
             if busy[i]:
                 continue
             lock = self.locks.get(i)
-            if lock is not None and lock["prio"] > URGENT_PRIO:
+            if lock is not None and not self._is_urgent(lock["prio"], lock["key"], ctx):
                 urgent = self._pick_for(i, pos, open_tasks, self.home.get(i), ctx, urgent_only=True)
                 if urgent is not None:
                     claimed.discard(lock["key"])
