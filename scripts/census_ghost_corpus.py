@@ -332,12 +332,15 @@ def main(argv=None) -> int:
           f"-- must be 0; a non-zero residual means the drain model or the "
           f"instrumentation is wrong, it is not a tolerance", file=sys.stderr)
     print(f"episodes with any market-parity mismatch: {parity_bad}", file=sys.stderr)
-    json.dump({"censused": ok, "failed": failed,
+    # A tier-scoped run reports on that tier only, so it gets its own file: censusing an
+    # added tier must not overwrite the whole-corpus validation record with a partial one.
+    name = f"census_validation-{args.tier}.json" if args.tier else "census_validation.json"
+    json.dump({"censused": ok, "failed": failed, "tier": args.tier or "all",
                "identity_residual_nonzero_cells": residual_bad,
                "episodes_with_parity_mismatch": parity_bad,
                "engine_pin": PIN, "engine_local": engine_version(),
                "at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")},
-              open(corpus / "meta" / "census_validation.json", "w"), indent=2)
+              open(corpus / "meta" / name, "w"), indent=2)
     return 1 if (residual_bad or failed) else 0
 
 

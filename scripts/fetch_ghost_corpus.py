@@ -1,12 +1,19 @@
 """G-1 — build the tiered ghost corpus of top-ladder replays (ruling R-2 Stage 1).
 
-Three tiers of public-leaderboard teams, winning episodes only, so that BC ghosts can be
-trained on each tier's behavioural centroid (G-2) and so that the uncontested-pool pricing
-table has a corpus to price against:
+Tiers of public-leaderboard teams so that BC ghosts can be trained on each tier's
+behavioural centroid (G-2) and so that the uncontested-pool pricing table has a corpus to
+price against:
 
     frontier  public LB rank 1-10
     upper     public LB rank 100-300
     field     public LB rank 2800-3300   (our own neighbourhood)
+    rank1     public LB rank 1 alone     (granular review of the single best team)
+
+The three ruling tiers are WINNING EPISODES ONLY: a behavioural centroid should be the
+behaviour that wins.  `rank1` is a review tier and deliberately also carries a few LOSSES,
+because a review of one specific team has to see what beats it.  The index does not carry an
+`outcome` column -- `bank_margin` is the outcome, strictly positive on a win -- so a
+consumer that wants the old invariant filters `bank_margin > 0` (or excludes `rank1`).
 
 Selection is metadata-only and costs no replay bytes:
 
@@ -36,6 +43,10 @@ Usage:
     uv run python scripts/fetch_ghost_corpus.py --plan          # select + report, no bytes
     uv run python scripts/fetch_ghost_corpus.py                 # fetch
     uv run python scripts/fetch_ghost_corpus.py --tier frontier --per-team 30
+    # the rank-1 review tier: 40 most recent wins + 10 most recent losses, own selection file
+    uv run python scripts/fetch_ghost_corpus.py --plan --tier rank1 --per-team 40 \
+        --losses 10 --target 50 --min-teams 1 --selection-out selection-rank1.json
+    uv run python scripts/fetch_ghost_corpus.py --use-selection <corpus>/meta/selection-rank1.json
 """
 from __future__ import annotations
 
@@ -73,7 +84,13 @@ TIERS = {
     "frontier": (1, 10),
     "upper": (100, 300),
     "field": (2800, 3300),
+    # A review tier, not one of the ruling's three behavioural bands. It overlaps `frontier`
+    # by construction; the rank-1 team was NOT among the four `frontier` teams (they are
+    # picked by how much ladder history the mirror has seen, and the very top of the LB
+    # plays little), which is why it needs its own tier rather than a filter over frontier.
+    "rank1": (1, 1),
 }
+RULING_TIERS = ("frontier", "upper", "field")   # winning episodes only -- see the module doc
 TARGET_PER_TIER = 120              # 4 teams x ~30 episodes
 MIN_TEAMS_PER_TIER = 4
 
@@ -145,12 +162,34 @@ def kaggle_env() -> dict:
 def refresh_leaderboard(env: dict) -> Path:
     meta = CORPUS / "meta"
     meta.mkdir(parents=True, exist_ok=True)
+    keep_snapshot(meta / "kaggriculture.zip")
     cmd = kaggle_cmd() + ["competitions", "leaderboard", "-c", "kaggriculture",
                           "--download", "-p", str(meta)]
     res = subprocess.run(cmd, env=env, text=True, capture_output=True)
     if res.returncode != 0:
         raise SystemExit(f"leaderboard download failed: {res.stderr[:400]}")
     return meta / "kaggriculture.zip"
+
+
+def keep_snapshot(zip_path: Path) -> None:
+    """Archive an existing LB download under its own timestamped name before it is replaced.
+
+    `selection.json` names its snapshot, so overwriting `kaggriculture.zip` would leave a
+    frozen selection pointing at a leaderboard nobody can read again -- and a tier added
+    later refreshes the LB by definition.
+    """
+    if not zip_path.exists():
+        return
+    try:
+        _, name = read_leaderboard(zip_path)
+    except Exception:
+        return
+    # the LB csv's name carries a timestamp with colons, which Windows will not have in a
+    # filename (WinError 123, and copy2 fails *after* the download has been queued)
+    stamp = "".join(c if c.isalnum() or c in "-._" else "-" for c in Path(name).stem)
+    kept = zip_path.with_name(f"{zip_path.stem}-{stamp}.zip")
+    if not kept.exists():
+        shutil.copy2(zip_path, kept)
 
 
 def read_leaderboard(zip_path: Path) -> tuple[list[dict], str]:
@@ -231,8 +270,22 @@ def episodes_for_submission(sub: str) -> list[dict]:
 def select(lb: list[dict], per_team: int, target: int, only_tier: str | None,
            since: str = PIN_SHIPPED, exclude: set[int] | None = None,
            exclude_teams: set[str] | None = None,
-           min_teams: int = MIN_TEAMS_PER_TIER) -> dict[str, list[dict]]:
-    by_team = mirror_submissions_by_team()
+           min_teams: int = MIN_TEAMS_PER_TIER,
+           losses_per_team: int = 0,
+           submissions: list[str] | None = None) -> dict[str, list[dict]]:
+    """Pick episodes per tier: the `per_team` most recent WINS of each selected team, plus
+    (review tiers only) its `losses_per_team` most recent LOSSES.
+
+    `target` counts selected episodes of both kinds, so a 40-win + 10-loss tier is
+    `--per-team 40 --losses 10 --target 50`.
+
+    `submissions` replaces mirror discovery for this run.  The mirror does not see the top
+    of the ladder: of its 49,985 episodes on 2026-08-22 the rank-1 team appeared in 3, none
+    after 08-18, and the highest rating anywhere in the last day was 2,124 against a rank-1
+    LB score of 3,142.  Discovery there returns a team's *retired* submission and the
+    selection then clones the wrong agent while looking perfectly healthy.
+    """
+    by_team = {} if submissions else mirror_submissions_by_team()
     lb_by_team = {r["TeamId"]: r for r in lb}
     plan: dict[str, list[dict]] = {}
 
@@ -252,10 +305,11 @@ def select(lb: list[dict], per_team: int, target: int, only_tier: str | None,
             team = row["TeamId"]
             if exclude_teams and team in exclude_teams:
                 continue
-            subs = by_team.get(team, [])
+            subs = submissions or by_team.get(team, [])
             if not subs:
                 continue
             wins: list[dict] = []
+            losses: list[dict] = []
             seen: set[int] = set()
             for sub in subs[:6]:                       # newest submissions first
                 try:
@@ -264,21 +318,32 @@ def select(lb: list[dict], per_team: int, target: int, only_tier: str | None,
                     print(f"    sub {sub}: {type(e).__name__} {e}", file=sys.stderr)
                     continue
                 for r in rows:
-                    if r["team_id"] != team or not r["won"] or r["episode_id"] in seen:
+                    if r["team_id"] != team or r["episode_id"] in seen:
                         continue
+                    if not r["won"] and not losses_per_team:
+                        continue                    # the three ruling tiers are wins-only
                     if since and r["end_time"][:10] < since:
                         continue                    # predates the engine pin -- see PIN_SHIPPED
                     if exclude and r["episode_id"] in exclude:
                         continue                    # already in the corpus
+                    if not r["won"] and r["bank"] == r["opp_bank"]:
+                        continue         # a tie is neither, and this ladder has never had one
                     seen.add(r["episode_id"])
-                    wins.append(r)
+                    (wins if r["won"] else losses).append(r)
                 time.sleep(0.3)
-                if len(wins) >= per_team:
-                    break
-            if not wins:
+                # NO early break on "quota met". "The N most recent wins" is a statement
+                # about the team's episodes, not about one submission's: stopping at the
+                # first submission that happens to fill the quota selects whichever
+                # submission discovery listed first, which is not necessarily the newest.
+            if not wins and not losses:
                 continue
             wins.sort(key=lambda r: r["end_time"], reverse=True)     # most recent wins
-            take = wins[:per_team]
+            losses.sort(key=lambda r: r["end_time"], reverse=True)
+            if losses_per_team and len(losses) < losses_per_team:
+                print(f"    rank {int(row['Rank']):5d} team {team}: only {len(losses)} losses "
+                      f"at the pin (asked for {losses_per_team}) -- reported, not padded",
+                      file=sys.stderr)
+            take = wins[:per_team] + losses[:losses_per_team]
             for r in take:
                 r["tier"] = tier
                 r["lb_rank"] = int(row["Rank"])
@@ -286,8 +351,11 @@ def select(lb: list[dict], per_team: int, target: int, only_tier: str | None,
                 r["team_name"] = r["team_name"] or row["TeamName"]
             picked += take
             teams_used += 1
-            print(f"    rank {int(row['Rank']):5d} team {team}: {len(take):3d} wins "
-                  f"(of {len(wins)} found)  running total {len(picked)}", file=sys.stderr)
+            print(f"    rank {int(row['Rank']):5d} team {team}: {len(take):3d} episodes "
+                  f"({min(len(wins), per_team)}W of {len(wins)} found"
+                  + (f", {min(len(losses), losses_per_team)}L of {len(losses)}"
+                     if losses_per_team else "")
+                  + f")  running total {len(picked)}", file=sys.stderr)
         plan[tier] = picked
         print(f"  -> {tier}: {len(picked)} episodes from {teams_used} teams", file=sys.stderr)
         if teams_used < min_teams:
@@ -391,6 +459,19 @@ def main(argv=None) -> int:
                    help="select only what the corpus is still missing: skip episodes and "
                         "teams already in index.csv, and write meta/selection-topup.json "
                         "instead of overwriting the frozen selection")
+    p.add_argument("--losses", type=int, default=0, metavar="N",
+                   help="also select each team's N most recent LOSSES (review tiers only -- "
+                        "a behavioural review of one team has to see what beats it). The "
+                        "index has no outcome column: bank_margin is the outcome")
+    p.add_argument("--submissions", metavar="IDS",
+                   help="comma-separated submission ids to select from, instead of "
+                        "discovering them in the community mirror. Needed for the top of "
+                        "the ladder, which the mirror barely covers -- discovery there "
+                        "hands back a team's retired submission and looks healthy doing it")
+    p.add_argument("--selection-out", metavar="NAME",
+                   help="write the frozen selection to meta/<NAME> instead of "
+                        "selection.json, so an added tier never overwrites the selection an "
+                        "existing tier was built from")
     args = p.parse_args(argv)
 
     CORPUS.mkdir(parents=True, exist_ok=True)
@@ -424,10 +505,15 @@ def main(argv=None) -> int:
                   f"in the corpus will be skipped", file=sys.stderr)
         plan = select(lb, args.per_team, args.target, args.tier,
                       since=args.since, exclude=exclude, exclude_teams=exclude_teams,
-                      min_teams=args.min_teams)
+                      min_teams=args.min_teams, losses_per_team=args.losses,
+                      submissions=([s.strip() for s in args.submissions.split(",") if s.strip()]
+                                   if args.submissions else None))
         (CORPUS / "meta").mkdir(parents=True, exist_ok=True)
-        out_name = "selection-topup.json" if args.top_up else "selection.json"
+        out_name = (args.selection_out
+                    or ("selection-topup.json" if args.top_up else "selection.json"))
         json.dump({"snapshot": snap_name, "since": args.since, "top_up": args.top_up,
+                   "per_team_wins": args.per_team, "per_team_losses": args.losses,
+                   "submissions": args.submissions or None,
                    "selected_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
                    "tiers": {t: eps for t, eps in plan.items()}},
                   open(CORPUS / "meta" / out_name, "w"), indent=2)
@@ -444,7 +530,7 @@ def main(argv=None) -> int:
           f"(cap {args.cap_bytes/1e9:.1f} GB)", file=sys.stderr)
 
     scratch = Path(tempfile.mkdtemp(prefix="ghostfetch-"))
-    stats = {"ok": 0, "skipped": 0, "engine_mismatch": 0, "failed": 0}
+    stats = {"ok": 0, "skipped": 0, "engine_mismatch": 0, "failed": 0, "won": 0, "lost": 0}
     mismatches: dict[str, int] = {}
     try:
         for tier, eps in plan.items():
@@ -464,6 +550,7 @@ def main(argv=None) -> int:
                     index[eid] = row
                     used += int(row["bytes_gz"])
                     stats["ok"] += 1
+                    stats["won" if row["bank_margin"] > 0 else "lost"] += 1
                     print(f"  [{tier} {i}/{len(eps)}] {eid} ok  "
                           f"{int(row['bytes_raw'])/1e6:.1f}MB -> {int(row['bytes_gz'])/1e3:.0f}kB "
                           f"| corpus {used/1e6:.0f} MB", file=sys.stderr)
@@ -479,7 +566,8 @@ def main(argv=None) -> int:
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
 
-    print(f"\nfetched {stats['ok']}, skipped {stats['skipped']} (already indexed), "
+    print(f"\nfetched {stats['ok']} ({stats['won']}W / {stats['lost']}L), "
+          f"skipped {stats['skipped']} (already indexed), "
           f"engine-discarded {stats['engine_mismatch']} {mismatches or ''}, "
           f"failed {stats['failed']}", file=sys.stderr)
     print(f"corpus now {len(index)} episodes, {used/1e6:.1f} MB packed "

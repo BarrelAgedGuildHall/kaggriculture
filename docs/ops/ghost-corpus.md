@@ -22,6 +22,20 @@ Three tiers of public-leaderboard teams, **winning episodes only**, most recent 
 
 360 replays, packed, in `$GUILDHALL_WAREHOUSE/datasets/ghost-corpus/`.
 
+Plus **review tiers**, which are not behavioural bands and are added on request beside the
+three above without disturbing them (own frozen selection file, own directory, rows tagged
+with their own `tier`):
+
+| tier | public LB rank | teams | episodes | why |
+|---|---|---|---|---|
+| `rank1` | 1 | 1 | 40 W + 10 L | granular review of the single best team |
+
+**A review tier carries losses on purpose** — a behavioural review of one specific team has
+to see what beats it. The index has no `outcome` column (adding one would rewrite the header
+of a file live consumers are reading), so **`bank_margin` is the outcome**: strictly positive
+on a win, strictly negative on a loss, never zero. A consumer that wants the old wins-only
+invariant filters `bank_margin > 0`, or filters to `RULING_TIERS`.
+
 ## Running it
 
 ```bash
@@ -37,7 +51,20 @@ uv run python scripts/census_ghost_corpus.py
 # top up a short tier with teams it does not already have, writing a SEPARATE selection
 uv run python scripts/fetch_ghost_corpus.py --plan --top-up --tier field --target 30 --min-teams 1
 uv run python scripts/fetch_ghost_corpus.py --use-selection <corpus>/meta/selection-topup.json
+
+# add a review tier: the rank-1 team's 40 most recent wins + 10 most recent losses.
+# --submissions is not optional up here -- see "The mirror cannot see the top of the ladder".
+uv run python scripts/fetch_ghost_corpus.py --plan --tier rank1 \
+    --per-team 40 --losses 10 --target 50 --min-teams 1 \
+    --submissions <active-submission-id> --selection-out selection-rank1.json
+uv run python scripts/fetch_ghost_corpus.py --use-selection <corpus>/meta/selection-rank1.json
+uv run python scripts/census_ghost_corpus.py --tier rank1
 ```
+
+`--selection-out` is what keeps the freeze honest when a tier is added later: the new tier
+gets its own selection file and the existing `selection.json` is never rewritten. The
+leaderboard download is likewise archived under its own timestamped name before it is
+replaced, so a frozen selection's `snapshot` field still names a file that exists.
 
 **Do not run the census while a fetch is in flight.** Both hammer the bulk disk; measured
 2026-08-22, the fetch dropped from **21.7 to 1.3 episodes/min** with a census running
@@ -59,6 +86,32 @@ let a fetch re-select. Two reasons:
    run it three times in half an hour and the fourth run stalls in backoff for minutes with
    no output. That is what it looks like when it happens — the process is alive, burning no
    CPU, and no scratch directory has appeared yet.
+
+## The mirror cannot see the top of the ladder
+
+Discovery (team → submission ids) uses the community mirror `georgymamarin/kaggriculture-episodes`.
+It is fine in the middle and bottom of the leaderboard and **wrong at the top**. Measured
+2026-08-22 on its 49,985-episode `episodes.csv`:
+
+- the **rank-1 team appeared in 3 episodes**, the newest from 08-18, four days stale;
+- the **highest rating anywhere in its last 24 hours was 2,124**, against a rank-1 LB score
+  of **3,142** — the mirror's population simply does not contain the top clique;
+- so discovery returned that team's **retired** submission (peaked ~1,505 and stopped playing
+  on 08-19) rather than the one holding rank 1.
+
+Nothing about that failure looks like a failure: the selection reports "40 wins found", every
+replay is at the pin, and the corpus that comes out is a faithful clone of **the wrong agent**.
+The tell is `rating_at_play` — compare it against the team's `lb_score` before fetching.
+
+Two consequences, both now in the tool:
+
+1. **`--submissions ID[,ID…]`** bypasses mirror discovery. For a top team, find the active
+   submission id from an opponent's episode list: pull `ListEpisodes` for a frontier
+   submission already in `index.csv` and read `opp_submission_id` where
+   `opp_team_id` is the team you want. Four calls found it on 2026-08-22.
+2. Selection **no longer stops at the first submission that fills the quota**. "The 40 most
+   recent wins" is a statement about the *team*; ranking by date within one submission and
+   stopping there silently selects whichever submission discovery listed first.
 
 ## Storage and the cap
 
