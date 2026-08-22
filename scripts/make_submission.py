@@ -12,10 +12,25 @@ anything matched by `--exclude` -- training-only modules do not belong in a subm
 kaggle-environments -- i.e. no access to this repo's modules -- which is what Kaggle's
 runner sees. Pass `--no-fresh-venv` for a quick check with the current interpreter.
 
+`--vendor <pkg>` copies a repo-root package (today: `nav`) into the bundle beside `main.py`,
+so `import nav` resolves identically in the repo and in the submission. The engine's loader
+appends **only** the agent's own directory to `sys.path`, which is why an agent that imports
+a repo-root module works in the Pit and dies on Kaggle -- that exact failure already cost
+Team B a submission night. Vendoring is checked, not hoped for: offline-only modules are left
+out (`nav/analysis.py`), a numpy/pandas/kaggle_environments import anywhere in the vendored
+tree is a hard error, the tree is size-capped, and `--verify` imports the package standalone
+in the fresh venv before playing the episode.
+
+**A vendored package is part of the agent's identity.** Arena snapshots hash every file, so
+bumping `nav` re-ids every agent that vendors it and invalidates its gates: sequence a bump
+between experiments, never during one and never in a promotion window (docs/nav.md).
+
 Usage:
     uv run python scripts/make_submission.py                 # build agent/ only
     uv run python scripts/make_submission.py --verify        # build + standalone episode in a fresh venv
     uv run python scripts/make_submission.py --verify --no-fresh-venv
+    uv run python scripts/make_submission.py --verify --vendor nav \
+        --agent-dir agents/team_b/routed
     uv run python scripts/make_submission.py --verify \
         --agent-dir agents/team_a/bc --exclude train.py --exclude extract.py --exclude audit.py
 
@@ -65,6 +80,13 @@ DEFAULT_AGENT_DIR = "agent"
 DIST_DIR = REPO_ROOT / "dist"
 EXCLUDE_DIRS = {"__pycache__", "tests", ".pytest_cache"}
 EXCLUDE_SUFFIXES = {".pyc", ".md"}
+
+# Per-package files that exist for offline work and must never reach the sandbox.
+VENDOR_EXCLUDE = {"nav": {"analysis.py"}}
+# The sandbox has no wheels beyond the engine's own; a vendored tree that reaches for one
+# fails at import time on Kaggle, i.e. at the worst possible moment.
+VENDOR_FORBIDDEN_IMPORTS = ("numpy", "pandas", "scipy", "torch", "kaggle_environments")
+VENDOR_MAX_BYTES = 200 * 1024
 
 RUNNER = r'''
 import json, os, sys, statistics
@@ -117,18 +139,64 @@ def collect_files(agent_dir: Path, excludes: list[str]) -> list[Path]:
     return files
 
 
-def build(agent_dir: Path, files: list[Path]) -> Path:
-    DIST_DIR.mkdir(exist_ok=True)
-    for old in DIST_DIR.glob("*"):
+def collect_vendor(packages: list[str]) -> list[tuple[Path, str]]:
+    """(source path, arcname) for every file of every vendored package.
+
+    Refuses rather than warns: a package that is missing, that reaches for a wheel the
+    sandbox does not have, or that is too big to be a shared library is a packaging bug, and
+    the only cheap moment to catch it is here.
+    """
+    out: list[tuple[Path, str]] = []
+    total = 0
+    for pkg in packages:
+        root = REPO_ROOT / pkg
+        if not (root / "__init__.py").exists():
+            raise SystemExit(f"--vendor {pkg}: {root}/__init__.py not found (repo-root package expected)")
+        skip = VENDOR_EXCLUDE.get(pkg, set())
+        for p in sorted(root.rglob("*")):
+            if p.is_dir():
+                continue
+            rel = p.relative_to(root)
+            if any(part in EXCLUDE_DIRS for part in rel.parts) or p.suffix in EXCLUDE_SUFFIXES:
+                continue
+            if rel.as_posix() in skip or rel.parts[0] in skip:
+                continue
+            if p.suffix == ".py":
+                text = p.read_text(encoding="utf-8")
+                for line in text.splitlines():
+                    stripped = line.strip()
+                    if not (stripped.startswith("import ") or stripped.startswith("from ")):
+                        continue
+                    for banned in VENDOR_FORBIDDEN_IMPORTS:
+                        if stripped.startswith(f"import {banned}") or stripped.startswith(f"from {banned}"):
+                            raise SystemExit(
+                                f"--vendor {pkg}: {rel.as_posix()} imports {banned!r}, which does not "
+                                f"exist in the Kaggle sandbox. Move that code to an offline-only "
+                                f"module and add it to VENDOR_EXCLUDE.")
+            total += p.stat().st_size
+            out.append((p, f"{pkg}/{rel.as_posix()}"))
+    if total > VENDOR_MAX_BYTES:
+        raise SystemExit(f"--vendor: {total} B exceeds the {VENDOR_MAX_BYTES} B cap for vendored code")
+    return out
+
+
+def build(agent_dir: Path, files: list[Path], vendor: list[tuple[Path, str]] | None = None,
+          dist_dir: Path | None = None) -> Path:
+    dist_dir = dist_dir or DIST_DIR
+    vendor = vendor or []
+    dist_dir.mkdir(parents=True, exist_ok=True)
+    for old in dist_dir.glob("*"):
         old.unlink() if old.is_file() else shutil.rmtree(old)
-    if len(files) == 1 and files[0].name == "main.py":
-        out = DIST_DIR / "main.py"
+    if len(files) == 1 and files[0].name == "main.py" and not vendor:
+        out = dist_dir / "main.py"
         shutil.copyfile(files[0], out)
     else:
-        out = DIST_DIR / "submission.tar.gz"
+        out = dist_dir / "submission.tar.gz"
         with tarfile.open(out, "w:gz") as tar:
             for f in files:
                 tar.add(f, arcname=str(f.relative_to(agent_dir).as_posix()))
+            for src, arcname in vendor:
+                tar.add(src, arcname=arcname)
     return out
 
 
@@ -153,7 +221,38 @@ def fresh_venv_python(work: Path, version: str) -> str:
     return str(py)
 
 
-def run_verify(artefact: Path, seed: int, steps: int, no_fresh_venv: bool) -> tuple[bool, dict | None]:
+IMPORT_CHECK = r'''
+import sys, os
+# Exactly what the engine's loader does: the agent's own directory, and nothing else.
+sys.path.insert(0, sys.argv[1])
+os.chdir(sys.argv[1])
+for name in sys.argv[2:]:
+    mod = __import__(name)
+    extra = ""
+    if hasattr(mod, "SCHEMA_VERSION"):
+        extra = f" schema={mod.SCHEMA_VERSION} source={mod.source_hash()}"
+    print(f"IMPORT OK {name} <- {getattr(mod, '__file__', '?')}{extra}")
+'''
+
+
+def run_import_check(py: str, sub: Path, packages: list[str], work: Path) -> bool:
+    """Import each vendored package with only the bundle directory on `sys.path`."""
+    if not packages:
+        return True
+    checker = work / "import_check.py"
+    checker.write_text(IMPORT_CHECK, encoding="utf-8")
+    res = subprocess.run([py, "-I", str(checker), str(sub), *packages],
+                         text=True, capture_output=True, cwd=str(work))
+    print((res.stdout or "").strip() or "(no output)")
+    if res.returncode != 0:
+        print(res.stderr[-2000:], file=sys.stderr)
+        print("VENDOR IMPORT FAILED")
+        return False
+    return True
+
+
+def run_verify(artefact: Path, seed: int, steps: int, no_fresh_venv: bool,
+               vendor: list[str] | None = None) -> tuple[bool, dict | None]:
     version = engine_version()
     work = Path(tempfile.mkdtemp(prefix="kaggriculture-verify-"))
     try:
@@ -162,6 +261,8 @@ def run_verify(artefact: Path, seed: int, steps: int, no_fresh_venv: bool) -> tu
         unpack(artefact, sub)
         py = sys.executable if no_fresh_venv else fresh_venv_python(work, version)
         print(f"verify   : {'current interpreter' if no_fresh_venv else 'fresh venv'} -> {py}")
+        if not run_import_check(py, sub, vendor or [], work):
+            return False, None
         runner = work / "runner.py"
         runner.write_text(RUNNER, encoding="utf-8")
         res = subprocess.run(
@@ -336,7 +437,7 @@ def do_submit(artefact: Path, args) -> int:
         record_attempt(args, artefact, mode, "refused:no-kaggle-token")
         raise SystemExit("KAGGLE_API_TOKEN is not set in the environment (export it in-shell; never write it to a file)")
 
-    ok, info = run_verify(artefact, args.seed, args.steps, args.no_fresh_venv)
+    ok, info = run_verify(artefact, args.seed, args.steps, args.no_fresh_venv, args.vendor)
     if not ok:
         record_attempt(args, artefact, mode, "refused:verify-failed")
         raise SystemExit("--submit refused: --verify failed on the packaged artefact. Fix it before submitting.")
@@ -371,6 +472,9 @@ def main(argv=None) -> int:
                    help="agent directory to package (repo-relative or absolute), e.g. agents/team_a/bc")
     p.add_argument("--exclude", action="append", default=[], metavar="GLOB",
                    help="file name/path glob to leave out of the artefact (repeatable), e.g. train.py")
+    p.add_argument("--vendor", action="append", default=[], metavar="PKG",
+                   help="copy a repo-root package into the bundle beside main.py (repeatable), e.g. nav")
+    p.add_argument("--dist-dir", help="write the artefact here instead of dist/")
     p.add_argument("--verify", action="store_true", help="play one episode with the packaged artefact")
     p.add_argument("--no-fresh-venv", action="store_true", help="verify with the current interpreter instead of a fresh uv venv")
     p.add_argument("--seed", type=int, default=0)
@@ -386,10 +490,15 @@ def main(argv=None) -> int:
 
     agent_dir = resolve_agent_dir(args.agent_dir)
     files = collect_files(agent_dir, args.exclude)
-    artefact = build(agent_dir, files)
+    vendor = collect_vendor(args.vendor)
+    artefact = build(agent_dir, files, vendor, Path(args.dist_dir) if args.dist_dir else None)
     print(f"agent    : {agent_dir}")
     print(f"artefact : {artefact}  ({artefact.stat().st_size} B, {len(files)} file(s): "
           f"{[f.relative_to(agent_dir).as_posix() for f in files]})")
+    if vendor:
+        print(f"vendored : {', '.join(args.vendor)}  ({len(vendor)} file(s), "
+              f"{sum(src.stat().st_size for src, _ in vendor)} B) -- "
+              f"a bump re-ids every agent that vendors it (docs/nav.md)")
 
     if args.submit:
         return do_submit(artefact, args)
@@ -397,7 +506,7 @@ def main(argv=None) -> int:
     if not args.verify:
         return 0
 
-    ok, _info = run_verify(artefact, args.seed, args.steps, args.no_fresh_venv)
+    ok, _info = run_verify(artefact, args.seed, args.steps, args.no_fresh_venv, args.vendor)
     return 0 if ok else 1
 
 
