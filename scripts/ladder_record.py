@@ -54,6 +54,7 @@ KNOWN_SUBMISSIONS: dict[int, str | None] = {
     55658537: "TeamB-Millrace-melonrace@725fcf7",
     55671796: "TeamA-EnsembleBC-rebuild-v2@a513403",
     55681086: "TeamB-Millrace-strawberry@h9d854a3d8c",
+    55683922: "TeamB-Millrace-pricer@hdd12354335",
 }
 
 # Below this many ladder games an agent is not ranked or calibrated: a 1-1 record carries a
