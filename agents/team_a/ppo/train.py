@@ -503,6 +503,14 @@ class Run:
             self.critic_ready = True
         target_row = target_ep[ep_of_row]
         v = self.critic.value(b["x"])
+        # exp-014's DECIDING STATISTIC (addendum-02 C-5.2), and it is free and genuinely held out:
+        # `v` is this iteration's critic evaluated on THIS iteration's rollouts BEFORE any update
+        # on them, i.e. fresh episodes the critic has never seen. No episode is withheld from
+        # training to get it, so exp-013's configuration is untouched -- which matters, because
+        # R-4.2 requires everything but the critic to be identical. `critic.value_explained_var`
+        # is one function used by both critic kinds, per C-5.2's "same formula both arms";
+        # iteration 0 reads a freshly initialised critic and is flagged rather than quoted.
+        ev_heldout = CRITIC.value_explained_var(self.critic, b["x"], target_row)
         adv = target_row - v
         adv_mu, adv_sd = adv.mean(), max(1e-6, adv.std())
         adv = (adv - adv_mu) / adv_sd
@@ -518,6 +526,7 @@ class Run:
         n = len(b["x"])
         rng = np.random.default_rng(1000 + it)
         agg, uagg = {}, {}
+        trunk, probed = {}, False
         for _ in range(self.epochs):
             order = rng.permutation(n)
             for s in range(0, n, self.minibatch):
@@ -531,11 +540,19 @@ class Run:
                                        alpha=self.alpha_aux)
                 for k, val in st.items():
                     agg.setdefault(k, []).append(val)
+                # C-5.1's trunk share costs two extra backward passes, so it is probed on the
+                # first minibatch of the iteration only -- enough to report the term balance,
+                # cheap enough to leave on permanently.
                 cst = self.critic.update(
                     mb["x"], target_row[idx],
                     target_lines=(None if line_target_row is None else line_target_row[idx]),
-                    aux=(None if aux_row is None else {k: v[idx] for k, v in aux_row.items()}))
-                for k in ("critic_loss", "aux_loss", "gnorm_critic", "gnorm_critic_aux"):
+                    aux=(None if aux_row is None else {k: v[idx] for k, v in aux_row.items()}),
+                    probe=(not probed))
+                if not probed:
+                    trunk = {k: cst[k] for k in cst if k.startswith("trunk_")}
+                    probed = True
+                for k in ("critic_loss", "aux_loss", "gnorm_critic", "gnorm_critic_aux",
+                          "rms_lines", "rms_aux"):
                     agg.setdefault(k, []).append(cst[k])
             if ub is not None:
                 un = len(ub["x"])
@@ -572,8 +589,7 @@ class Run:
                   if self.unit_trainer else 0.0)
         self.save_actor(self.actor_npz)
 
-        v2 = self.critic.value(b["x"])
-        ev = 1.0 - float(np.var(target_row - v2) / max(1e-12, np.var(target_row)))
+        ev_insample = CRITIC.value_explained_var(self.critic, b["x"], target_row)
 
         # R-5.4: the per-term gradient-norm SHARE, market and unit tracked separately. Shares
         # rather than raw norms because the absolute scale moves with the batch and the
@@ -618,7 +634,16 @@ class Run:
             "entropy_op": float(np.mean(uagg.get("entropy_op", [0.0]))) if uagg else 0.0,
             "aux_mkt": float(np.mean(agg.get("aux_mkt", [0.0]))),
             "aux_unit": float(np.mean(uagg.get("aux_unit", [0.0]))) if uagg else 0.0,
-            "explained_var": ev, "loo_singleton_cells": singles,
+            # exp-014's decider (C-5.2): value-level, held out, one formula for both critic kinds.
+            "explained_var_heldout": ev_heldout,
+            "explained_var_heldout_valid": bool(it > 0),
+            "explained_var_insample": ev_insample,
+            "explained_var": ev_heldout,        # back-compat alias; the decider is the held-out one
+            "rms_lines": float(np.mean(agg.get("rms_lines", [0.0]))),
+            "rms_aux": float(np.mean(agg.get("rms_aux", [0.0]))),
+            "trunk_share": trunk,
+            "critic_alpha_aux": getattr(self.critic, "alpha_aux", 0.0),
+            "loo_singleton_cells": singles,
             "gnorm_share_mkt": _shares(agg), "gnorm_share_unit": _shares(uagg) if uagg else {},
             "kl_below_kl0_iters": dict(self.kl_below),
             "kl_below_kl0_report": (self.kl_below["mkt"] >= 3 or self.kl_below["unit"] >= 3),

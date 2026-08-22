@@ -43,12 +43,45 @@ EPS = 1e-6
 
 
 def _norm(glogits):
-    """L2 over a {head: dL/dlogits} dict -- the R-5.4 per-term gradient-norm convention."""
+    """L2 over a {head: dL/dlogits} dict -- the R-5.4 per-term gradient-norm convention.
+
+    HEAD-OUTPUT norms. addendum-02 C-5.1: these are NOT the share of the gradient entering the
+    shared trunk, and they are taken over unequal widths (18 aux dims against 7 line dims =
+    sqrt(18/7) = 1.60x of dimensional bias before any real effect). They are kept because they are
+    cheap and comparable across iterations, but the quantity a threshold may be set against is
+    `trunk_share`, and any quotation of "the aux term took X% of the gradient" must use that.
+    """
     tot = 0.0
     for g in glogits.values():
         f = np.asarray(g).reshape(-1)
         tot += float(np.dot(f, f))
     return float(np.sqrt(tot))
+
+
+def _rms_per_dim(diff):
+    """Mean over dims of the per-dim rms residual (addendum-02 C-5.1).
+
+    Per-dim, so a 9-wide head and a 7-wide head are compared on the same footing; rms rather than
+    a summed MSE, so "how well is each dimension fitted" survives the width difference that made
+    the head-output norm misleading. Inputs are standardised, so 1.0 is "no better than the mean".
+    """
+    d = np.asarray(diff, dtype=np.float64)
+    return float(np.sqrt((d ** 2).mean(0)).mean())
+
+
+def value_explained_var(critic, x, target):
+    """1 - Var(target - value(x)) / Var(target). ONE function, both critics.
+
+    addendum-02 C-5.2 makes this exp-014's deciding statistic, and makes it binding that the
+    formula is identical across arms: the comparison is a scalar critic against a factored one, so
+    a mean over per-line `explained_var` is not available to the scalar arm and must never be the
+    decider. Per-line values stay reported (with degenerate lines named), never deciding.
+    """
+    t = np.asarray(target, dtype=np.float64)
+    vt = float(np.var(t))
+    if vt < 1e-12:
+        return None
+    return round(float(1.0 - np.var(t - critic.value(x)) / vt), 4)
 
 
 class ScalarCritic:
@@ -78,7 +111,7 @@ class ScalarCritic:
     def value(self, x):
         return self.net.forward((x - self.mu) / self.sd)["v"][:, 0]
 
-    def update(self, x, target, target_lines=None, aux=None):
+    def update(self, x, target, target_lines=None, aux=None, probe=False):
         xn = (x - self.mu) / self.sd
         out, cache = self.net.forward(xn, cache=True)
         pred = out["v"][:, 0]
@@ -88,7 +121,11 @@ class ScalarCritic:
         grads = self.net.backward(cache, {"v": g})
         self.opt.step(self.net.params(), grads)
         return {"critic_loss": loss, "aux_loss": 0.0,
-                "gnorm_critic": _norm({"v": g}), "gnorm_critic_aux": 0.0}
+                "gnorm_critic": _norm({"v": g}), "gnorm_critic_aux": 0.0,
+                # the same keys the factored critic emits, so exp-013b's control arm and exp-014
+                # produce the same row shape and a diff of two rows is readable
+                "rms_lines": round(_rms_per_dim(diff[:, None]), 5), "rms_aux": 0.0,
+                "trunk_share_lines": 1.0, "trunk_share_aux": 0.0}
 
 
 class FactoredCritic:
@@ -145,7 +182,27 @@ class FactoredCritic:
         return self.lines(x).sum(1)
 
     # -- update ---------------------------------------------------------------
-    def update(self, x, target=None, target_lines=None, aux=None):
+    def trunk_shares(self, cache, grads_out):
+        """Share of the gradient ENTERING THE SHARED TRUNK, per term (addendum-02 C-5.1).
+
+        Computed the way the ruling specifies: run the backward pass twice, each time with the
+        other term's head gradients zeroed, and measure the norm on the FIRST SHARED PARAMETER
+        TENSOR (`W1`, which `net.params()` returns at index 0). That is the only place the two
+        terms actually compete -- head-output norms measure two different heads' own outputs over
+        different widths and never touch the trunk at all.
+
+        Two extra backward passes, so the caller runs this once per iteration, not per minibatch.
+        """
+        vonly = {"v": grads_out["v"]}
+        aonly = {k: g for k, g in grads_out.items() if k != "v"}
+        nv = float(np.linalg.norm(self.net.backward(cache, vonly)[0]))
+        na = float(np.linalg.norm(self.net.backward(cache, aonly)[0])) if aonly else 0.0
+        tot = nv + na
+        return {"trunk_gnorm_lines": round(nv, 6), "trunk_gnorm_aux": round(na, 6),
+                "trunk_share_lines": round(nv / tot, 4) if tot > 0 else 0.0,
+                "trunk_share_aux": round(na / tot, 4) if tot > 0 else 0.0}
+
+    def update(self, x, target=None, target_lines=None, aux=None, probe=False):
         """One Adam step. `target_lines` is (batch, n_lines) in return units.
 
         `target` (the scalar) is accepted and used only when no line targets are supplied,
@@ -169,6 +226,7 @@ class FactoredCritic:
         grads_out = {"v": (2.0 * diff / n).astype(np.float32)}
 
         aux_loss = 0.0
+        aux_rms = []
         for k in self.aux_dims:
             v = (aux or {}).get(k)
             if v is None:
@@ -176,14 +234,22 @@ class FactoredCritic:
             a = (np.asarray(v, dtype=np.float64) - self.aux_mu[k]) / self.aux_sd[k]
             ad = out[k] - a
             aux_loss += float((ad ** 2).mean(0).sum())
+            aux_rms.append(_rms_per_dim(ad))
             grads_out[k] = (self.alpha_aux * 2.0 * ad / n).astype(np.float32)
 
+        probe_out = self.trunk_shares(cache, grads_out) if probe else {}
         grads = self.net.backward(cache, grads_out)
         self.opt.step(self.net.params(), grads)
-        return {"critic_loss": v_loss, "aux_loss": aux_loss,
-                "gnorm_critic": _norm({"v": grads_out["v"]}),
-                "gnorm_critic_aux": _norm({k: g for k, g in grads_out.items() if k != "v"}),
-                "line_loss": (diff ** 2).mean(0).round(6).tolist()}
+        out = {"critic_loss": v_loss, "aux_loss": aux_loss,
+               "gnorm_critic": _norm({"v": grads_out["v"]}),
+               "gnorm_critic_aux": _norm({k: g for k, g in grads_out.items() if k != "v"}),
+               # C-5.1: per-dim rms on standardised targets, so 7 lines and 18 aux dims are
+               # comparable. 1.0 == no better than predicting the mean.
+               "rms_lines": round(_rms_per_dim(diff), 5),
+               "rms_aux": round(float(np.mean(aux_rms)), 5) if aux_rms else 0.0,
+               "line_loss": (diff ** 2).mean(0).round(6).tolist()}
+        out.update(probe_out)
+        return out
 
     # -- diagnostics ----------------------------------------------------------
     # A line whose target barely varies over the batch has no explainable variance, and
