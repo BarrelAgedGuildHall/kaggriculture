@@ -715,6 +715,200 @@ def test_control_register_is_locked_down(tmp_path):
         hub.HUB_CONFIG.unlink(missing_ok=True)
 
 
+# ------------------------------------------------- lease hardening (Auditor review of PR #19)
+def test_control_rejects_a_lease_body_with_no_op():
+    """F1: `op` used to default to "list", so a mis-keyed or missing op turned a mutation into a
+    read that answered 200 with an empty lease list -- indistinguishable from "the ladder is free"."""
+    from arena import serve as srv
+    with pytest.raises(ValueError, match="unknown request key"):
+        srv.control("lease", {"action": "acquire", "owner": "someone", "purpose": "x"})
+    with pytest.raises(ValueError, match='lease needs an "op"'):
+        srv.control("lease", {})
+    with pytest.raises(ValueError, match='lease needs an "op"'):
+        srv.control("lease", {"owner": "someone", "purpose": "x", "ttl_s": 60})
+    with pytest.raises(ValueError, match="unknown lease op"):
+        srv.control("lease", {"op": "aquire"})
+
+
+def test_control_rejects_unknown_body_keys():
+    from arena import serve as srv
+    with pytest.raises(ValueError, match="unknown request key"):
+        srv.control("resume", {"forced": True})
+    with pytest.raises(ValueError, match="unknown request key"):
+        srv.control("lease", {"op": "acquire", "owner": "o", "purpose": "p", "ttl": 60})
+    with pytest.raises(ValueError, match="unknown request key"):
+        srv.control("champion", {"team": "A", "agent": "x", "force": True})
+    with pytest.raises(ValueError, match="unknown control action"):
+        srv.control("resune", {})
+
+
+def test_control_still_accepts_the_documented_bodies():
+    from arena import hub, serve as srv
+    try:
+        out = srv.control("lease", {"op": "acquire", "owner": "engineer", "purpose": "hardening test",
+                                    "ttl_s": 60})
+        lid = out["lease"]["id"]
+        assert srv.control("lease", {"op": "list"})["lease_held"] is True
+        assert srv.control("lease", {"op": "renew", "id": lid, "ttl_s": 90})["lease"]["ttl_s"] == 90
+        srv.control("lease", {"op": "release", "lease_id": lid, "resume": True})
+        assert srv.control("lease", {"op": "list"})["lease_held"] is False
+    finally:
+        for l in leases_mod().active():
+            leases_mod().release(l["id"])
+        hub_mod().set_paused(False)
+
+
+def leases_mod():
+    from arena import leases
+    return leases
+
+
+def hub_mod():
+    from arena import hub
+    return hub
+
+
+def test_unreadable_lease_state_reads_as_held_and_refuses_resume():
+    """F2: `except Exception: state = {}` turned a truncated leases.json into "no leases held" --
+    resume went from 409 to 200 with no log row. Unknown state is held state now."""
+    from arena import hub, leases
+    lease = hub.acquire_lease("engineer", "F2 regression", ttl_s=600)
+    try:
+        leases.LEASES_PATH.write_text('{"leases": {"x": ', encoding="utf-8")   # truncated mid-write
+        st = leases.status()
+        assert st["lease_held"] is True and st["leases"] == []
+        assert "unreadable" in st["lease_state_error"]
+        with pytest.raises(leases.LeaseStateUnreadable):
+            leases.active()
+        with pytest.raises(leases.LeaseHeld):        # LeaseStateUnreadable IS a LeaseHeld -> 409
+            hub.set_paused(False)
+        assert hub.is_paused(), "a refused resume must not have touched the flag"
+        # the API reports it at both levels rather than answering "free"
+        from arena import serve as srv
+        assert srv.api_leases()["lease_held"] is True
+        assert srv.api_status()["lease_state_error"]
+        assert srv.api_status()["hub"]["lease_held"] is True
+        events = [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+        assert any(e["event"] == "state-unreadable" for e in events), "and it says so in the log"
+    finally:
+        leases.LEASES_PATH.unlink(missing_ok=True)
+        for l in leases.active():
+            leases.release(l["id"])
+        hub.set_paused(False)
+    assert lease["id"]
+
+
+def test_force_resume_quarantines_an_unreadable_lease_file():
+    """The one way past: deliberate, attributed, logged -- and the bad file is kept, renamed. It is
+    never deleted, because "no file" would be back to "no leases held"."""
+    from arena import hub, leases
+    hub.set_paused(True)
+    leases.LEASES_PATH.write_text("not json at all", encoding="utf-8")
+    try:
+        with pytest.raises(ValueError, match="actor"):
+            hub.set_paused(False, force=True, actor="")      # an override must name someone
+        assert hub.is_paused()
+        assert hub.set_paused(False, force=True, actor="ceo") is False
+        assert not leases.LEASES_PATH.exists()
+        moved = list(leases.LEASES_PATH.parent.glob(leases.LEASES_PATH.name + ".corrupt-*"))
+        assert moved and moved[0].read_text(encoding="utf-8") == "not json at all"
+        events = [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+        assert any(e["event"] == "state-quarantined" and e["actor"] == "ceo" for e in events)
+    finally:
+        for f in leases.LEASES_PATH.parent.glob(leases.LEASES_PATH.name + ".corrupt-*"):
+            f.unlink()
+        leases.LEASES_PATH.unlink(missing_ok=True)
+        hub.set_paused(False)
+
+
+def test_lease_writes_are_serialised_and_use_unique_temp_files():
+    """F3: read-modify-write with a fixed .tmp name under a threading server. 12 concurrent
+    acquires must all survive."""
+    import threading as th
+    from arena import leases
+    errors, ids = [], []
+
+    def take(i):
+        try:
+            ids.append(leases.acquire(f"owner{i}", f"purpose {i}", ttl_s=120)["id"])
+        except Exception as exc:               # noqa: BLE001 - reported below
+            errors.append(exc)
+
+    threads = [th.Thread(target=take, args=(i,)) for i in range(12)]
+    try:
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join(timeout=30)
+        assert not errors, errors
+        assert len(ids) == 12
+        assert {l["id"] for l in leases.active()} == set(ids), "no acquire may be lost to a race"
+        assert not list(leases.LEASES_PATH.parent.glob(leases.LEASES_PATH.name + ".tmp*")), \
+            "temp files are cleaned up and uniquely named"
+    finally:
+        for l in leases.active():
+            leases.release(l["id"])
+
+
+def test_hub_reconciles_a_lease_held_over_an_unpaused_ladder():
+    """F4: the loop only checked the pause flag, so a lease could be live while the ladder played.
+    A live lease means the ladder must not play -- the hub re-asserts the pause and logs it."""
+    from arena import hub, leases
+    lease = leases.acquire("modeler", "F4 regression", ttl_s=120)   # no pause taken with it
+    hub.PAUSE_FLAG.unlink(missing_ok=True)
+    try:
+        assert not hub.is_paused()
+        assert hub.reconcile_pause() is True
+        assert hub.reconcile_pause() is False, "already reconciled: no second pause, no second log row"
+        assert hub.is_paused(), "a held lease re-asserts the pause instead of dealing games under it"
+        events = [json.loads(l) for l in leases.LEASE_LOG.read_text(encoding="utf-8").splitlines()]
+        rec = [e for e in events if e["event"] == "reconciled-pause"]
+        assert rec and lease["id"] in rec[-1]["lease_ids"]
+    finally:
+        leases.release(lease["id"])
+        hub.set_paused(False)
+
+
+# ------------------------------------------------- deploy identity (F7)
+def test_arena_code_hash_is_stable_and_line_ending_independent(tmp_path, monkeypatch):
+    """arena_sha can be a value declared in a systemd unit at deploy time and never updated (it
+    read 12a5398 while the hub ran code well past it), so `is the deploy live?` needs an answer
+    computed from the files themselves."""
+    from arena import engine as eng2
+    h1 = eng2.arena_code_hash()
+    assert len(h1) == 12 and h1 == eng2.arena_code_hash()
+
+    pkg = tmp_path / "arena"
+    pkg.mkdir()
+    (pkg / "a.py").write_bytes(b"x = 1\r\ny = 2\r\n")
+    (pkg / "b.py").write_bytes(b"z = 3\n")
+    monkeypatch.setattr(eng2, "__file__", str(pkg / "engine.py"))
+    monkeypatch.setitem(eng2._CODE_HASH, "at", 0.0)
+    crlf = eng2.arena_code_hash()
+    (pkg / "a.py").write_bytes(b"x = 1\ny = 2\n")
+    monkeypatch.setitem(eng2._CODE_HASH, "at", 0.0)
+    assert eng2.arena_code_hash() == crlf, "CRLF vs LF must not change the deploy identity"
+    (pkg / "b.py").write_bytes(b"z = 4\n")
+    monkeypatch.setitem(eng2._CODE_HASH, "at", 0.0)
+    assert eng2.arena_code_hash() != crlf, "a real code change must change it"
+
+
+def test_arena_sha_source_says_where_the_sha_came_from(monkeypatch):
+    from arena import engine as eng2
+    monkeypatch.setenv("KAGGRI_ARENA_SHA", "12a5398")
+    eng2.arena_git_sha.cache_clear()
+    try:
+        assert eng2.arena_git_sha() == "12a5398"
+        assert eng2.arena_sha_source() == "env", "a declared sha is flagged as declared"
+    finally:
+        monkeypatch.delenv("KAGGRI_ARENA_SHA")
+        eng2.arena_git_sha.cache_clear()
+
+
+def test_status_reports_both_identities():
+    from arena import serve as srv
+    st = srv.api_status()
+    assert st["arena_code_hash"] and st["arena_sha_source"] in ("env", "git", "none")
 # ----------------------------------------------------------------------------- seed bands
 def test_seed_bands_are_declared_and_resolvable():
     """The confirm band used to be a module constant, so every gate in the org's history

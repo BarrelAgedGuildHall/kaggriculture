@@ -9,6 +9,7 @@ import hashlib
 import os
 import subprocess
 import sys
+import time
 from functools import lru_cache
 from pathlib import Path
 
@@ -56,10 +57,49 @@ def engine_sha() -> str:
     return hashlib.sha256((engine_dir() / "kaggriculture.py").read_bytes()).hexdigest()[:12]
 
 
+def arena_sha_source() -> str:
+    """Where `arena_git_sha()` got its answer: 'env' (declared, can go stale), 'git', or 'none'.
+
+    Worth reporting: on the Pit host the hub runs from an untarred working tree with no .git, so
+    the sha comes from KAGGRI_ARENA_SHA in the systemd unit -- a value written at deploy time that
+    no later deploy updates. It read `12a5398` while the running code was several commits past it,
+    and it is stamped on every games/runs row. Pair it with `arena_code_hash()`, which is computed
+    from the files themselves."""
+    if os.environ.get("KAGGRI_ARENA_SHA"):
+        return "env"
+    return "git" if arena_git_sha() != "nogit" else "none"
+
+
+_CODE_HASH: dict[str, float | str] = {"at": 0.0, "value": ""}
+CODE_HASH_TTL_S = 5.0
+
+
+def arena_code_hash() -> str:
+    """sha256 over the arena package's own source, line-ending-normalised (12 hex chars).
+
+    This is the deploy check: identical code gives an identical hash on a Windows clone and on the
+    Linux host, whatever git says and whatever the unit file declares. Cached for a few seconds
+    because it is read per API request; a restart or an edit shows up within the TTL."""
+    now = time.monotonic()
+    if _CODE_HASH["value"] and now - float(_CODE_HASH["at"]) < CODE_HASH_TTL_S:
+        return str(_CODE_HASH["value"])
+    h = hashlib.sha256()
+    pkg = Path(__file__).resolve().parent
+    for f in sorted(pkg.glob("*.py")):
+        h.update(f.name.encode())
+        h.update(f.read_bytes().replace(b"\r\n", b"\n"))
+    _CODE_HASH.update(at=now, value=h.hexdigest()[:12])
+    return str(_CODE_HASH["value"])
+
+
 @lru_cache(maxsize=1)
 def arena_git_sha() -> str:
     """Short git sha of the repo HEAD (+ '-dirty' if the arena package has local edits).
-    KAGGRI_ARENA_SHA overrides it (remote runs ship a tarball without .git)."""
+    KAGGRI_ARENA_SHA overrides it (remote runs ship a tarball without .git).
+
+    Cached for the life of the process: it is stamped on every row, and re-shelling out to git per
+    game would cost more than it tells. That means a *declared* sha never refreshes -- see
+    `arena_sha_source()` and `arena_code_hash()` for the answer that does."""
     if os.environ.get("KAGGRI_ARENA_SHA"):
         return os.environ["KAGGRI_ARENA_SHA"]
     try:

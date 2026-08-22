@@ -255,6 +255,8 @@ def cmd_lease(args) -> int:
             out = _hub_call(args.hub, "/api/control/lease", body)
         if out.get("lease"):
             _p(f"{op}: {out['lease']['id']}")
+        if out.get("lease_state_error"):
+            _p(f"! LEASE STATE UNREADABLE on the hub -- treated as HELD: {out['lease_state_error']}")
         _print_leases(out.get("leases", []))
         _p(f"ladder paused: {out.get('paused')}")
         return 0
@@ -273,7 +275,11 @@ def cmd_lease(args) -> int:
         rec = hubmod.release_lease(args.lease_id, resume=args.resume)
         _p(f"lease {rec['id']} released after {rec['held_for_s'] // 60} min; ladder paused: {hubmod.is_paused()}")
     else:
-        _print_leases(leases.active())
+        st = leases.status()
+        if st["lease_state_error"]:
+            _p(f"! LEASE STATE UNREADABLE -- treated as HELD: {st['lease_state_error']}")
+        else:
+            _print_leases(st["leases"])
         _p(f"ladder paused: {hubmod.is_paused()}")
     return 0
 
@@ -283,7 +289,8 @@ def cmd_info(args) -> int:
     _p(f"store     : {DB_PATH} ({'exists' if DB_PATH.exists() else 'missing'})")
     _p(f"runs dir  : {RUNS_DIR}")
     _p(f"engine    : kaggle-environments {eng.engine_version()} (kaggriculture.py sha {eng.engine_sha()})")
-    _p(f"arena sha : {eng.arena_git_sha()}")
+    _p(f"arena sha : {eng.arena_git_sha()} (from {eng.arena_sha_source()})")
+    _p(f"arena code: {eng.arena_code_hash()}  <- compare with the hub's /api/status to see if a deploy is live")
     bands = ", ".join(f"{n} {lo}-{hi if hi is not None else ''}" for n, (lo, hi) in SEED_BANDS.items())
     _p(f"seed bands: {bands}   (gate default: {DEFAULT_GATE_BAND}; override with KAGGRI_SEED_BANDS)")
     from .scheduler import default_workers
