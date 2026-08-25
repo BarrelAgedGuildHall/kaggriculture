@@ -38,8 +38,38 @@ The buy side follows the engine exactly: `BUY_PRODUCT` quotes at `inventory - 1`
 decrements, so `marginal_cost(inv, n) = sum_{k=1..n} p(inv - k)`. (The probe walked
 `p(inv), p(inv-1), ...`, one unit short of the engine; recorded here, engine wins.)
 
+Provenance: a read says what backed it (R-52)
+---------------------------------------------
+A curve is fitted per *side*, and the two sides are observed independently: a product we only
+ever sell walks its pool up, so the glut side fills with points while the scarcity side stays
+empty. The old fallback returned `base` on a side with no fit -- a flat curve, i.e. "sell as
+much as you like, no price impact" -- and nothing in the return value distinguished that from
+a well-fitted read. It is not a symmetric loss of accuracy; it biases every acreage and
+capital decision toward over-production.
+
+So every read now carries its **provenance**, worst-of over whatever it touched:
+
+    observed        an exact recorded (inventory, price) point
+    fitted          the side has a fit and the query is inside (or just past) its reach
+    extrapolated    the query is beyond `EXTRAPOLATION_FACTOR x side_reach`
+    base_fallback   the side has NO fit -- the read is `base`, and is not evidence
+    floor           the curve has no `base` yet -- the read is PRICE_FLOOR
+
+`price_at`/`quote` keep their signatures and their numbers exactly; `price_at_marked` is the
+marked read, and every aggregate read (`marginal_revenue`, `marginal_cost`, `priced_units`,
+`units_above`, `_integral`) leaves `curve.last_read` behind for the caller that cares. The
+bookkeeping is O(1) in the number of units: the inventory interval is split analytically by
+side and by reach, never walked.
+
+**The gate clause that goes with it (ruling-05 R-52 item 5).** Any offline projection,
+back-test or calibration pair whose read touched `base_fallback` (or `floor`) is **VOID** --
+excluded from the denominator, reported as a separate count, never scored as a miss. A model
+cannot be refuted on data where it was never consulted. And no irreversible action (a
+purchase, a plant, a hire) may be taken on such a read. `nav` states the classes and reports
+them; enforcing either clause is the caller's job, because `nav` never decides anything.
+
 Nothing in this module decides anything: it answers "what is this worth" and "how much
-evidence backs that answer" (`confidence`, `diagnostics`, `tripwire`).
+evidence backs that answer" (`confidence`, `side_confidence`, `diagnostics`, `tripwire`).
 """
 from __future__ import annotations
 
@@ -81,6 +111,68 @@ TRIPWIRE_MIN_POINTS = 4       # never fire on a curve that has barely been obser
 #   gamma  0.90 ->   0 firings, but max error 7 -- forgetting too fast costs accuracy
 # 0.97 is the point where the false-positive rate reaches zero without paying for it.
 FORGET = 0.97
+
+# How far past the observed reach of a side a fit is still called `fitted`. A parameter, not a
+# constant: the shapes are monotone and one-parameter, so a modest extension of the observed
+# range is the fit doing its job, while a query many times past the furthest point ever seen
+# is the model speaking about a market it has never been shown. Start at 1.5 (R-52).
+EXTRAPOLATION_FACTOR = 1.5
+
+# --------------------------------------------------------------------------- read provenance
+# Ordered from "nothing was read" to "worst", so `worst_provenance` is a max over the index.
+PROVENANCE_ORDER = ("none", "observed", "fitted", "extrapolated", "base_fallback", "floor")
+_PROVENANCE_RANK = {p: i for i, p in enumerate(PROVENANCE_ORDER)}
+
+# A read in this class is not evidence: the curve was never consulted, it answered with a
+# constant. Offline pairs that touched one are VOID; no irreversible action may rest on one.
+VOID_PROVENANCE = frozenset({"base_fallback", "floor"})
+
+# `provisional` on a mark: the read is either not evidence at all, or is the fit speaking
+# well outside the range it was fitted on.
+PROVISIONAL_PROVENANCE = frozenset({"extrapolated", "base_fallback", "floor"})
+
+
+def worst_provenance(*provenances) -> str:
+    """The worst class among the arguments (each a class name or an iterable of them)."""
+    worst = "none"
+    for p in provenances:
+        if p is None:
+            continue
+        if not isinstance(p, str):
+            p = worst_provenance(*p)
+        if _PROVENANCE_RANK.get(p, 0) > _PROVENANCE_RANK[worst]:
+            worst = p
+    return worst
+
+
+def read_is_void(provenance) -> bool:
+    """True when this read leaned on a constant instead of on evidence (R-52 item 5).
+
+    Accepts a class name, a `last_read`/`Line`-style mapping carrying `"provenance"`, or a
+    `(value, provenance)` pair -- so an analysis script can pass whatever it happens to hold.
+    """
+    if provenance is None:
+        return False
+    if isinstance(provenance, str):
+        return provenance in VOID_PROVENANCE
+    if isinstance(provenance, dict):
+        return read_is_void(provenance.get("provenance"))
+    if isinstance(provenance, (tuple, list)) and len(provenance) == 2:
+        return read_is_void(provenance[1])
+    return read_is_void(getattr(provenance, "provenance", None))
+
+
+def read_is_provisional(provenance) -> bool:
+    """True when a mark resting on this read must be flagged `provisional`."""
+    if isinstance(provenance, str):
+        return provenance in PROVISIONAL_PROVENANCE
+    if provenance is None:
+        return False
+    if isinstance(provenance, dict):
+        return read_is_provisional(provenance.get("provenance"))
+    if isinstance(provenance, (tuple, list)) and len(provenance) == 2:
+        return read_is_provisional(provenance[1])
+    return read_is_provisional(getattr(provenance, "provenance", None))
 
 
 # ----------------------------------------------------------------------------- shape algebra
@@ -141,7 +233,7 @@ class _SideFit:
     """
 
     __slots__ = ("models", "sgg", "sgy", "syy", "n", "w", "seen", "dirty",
-                 "shape", "T", "c", "sse", "rmse", "residuals")
+                 "shape", "T", "c", "sse", "rmse", "residuals", "reach")
 
     def __init__(self) -> None:
         self.models: list[tuple[str, float | None]] = [(f, None) for f in SHAPES if f != "hinge"]
@@ -159,12 +251,14 @@ class _SideFit:
         self.sse = 0.0
         self.rmse = 0.0
         self.residuals: list[tuple[float, float]] = []
+        self.reach: float | None = None      # largest |inv - I0| ever observed on this side
 
     def add(self, d: float, y: float, key: int) -> None:
         if key in self.seen:
             return                      # the same inventory carries no new information
         self.seen.add(key)
         self.n += 1
+        self.reach = d if self.reach is None else max(self.reach, d)
         self.w = self.w * FORGET + 1.0
         self.syy = self.syy * FORGET + y * y
         for i, (func, T) in enumerate(self.models):
@@ -238,6 +332,10 @@ class PriceCurve:
         self.exact: dict | None = None   # set only by `from_params` (offline/tests)
         self.n_points = 0
         self._observed: dict[int, int] = {}   # inventory -> exact observed integer price
+        self.extrapolation_factor = float(EXTRAPOLATION_FACTOR)
+        # What backed the most recent aggregate read: {"provenance": <worst class touched>,
+        # "units_by_class": {class: units}}. `None` until something has been read.
+        self.last_read: dict | None = None
 
     # -- construction -----------------------------------------------------------------------
     @classmethod
@@ -297,6 +395,137 @@ class PriceCurve:
         rmse = max(self.above.rmse, self.below.rmse)
         return min(1.0, n / 8.0) / (1.0 + rmse)
 
+    def _side(self, side: str) -> _SideFit:
+        if side in ("above", "glut"):
+            return self.above
+        if side in ("below", "scarcity"):
+            return self.below
+        raise ValueError(f"side must be 'above'/'glut' or 'below'/'scarcity', got {side!r}")
+
+    def side_of(self, inventory: float) -> str:
+        """`'above'` (glut, price below base) or `'below'` (scarcity, price above base).
+
+        `inventory == I0` is reported as `'below'`; nothing is read there anyway, because
+        `d == 0` is the exactly-observed base point.
+        """
+        return "above" if inventory > self.i0 else "below"
+
+    def side_confidence(self, side: str) -> float:
+        """The aggregate `confidence`, restricted to the evidence on ONE side.
+
+        This is the statistic the aggregate one cannot be: a curve with forty points on the
+        glut side and none on the scarcity side reports high `confidence` while every
+        scarcity-side read is pure `base` (R-52 N-2). The invariant worth relying on is
+
+            `side_confidence(side) == 0.0`  <=>  a read on that side is `base_fallback`
+
+        so a caller can gate on the number without knowing about provenance classes.
+        """
+        fit = self._side(side)
+        if self.exact is not None:
+            return 1.0
+        if fit.n <= 0:
+            return 0.0
+        fit.fit()
+        return min(1.0, fit.n / 8.0) / (1.0 + fit.rmse)
+
+    def side_reach(self, side: str) -> float | None:
+        """The largest `|inventory - I0|` ever observed on that side, or None if never."""
+        if self.exact is not None:
+            return None
+        return self._side(side).reach
+
+    # -- provenance --------------------------------------------------------------------------
+    def price_at_marked(self, inventory: float) -> tuple[float, str]:
+        """`price_at(inventory)` and what backed it -- the marked read (R-52 item 2).
+
+        The price is bit-for-bit what `price_at` returns; only the second element is new.
+        """
+        price = self.price_at(inventory)
+        return price, self._record_point_read(inventory)
+
+    def _provenance_at(self, inventory: float) -> str:
+        """Which class a single-point read at `inventory` falls in."""
+        if self.base is None:
+            return "floor"
+        if self.exact is not None:
+            return "observed"
+        inv_i = int(inventory)
+        if inv_i == inventory and inv_i in self._observed:
+            return "observed"
+        d = abs(inventory - self.i0)
+        if d == 0:
+            return "observed" if self.i0_observed else "fitted"
+        fit = self.above if inventory > self.i0 else self.below
+        fit.fit()
+        if fit.shape is None:
+            return "base_fallback"
+        reach = fit.reach or 0.0
+        return "fitted" if d <= self.extrapolation_factor * reach else "extrapolated"
+
+    def _classify_units(self, lo: float, hi: float) -> dict[str, float]:
+        """Split the inventory interval [lo, hi] into provenance classes, by units.
+
+        Analytic, O(1): each side contributes at most two pieces (inside its reach, past the
+        extrapolation factor), so pricing one unit and pricing nine hundred cost the same.
+        Exactly-observed points are NOT looked up here -- classifying an observed unit as
+        `fitted` errs on the pessimistic side, which is the direction that is safe.
+
+        `lo`/`hi` are the FIRST and LAST inventory a read prices, not the midpoint interval
+        the integral uses: half a unit of overhang across `I0` is not evidence that the read
+        leaned on the other side, and it must not decide the worst class.
+        """
+        if hi < lo:
+            return {}
+        span = hi - lo
+        if self.base is None:
+            return {"floor": span}
+        if self.exact is not None:
+            return {"observed": span}
+        out: dict[str, float] = {}
+
+        def add(cls: str, units: float) -> None:
+            if units > 0:
+                out[cls] = out.get(cls, 0.0) + units
+
+        i0 = float(self.i0)
+        for name, fit, a, b in (("below", self.below, lo, min(hi, i0)),
+                                ("above", self.above, max(lo, i0), hi)):
+            if b <= a:
+                continue
+            fit.fit()
+            if fit.shape is None:
+                add("base_fallback", b - a)
+                continue
+            # d runs from |a - i0| to |b - i0|; the fitted band is d <= factor * reach.
+            d_lo, d_hi = (i0 - b, i0 - a) if name == "below" else (a - i0, b - i0)
+            edge = self.extrapolation_factor * (fit.reach or 0.0)
+            add("fitted", max(0.0, min(d_hi, edge) - d_lo))
+            add("extrapolated", max(0.0, d_hi - max(d_lo, edge)))
+        return out
+
+    def _record_read(self, lo: float, hi: float, units: float | None = None) -> str:
+        """Set `last_read` from the interval an aggregate read touched. Returns the class.
+
+        `units`, when given, is what the class weights are normalised to -- `n` units priced at
+        `n` consecutive inventories span `n - 1`, and the caller cares about units.
+        """
+        if hi <= lo:
+            return self._record_point_read(lo)
+        classes = self._classify_units(lo, hi)
+        if units is not None and classes:
+            scale = float(units) / sum(classes.values())
+            classes = {k: v * scale for k, v in classes.items()}
+        provenance = worst_provenance(classes.keys())
+        self.last_read = {"provenance": provenance, "units_by_class": classes}
+        return provenance
+
+    def _record_point_read(self, inventory: float) -> str:
+        """Set `last_read` from a single-point read (one unit in one class)."""
+        cls = self._provenance_at(inventory)
+        self.last_read = {"provenance": cls, "units_by_class": {cls: 1.0}}
+        return cls
+
     @property
     def fitted_shape(self) -> tuple[str | None, str | None]:
         self.below.fit()
@@ -342,6 +571,7 @@ class PriceCurve:
         model; for `exact` curves it integrates the true curve."""
         if b <= a:
             return 0.0
+        self._record_read(a, b)
         if self.base is None:
             return float(PRICE_FLOOR) * (b - a)
         total = 0.0
@@ -445,7 +675,10 @@ class PriceCurve:
         inventory = int(inventory)
         f = self._floor_inventory(inventory, inventory + n - 1)
         n_priced = max(0, min(n, f - inventory))
-        return self._sum_quotes(inventory, inventory + n_priced - 1) + float(PRICE_FLOOR) * (n - n_priced)
+        value = (self._sum_quotes(inventory, inventory + n_priced - 1)
+                 + float(PRICE_FLOOR) * (n - n_priced))
+        self._record_read(inventory, inventory + n - 1, units=n)
+        return value
 
     def priced_units(self, inventory: int, n: int) -> int:
         """How many of `n` units sold actually move the pool -- i.e. fetch more than the
@@ -455,6 +688,7 @@ class PriceCurve:
             return 0
         inventory = int(inventory)
         f = self._floor_inventory(inventory, inventory + n - 1)
+        self._record_read(inventory, inventory + n - 1, units=n)
         return max(0, min(n, f - inventory))
 
     def marginal_cost(self, inventory: int, n: int) -> float:
@@ -464,15 +698,19 @@ class PriceCurve:
         if n <= 0:
             return 0.0
         inventory = int(inventory)
-        return self._sum_quotes(inventory - n, inventory - 1)
+        cost = self._sum_quotes(inventory - n, inventory - 1)
+        self._record_read(inventory - n, inventory - 1, units=n)
+        return cost
 
     def units_above(self, inventory: int, fraction: float) -> int:
         """Headroom: how many units can be sold before the quote falls below `fraction * base`
         (the steep-pool diagnostic that orders liquidation, spec §3.8)."""
         if self.base is None:
+            self._record_point_read(inventory)
             return 0
         target = fraction * self.base
         if self.price_at(inventory) < target:
+            self._record_point_read(inventory)
             return 0
         lo, hi = 0, 1
         while hi < 1 << 20 and self.price_at(inventory + hi) >= target:
@@ -483,6 +721,7 @@ class PriceCurve:
                 lo = m
             else:
                 hi = m
+        self._record_read(float(inventory), float(inventory + lo))
         return lo
 
     # -- diagnostics ------------------------------------------------------------------------
@@ -501,6 +740,10 @@ class PriceCurve:
             "product": self.product, "base": self.base, "i0": self.i0,
             "i0_observed": self.i0_observed, "n_points": self.n_points,
             "confidence": round(self.confidence, 4),
+            "below_confidence": round(self.side_confidence("below"), 4),
+            "above_confidence": round(self.side_confidence("above"), 4),
+            "below_reach": self.side_reach("below"), "above_reach": self.side_reach("above"),
+            "last_read": (self.last_read or {}).get("provenance", "none"),
             "below_shape": below, "above_shape": above,
             "below_rmse": round(self.below.rmse, 3), "above_rmse": round(self.above.rmse, 3),
             "below_T": self.below.T, "above_T": self.above.T,

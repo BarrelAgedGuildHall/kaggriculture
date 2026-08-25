@@ -40,26 +40,42 @@ never inside one, and never while a promotion is being decided (spec §9.3, docs
 `SCHEMA_VERSION` bumps whenever a mark's *meaning* changes; `Sheet.as_dict()` carries it, so
 any S-3 telemetry row or experiment result can be attributed to the version that produced it.
 Registrations should record `nav.SCHEMA_VERSION` and `nav.source_hash()` in the agent's notes.
+It lives in `nav.sheet` beside the dataclass that stamps it, so the two cannot drift apart.
+
+What backed a read (schema 2, ruling-05 R-52)
+---------------------------------------------
+Every read now says what it rested on -- `observed`, `fitted`, `extrapolated`, `base_fallback`
+(the side had no fit, so the answer was the flat `base`) or `floor`. `Sheet.provenance` is the
+worst class the sheet touched and `Sheet.void` is the gate clause:
+
+> **Any offline projection, back-test or calibration pair whose read touched `base_fallback`
+> is VOID** -- excluded from the denominator, reported as a separate count, never scored as a
+> miss. A model cannot be refuted on data where it was never consulted. And no irreversible
+> action -- a purchase, a plant, a hire -- may be taken on such a read.
+
+`nav` states the classes and reports them; enforcing either clause is the caller's job.
 """
 from __future__ import annotations
 
-SCHEMA_VERSION = 1
-
 from .api import Nav, NavConfig, obs_get, step_of                       # noqa: E402
 from .book import DemandBook                                            # noqa: E402
-from .curves import CurveSet, PriceCurve, shape, shape_integral         # noqa: E402
+from .curves import (CurveSet, EXTRAPOLATION_FACTOR, PROVENANCE_ORDER, PriceCurve,
+                     VOID_PROVENANCE, read_is_provisional, read_is_void, shape,
+                     shape_integral, worst_provenance)                  # noqa: E402
 from .lam import (LAMBDA_CRITIC, LAMBDA_LIQUIDATION, LambdaPair, LiveLambda,
                   fixed_lambda)                                         # noqa: E402
 from .opponent import OpponentBook                                      # noqa: E402
-from .sheet import (Line, MarkContext, Sheet, VARIANTS, build_sheet, covenant_charge,
-                    intangible_diagnostic, mark_animal, mark_carried, mark_cash, mark_crop,
-                    mark_feed_liability, mark_fertilizer_entitlement, mark_land, mark_seeds,
-                    mark_shed, mark_structures)                         # noqa: E402
+from .sheet import (SCHEMA_VERSION, Line, MarkContext, Sheet, VARIANTS, build_sheet,
+                    covenant_charge, intangible_diagnostic, mark_animal, mark_carried,
+                    mark_cash, mark_crop, mark_feed_liability, mark_fertilizer_entitlement,
+                    mark_land, mark_seeds, mark_shed, mark_structures)  # noqa: E402
 
 __all__ = [
     "SCHEMA_VERSION", "source_hash",
     "Nav", "NavConfig", "obs_get", "step_of",
     "CurveSet", "PriceCurve", "shape", "shape_integral",
+    "EXTRAPOLATION_FACTOR", "PROVENANCE_ORDER", "VOID_PROVENANCE",
+    "read_is_provisional", "read_is_void", "worst_provenance",
     "DemandBook", "OpponentBook",
     "LambdaPair", "LiveLambda", "fixed_lambda", "LAMBDA_CRITIC", "LAMBDA_LIQUIDATION",
     "Line", "Sheet", "MarkContext", "VARIANTS", "build_sheet",

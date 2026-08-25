@@ -42,12 +42,20 @@ from dataclasses import dataclass, field
 from typing import Mapping
 
 from .book import DemandBook
-from .curves import CurveSet
+from .curves import CurveSet, read_is_provisional, read_is_void, worst_provenance
 from .lam import LambdaPair
 from .rules import (ANIMALS, CROPS, LAST_DAY, PRICE_FLOOR, SHED_CAPACITY, TERMINAL_INDEX,
                     TURNS_PER_DAY, hours_left, shed_access_tiles, ticks_left)
 
 VARIANTS = ("spot", "walk", "drain")
+
+# Bumped whenever a mark's *meaning* changes; `Sheet.as_dict()` carries it so any S-3
+# telemetry row or experiment result can be attributed to the version that produced it.
+# `nav.SCHEMA_VERSION` re-exports this one so the two cannot drift apart.
+#   1 -> 2 (ruling-05 R-52): `Line.provisional` is keyed on the READ that line actually made
+#          (base_fallback / extrapolated), not on the pass-cumulative aggregate curve
+#          confidence; `Line.provenance`, `Sheet.provenance` and `Sheet.void` are new.
+SCHEMA_VERSION = 2
 
 
 # ------------------------------------------------------------------------------ the pool
@@ -65,6 +73,14 @@ class LiquidationPool:
       * `drain` -- as `walk`, but a unit delivered on a LATER day is sold into a pool the town
                    has already eaten, so the pool is advanced by the remaining town drain the
                    first time a future delivery of that product is marked.
+
+    **Provenance (R-52).** The `drain` variant subtracts the remaining town drain, which pushes
+    the query BELOW `I0` -- the scarcity side -- for a product we only ever sell into, and that
+    is precisely the side such a product never observes. So the drain-aware read is the one
+    most likely to land where there is no fit, and the pool records what backed every read:
+    `pool.reads` is the class of each read in order, and `provenance_since(cursor)` gives the
+    worst class a single mark touched, which is what re-keys `Line.provisional` onto the read
+    instead of onto the curve's aggregate confidence (which cannot see a per-side hole).
     """
 
     def __init__(self, curves: CurveSet, book: DemandBook, market, step: int,
@@ -79,6 +95,42 @@ class LiquidationPool:
         self.spot = {k: int(v) for k, v in prices.items()}
         self._drained: set[str] = set()
         self.provisional = False
+        self.reads: list[str] = []            # provenance of every read, in order
+        self.provenance = "none"              # worst over the whole pass
+
+    # -- what backed the reads ----------------------------------------------------------------
+    def cursor(self) -> int:
+        """A mark takes this before its first read and passes it back to `provenance_since`.
+
+        A cursor rather than a begin/end pair on purpose: nothing can go unbalanced, and a mark
+        that calls another mark (`mark_seeds` -> `mark_crop`) correctly inherits the nested
+        reads, because they land after its own cursor.
+        """
+        return len(self.reads)
+
+    def provenance_since(self, cursor: int) -> str:
+        return worst_provenance(self.reads[cursor:])
+
+    def _note(self, provenance: str) -> str:
+        self.reads.append(provenance)
+        self.provenance = worst_provenance(self.provenance, provenance)
+        if read_is_provisional(provenance):
+            self.provisional = True
+        return provenance
+
+    def _note_curve(self, curve) -> str:
+        """Record the class of the read `curve` just performed.
+
+        One addition to the curve's own classification: while the curve's AGGREGATE confidence
+        is zero (fewer than two points anywhere) even an in-reach read is the fit speaking from
+        almost nothing, so it is recorded as `extrapolated`. That preserves the coverage of the
+        pre-R-52 flag, which fired on exactly that condition, while the flag itself is now
+        keyed on the read.
+        """
+        p = (curve.last_read or {}).get("provenance", "none")
+        if p in ("observed", "fitted") and curve.confidence <= 0.0:
+            p = "extrapolated"
+        return self._note(p)
 
     def take(self, item: str, n: int, future: bool = False) -> float:
         """Proceeds of selling `n` units of `item` given everything already taken this pass."""
@@ -86,16 +138,16 @@ class LiquidationPool:
         if n <= 0 or item not in self.spot:
             return 0.0
         if self.variant == "spot":
+            self._note("observed")        # the engine's own quoted price, exactly as printed
             return float(self.spot.get(item, PRICE_FLOOR)) * n
         curve = self.curves[item]
-        if curve.confidence <= 0.0:
-            self.provisional = True
         if self.variant == "drain" and future and item not in self._drained:
             self._drained.add(item)
             self.inv[item] = self.inv.get(item, curve.i0) - int(
                 self.book.remaining_drain(item, self.step, TERMINAL_INDEX))
         inv = self.inv.get(item, curve.i0)
         value = curve.marginal_revenue(inv, n)
+        self._note_curve(curve)
         self.inv[item] = inv + curve.priced_units(inv, n)
         return value
 
@@ -107,11 +159,11 @@ class LiquidationPool:
             return 0.0
         curve = self.curves[item]
         if self.variant == "spot":
+            self._note("observed")
             return float(self.spot.get(item, PRICE_FLOOR)) * n
-        if curve.confidence <= 0.0:
-            self.provisional = True
         inv = self.inv.get(item, curve.i0)
         cost = curve.marginal_cost(inv, n)
+        self._note_curve(curve)
         self.inv[item] = inv - n
         return cost
 
@@ -119,16 +171,36 @@ class LiquidationPool:
 # ------------------------------------------------------------------------------ records
 @dataclass(frozen=True)
 class Line:
-    """One row of the sheet, in dollars. Liabilities are negative lines, not a second side."""
+    """One row of the sheet, in dollars. Liabilities are negative lines, not a second side.
+
+    `provenance` is the worst class among the curve reads THIS line made (`"none"` when it
+    made none), and `provisional` follows from it. `void` is the gate clause: the line leaned
+    on a constant rather than on evidence, so a projection built from it is not something the
+    model can be scored on.
+    """
     name: str
     value: float
     detail: Mapping[str, float] = field(default_factory=dict)
     provisional: bool = False
+    provenance: str = "none"
+
+    @property
+    def void(self) -> bool:
+        return read_is_void(self.provenance)
 
     def as_dict(self) -> dict:
         return {"name": self.name, "value": self.value,
                 "detail": {k: v for k, v in self.detail.items()},
-                "provisional": self.provisional}
+                "provisional": self.provisional, "provenance": self.provenance,
+                "void": self.void}
+
+
+def _read_line(name: str, value: float, detail: Mapping[str, float], ctx: "MarkContext",
+               cursor: int) -> Line:
+    """A line, tagged with what backed the reads it made since `cursor`."""
+    provenance = ctx.pool.provenance_since(cursor)
+    return Line(name, value, detail, provisional=read_is_provisional(provenance),
+                provenance=provenance)
 
 
 @dataclass(frozen=True)
@@ -163,7 +235,7 @@ class Sheet:
     cash: float
     lines: tuple[Line, ...]
     diagnostics: Mapping[str, float] = field(default_factory=dict)
-    schema_version: int = 1
+    schema_version: int = SCHEMA_VERSION
 
     @property
     def nav(self) -> float:
@@ -178,6 +250,24 @@ class Sheet:
     def provisional(self) -> bool:
         return any(l.provisional for l in self.lines)
 
+    @property
+    def provenance(self) -> str:
+        """The worst class any read in this sheet touched."""
+        return worst_provenance(l.provenance for l in self.lines)
+
+    @property
+    def void(self) -> bool:
+        """**The gate clause (ruling-05 R-52 item 5).** True when some read in this sheet was
+        answered by a constant instead of by evidence (`base_fallback` / `floor`).
+
+        An offline projection, back-test or calibration pair built on a void sheet is VOID:
+        excluded from the denominator, reported as a separate count, never scored as a miss --
+        a model cannot be refuted on data where it was never consulted. And no irreversible
+        action (a purchase, a plant, a hire) may rest on one. `nav` reports the flag; enforcing
+        either clause is the caller's, because `nav` never decides anything.
+        """
+        return any(l.void for l in self.lines)
+
     def line(self, name: str) -> Line | None:
         for l in self.lines:
             if l.name == name:
@@ -191,8 +281,10 @@ class Sheet:
             "seat": self.seat, "variant": self.variant, "lam": self.lam.as_dict(),
             "cash": self.cash, "nav": self.nav, "phi": self.phi,
             "provisional": self.provisional,
+            "provenance": self.provenance, "void": self.void,
             "lines": {l.name: l.value for l in self.lines},
             "detail": {l.name: dict(l.detail) for l in self.lines},
+            "line_provenance": {l.name: l.provenance for l in self.lines},
             "diagnostics": dict(self.diagnostics),
         }
 
@@ -241,13 +333,14 @@ def mark_shed(shed, ctx: MarkContext) -> Line:                                  
     detail: dict[str, float] = {}
     if ctx.hours_left < 1 or not shed:
         return Line("shed", 0.0, detail)
+    cursor = ctx.pool.cursor()
     order = [p for p in ctx.liquidation_order if p in shed]
     order += [p for p in shed if p not in ctx.liquidation_order]
     for item in order:
         n = int(shed.get(item, 0) or 0)
         if n > 0 and item in ctx.pool.spot:
             detail[item] = ctx.pool.take(item, n, future=False)
-    return Line("shed", sum(detail.values()), detail, provisional=ctx.pool.provisional)
+    return _read_line("shed", sum(detail.values()), detail, ctx, cursor)
 
 
 def mark_carried(inventories, farm, ctx: MarkContext) -> Line:                  # row 2, row 14
@@ -258,6 +351,7 @@ def mark_carried(inventories, farm, ctx: MarkContext) -> Line:                  
     reach the shed inside `H` is carrying worthless cargo -- the day-29 trap, priced.
     """
     total, detail = 0.0, {}
+    cursor = ctx.pool.cursor()
     positions = [tuple(farm["farmer"])] + [tuple(h) for h in farm.get("hands", [])]
     free_drop = ctx.t_ticks >= 1
     for u, inv in enumerate(inventories or []):
@@ -274,7 +368,7 @@ def mark_carried(inventories, farm, ctx: MarkContext) -> Line:                  
                 v = ctx.pool.take(item, int(n), future=False)
                 detail[item] = detail.get(item, 0.0) + v
                 total += v
-    return Line("carried", total, detail, provisional=ctx.pool.provisional)
+    return _read_line("carried", total, detail, ctx, cursor)
 
 
 def mark_seeds(seeds, ctx: MarkContext) -> Line:                                # row 3
@@ -285,6 +379,7 @@ def mark_seeds(seeds, ctx: MarkContext) -> Line:                                
     the wrong mark for a balance sheet. Recorded, not reconciled.)
     """
     total, detail = 0.0, {}
+    cursor = ctx.pool.cursor()
     for crop, n in (seeds or {}).items():
         n = int(n or 0)
         if n <= 0 or crop not in CROPS:
@@ -293,7 +388,7 @@ def mark_seeds(seeds, ctx: MarkContext) -> Line:                                
         if v > 0:
             detail[crop] = v * n
             total += v * n
-    return Line("seeds", total, detail, provisional=ctx.pool.provisional)
+    return _read_line("seeds", total, detail, ctx, cursor)
 
 
 def _npv_fresh_plant(crop: str, ctx: MarkContext) -> float:
@@ -339,9 +434,10 @@ def mark_crop(tile, ctx: MarkContext) -> Line:                                  
         actions = _keepalive_waters(ctx.day, LAST_DAY) + harvests
         if actions > ctx.hours_left:
             return Line("crop", 0.0, {})
+        cursor = ctx.pool.cursor()
         value = ctx.pool.take(crop, units, future=True) - ctx.lam.opp * actions
-        return Line("crop", value, {crop: float(units), "actions": float(actions)},
-                    provisional=ctx.pool.provisional)
+        return _read_line("crop", value, {crop: float(units), "actions": float(actions)},
+                          ctx, cursor)
 
     waters = _in_window_water_days(tile, ctx.day)
     units = int(tile.get("yield_units", 0))
@@ -358,9 +454,10 @@ def mark_crop(tile, ctx: MarkContext) -> Line:                                  
         actions += 1                                                            # + manual DROP
     if actions > ctx.hours_left:
         return Line("crop", 0.0, {})
+    cursor = ctx.pool.cursor()
     value = ctx.pool.take(crop, units, future=(harvest_day > ctx.day)) - ctx.lam.opp * actions
-    return Line("crop", value, {crop: float(units), "actions": float(actions)},
-                provisional=ctx.pool.provisional)
+    return _read_line("crop", value, {crop: float(units), "actions": float(actions)},
+                      ctx, cursor)
 
 
 @dataclass(frozen=True)
@@ -412,11 +509,11 @@ def mark_animal(tile, ctx: MarkContext, schedule: _AnimalSchedule | None = None)
     animal = ANIMALS.get(tile.get("animal"))
     if animal is None or not s.feasible or s.units <= 0:
         return Line("animal", 0.0, {})
+    cursor = ctx.pool.cursor()
     revenue = ctx.pool.take(animal["product"], s.units, future=True)
     value = revenue - ctx.lam.opp * s.harvests
-    return Line("animal", value, {animal["product"]: float(s.units),
-                                  "harvests": float(s.harvests)},
-                provisional=ctx.pool.provisional)
+    return _read_line("animal", value, {animal["product"]: float(s.units),
+                                        "harvests": float(s.harvests)}, ctx, cursor)
 
 
 def mark_fertilizer_entitlement(tile, ctx: MarkContext,
@@ -430,11 +527,11 @@ def mark_fertilizer_entitlement(tile, ctx: MarkContext,
     s = schedule or animal_schedule(tile, ctx)
     if not s.feasible or s.collect_days <= 0:
         return Line("fertilizer", 0.0, {})
+    cursor = ctx.pool.cursor()
     revenue = ctx.pool.take("FERTILIZER", s.collect_days, future=True)
     value = revenue - ctx.lam.opp * s.collect_days
-    return Line("fertilizer", value, {"units": float(s.collect_days),
-                                      "revenue": revenue},
-                provisional=ctx.pool.provisional)
+    return _read_line("fertilizer", value, {"units": float(s.collect_days),
+                                            "revenue": revenue}, ctx, cursor)
 
 
 def mark_feed_liability(tile, ctx: MarkContext,
@@ -447,10 +544,11 @@ def mark_feed_liability(tile, ctx: MarkContext,
     s = schedule or animal_schedule(tile, ctx)
     if not s.feasible or s.feed_days <= 0:
         return Line("feed", 0.0, {})
+    cursor = ctx.pool.cursor()
     cost = ctx.pool.buy("WHEAT", s.feed_days)
     value = -(cost + ctx.lam.opp * s.feed_days)
-    return Line("feed", value, {"wheat_units": float(s.feed_days), "wheat_cost": cost},
-                provisional=ctx.pool.provisional)
+    return _read_line("feed", value, {"wheat_units": float(s.feed_days), "wheat_cost": cost},
+                      ctx, cursor)
 
 
 def mark_structures(tiles, ctx: MarkContext) -> Line:                                # row 9
@@ -552,6 +650,12 @@ def build_sheet(farm, private, market, town, step: int, seat: int, curves: Curve
         "hours_left": float(ctx.hours_left),
         "t_ticks": float(ctx.t_ticks),
         "curve_confidence": min((curves[p].confidence for p in pool.spot), default=0.0),
+        # Per-side, because the aggregate cannot see a one-sided hole (R-52 N-2): the weakest
+        # side of any product this pass could have to read.
+        "curve_side_confidence": min(
+            (min(curves[p].side_confidence("below"), curves[p].side_confidence("above"))
+             for p in pool.spot), default=0.0),
+        "read_provenance": pool.provenance,
         "tripwire": float(len(curves.tripwire())),
     }
     if public_only:
@@ -561,10 +665,13 @@ def build_sheet(farm, private, market, town, step: int, seat: int, curves: Curve
 
 
 def _fold(name: str, lines) -> Line:
-    total, detail, provisional = 0.0, {}, False
+    """Sum the lines and take the WORST provenance among them -- a folded row is only as good
+    as the least-backed read inside it."""
+    total, detail, provisional, provenance = 0.0, {}, False, "none"
     for l in lines:
         total += l.value
         provisional = provisional or l.provisional
+        provenance = worst_provenance(provenance, l.provenance)
         for k, v in l.detail.items():
             detail[k] = detail.get(k, 0.0) + v
-    return Line(name, total, detail, provisional)
+    return Line(name, total, detail, provisional, provenance)
