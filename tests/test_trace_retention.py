@@ -18,7 +18,7 @@ SCRIPT = REPO / "scripts" / "trace_pipeline.py"
 FAULT_AGENT = "trace_retention/fixtures/fault_agent.py"
 
 
-def _config(tmp_path: Path, *, turns: int = 4, include_fault: bool = True) -> Path:
+def _config(tmp_path: Path, *, episode_steps: int = 5, include_fault: bool = True) -> Path:
     pairings = [{
         "agent_a": "pass-control",
         "agent_b": "starter-control",
@@ -40,8 +40,8 @@ def _config(tmp_path: Path, *, turns: int = 4, include_fault: bool = True) -> Pa
             "expected": "fault",
         })
     value = {
-        "schema_version": "kaggriculture.trace-config.v1",
-        "turns": turns,
+        "schema_version": "kaggriculture.trace-config.v2",
+        "episode_steps": episode_steps,
         "configuration": {},
         "agents": agents,
         "pairings": pairings,
@@ -60,8 +60,27 @@ def _rewrite_episode(bundle: Path, index: int, records: list[dict], *, counts=No
         sha256=exact, semantic_sha256=semantic, bytes=size, records=len(records)
     )
     if counts is not None:
-        episode["completion"]["turn_records_by_seat"] = counts
+        episode["completion"]["action_calls_by_seat"] = counts
     manifest["extraction"] = pipeline._write_semantic_extraction(bundle, manifest["episodes"])
+    manifest["semantic_sha256"] = pipeline.canonical_hash(
+        pipeline._manifest_semantic_view(manifest)
+    )
+    pipeline.write_json(manifest_path, manifest)
+
+
+def _rewrite_states(bundle: Path, index: int, records: list[dict]) -> None:
+    manifest_path = bundle / "manifest.json"
+    manifest = pipeline.read_json(manifest_path)
+    episode = manifest["episodes"][index]
+    sha256, size = pipeline._gzip_state_records(
+        bundle / episode["states"]["path"], records
+    )
+    episode["states"].update(
+        sha256=sha256,
+        semantic_sha256=sha256,
+        bytes=size,
+        records=len(records),
+    )
     manifest["semantic_sha256"] = pipeline.canonical_hash(
         pipeline._manifest_semantic_view(manifest)
     )
@@ -87,7 +106,11 @@ def test_one_command_captures_validates_extracts_and_retains_fault(tmp_path):
     assert validation["faults"] == 1
     manifest = pipeline.read_json(bundle / "manifest.json")
     assert all(
-        ep["completion"]["turn_records_by_seat"] == [4, 4]
+        ep["completion"]["episode_steps_configured"] == 5
+        and ep["completion"]["stored_states"] == 5
+        and ep["completion"]["action_calls_by_seat"] == [4, 4]
+        and ep["completion"]["final_action_step_expected"] == 3
+        and ep["completion"]["terminal_state_index_expected"] == 4
         for ep in manifest["episodes"][:2]
     )
     fault = manifest["episodes"][2]
@@ -116,7 +139,7 @@ def test_truncated_but_rehashed_normal_trace_fails_completeness(tmp_path):
     episode = manifest["episodes"][0]
     records = list(pipeline._read_gzip_records(bundle / episode["trace"]["path"]))[:-2]
     _rewrite_episode(bundle, 0, records, counts=[3, 3])
-    with pytest.raises(pipeline.TraceContractError, match="normal trace is not 4-turn complete"):
+    with pytest.raises(pipeline.TraceContractError, match="normal trace is not 4-call complete"):
         pipeline.validate_bundle(bundle, write=False)
 
 
@@ -152,7 +175,9 @@ def test_reproduction_uses_retained_packages_and_matches_semantics(tmp_path):
     pipeline.run_pipeline(_config(tmp_path, include_fault=True), source, workers=1)
     result = pipeline.reproduce_bundle(source, destination, workers=1)
     assert result["reproduced"] is True
-    assert result["episode_semantic_hashes_match"] is True
+    assert result["normal_trace_semantic_hashes_match"] is True
+    assert result["normal_state_semantic_hashes_match"] is True
+    assert result["fault_fingerprints_match"] is True
 
 
 def test_config_refuses_episode_steps_override(tmp_path):
@@ -161,3 +186,75 @@ def test_config_refuses_episode_steps_override(tmp_path):
     pipeline.write_json(tmp_path / "config.json", config)
     with pytest.raises(pipeline.TraceContractError, match="must not override"):
         pipeline.prepare_bundle(tmp_path / "config.json", tmp_path / "bundle")
+
+
+def test_exact_competition_plan_derives_719_calls_and_step_718(tmp_path):
+    plan = pipeline.prepare_bundle(
+        _config(tmp_path, episode_steps=720, include_fault=False), tmp_path / "bundle"
+    )
+    assert plan["configuration"]["episodeSteps"] == 720
+    assert plan["episode_steps"] == 720
+    assert plan["action_turns"] == 719
+    assert plan["semantics"] == {
+        "episode_steps": 720,
+        "stored_states_expected": 720,
+        "action_calls_per_seat_expected": 719,
+        "initial_state_index": 0,
+        "final_action_step": 718,
+        "terminal_state_index": 719,
+    }
+
+
+def test_rehashed_extra_call_fails_exact_derived_count(tmp_path):
+    bundle = tmp_path / "bundle"
+    pipeline.run_pipeline(_config(tmp_path, include_fault=False), bundle, workers=1)
+    manifest = pipeline.read_json(bundle / "manifest.json")
+    episode = manifest["episodes"][0]
+    records = list(pipeline._read_gzip_records(bundle / episode["trace"]["path"]))
+    extra = []
+    for seat in (0, 1):
+        record = copy.deepcopy(records[-2 + seat])
+        record["turn"] = 4
+        record["state_index"] = 4
+        record["pre_action_observation"]["step"] = 4
+        extra.append(record)
+    _rewrite_episode(bundle, 0, records + extra, counts=[5, 5])
+    with pytest.raises(pipeline.TraceContractError, match="normal trace is not 4-call complete"):
+        pipeline.validate_bundle(bundle, write=False)
+
+
+def test_rehashed_missing_paired_seat_fails_closed(tmp_path):
+    bundle = tmp_path / "bundle"
+    pipeline.run_pipeline(_config(tmp_path, include_fault=False), bundle, workers=1)
+    manifest = pipeline.read_json(bundle / "manifest.json")
+    episode = manifest["episodes"][0]
+    records = list(pipeline._read_gzip_records(bundle / episode["trace"]["path"]))
+    _rewrite_episode(bundle, 0, records[:-1], counts=[4, 3])
+    with pytest.raises(pipeline.TraceContractError, match="truncated or unpaired turns"):
+        pipeline.validate_bundle(bundle, write=False)
+
+
+def test_rehashed_action_state_mismatch_fails_closed(tmp_path):
+    bundle = tmp_path / "bundle"
+    pipeline.run_pipeline(_config(tmp_path, include_fault=False), bundle, workers=1)
+    manifest = pipeline.read_json(bundle / "manifest.json")
+    episode = manifest["episodes"][0]
+    records = list(pipeline._read_gzip_records(bundle / episode["trace"]["path"]))
+    records[0] = copy.deepcopy(records[0])
+    records[0]["emitted_action"] = {"farmer": ["PASS", "PASS"], "hands": [], "market": []}
+    _rewrite_episode(bundle, 0, records)
+    with pytest.raises(pipeline.TraceContractError, match="emitted action/stored state mismatch"):
+        pipeline.validate_bundle(bundle, write=False)
+
+
+def test_rehashed_unexpected_terminal_state_fails_closed(tmp_path):
+    bundle = tmp_path / "bundle"
+    pipeline.run_pipeline(_config(tmp_path, include_fault=False), bundle, workers=1)
+    manifest = pipeline.read_json(bundle / "manifest.json")
+    episode = manifest["episodes"][0]
+    states = list(pipeline._read_gzip_records(bundle / episode["states"]["path"]))
+    states[-1] = copy.deepcopy(states[-1])
+    states[-1]["framework_state"][0]["status"] = "ACTIVE"
+    _rewrite_states(bundle, 0, states)
+    with pytest.raises(pipeline.TraceContractError, match="normal completion mismatch"):
+        pipeline.validate_bundle(bundle, write=False)

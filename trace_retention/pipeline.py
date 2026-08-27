@@ -27,16 +27,19 @@ from tools.agent_spec import arity_wrap
 from . import (
     MANIFEST_SCHEMA_VERSION,
     PLAN_SCHEMA_VERSION,
+    STATE_SCHEMA_VERSION,
     TRACE_SCHEMA_VERSION,
     VALIDATION_SCHEMA_VERSION,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCHEMA_SOURCE = Path(__file__).resolve().parent / "schema" / "turn-trace-v1.schema.json"
+TRACE_SCHEMA_SOURCE = Path(__file__).resolve().parent / "schema" / "turn-trace-v2.schema.json"
+STATE_SCHEMA_SOURCE = Path(__file__).resolve().parent / "schema" / "framework-state-v1.schema.json"
 BUILTINS = ("pass", "random", "starter")
 PACKAGE_HASH_FORMAT = "sha256(canonical-json(package-files-v1))"
 GAME_HASH_FORMAT = "sha256(canonical-json(game-identity-v1))"
 SEMANTIC_HASH_FORMAT = "sha256(canonical-jsonl(records-without-timing))"
+STATE_HASH_FORMAT = "sha256(canonical-jsonl(framework-state-records-v1))"
 
 
 class TraceContractError(ValueError):
@@ -183,19 +186,33 @@ def _expand_seeds(value) -> list[int]:
     return seeds
 
 
-def _full_configuration(base: dict, action_turns: int) -> dict:
+def _episode_semantics(episode_steps: int) -> dict:
+    if episode_steps < 2:
+        raise TraceContractError("episode_steps must leave an initial and terminal state")
+    return {
+        "episode_steps": episode_steps,
+        "stored_states_expected": episode_steps,
+        "action_calls_per_seat_expected": episode_steps - 1,
+        "initial_state_index": 0,
+        "final_action_step": episode_steps - 2,
+        "terminal_state_index": episode_steps - 1,
+    }
+
+
+def _full_configuration(base: dict, episode_steps: int) -> dict:
     if "episodeSteps" in base or "seed" in base:
         raise TraceContractError("configuration must not override episodeSteps or seed")
     ke = arena_engine.import_engine()
-    requested = {**base, "episodeSteps": action_turns + 1, "seed": 0}
+    requested = {**base, "episodeSteps": episode_steps, "seed": 0}
     env = ke.make("kaggriculture", configuration=requested, debug=False)
     actual = to_plain(env.configuration)
-    if int(actual["episodeSteps"]) != action_turns + 1:
-        raise TraceContractError("engine contradicted the action-turn/terminal-state contract")
+    if int(actual["episodeSteps"]) != episode_steps:
+        raise TraceContractError("engine contradicted the configured episodeSteps contract")
     return actual
 
 
-def _game_identity(p0: dict, p1: dict, seed: int, turns: int, configuration: dict, engine: dict) -> dict:
+def _game_identity(p0: dict, p1: dict, seed: int, episode_steps: int,
+                   action_turns: int, configuration: dict, engine: dict) -> dict:
     return {
         "format": "game-identity-v1",
         "p0_agent_id": p0["agent_id"],
@@ -205,16 +222,18 @@ def _game_identity(p0: dict, p1: dict, seed: int, turns: int, configuration: dic
         "engine_version": engine["version"],
         "engine_sha256": engine["sha256"],
         "seed": int(seed),
-        "action_turns": int(turns),
-        "episode_steps": int(turns) + 1,
+        "action_turns": int(action_turns),
+        "episode_steps": int(episode_steps),
         "configuration": configuration,
     }
 
 
 def _job(p0_label: str, p1_label: str, seed: int, expected: str, agents: dict,
-         turns: int, configuration: dict, engine: dict) -> dict:
+         episode_steps: int, action_turns: int, configuration: dict, engine: dict) -> dict:
     p0, p1 = agents[p0_label], agents[p1_label]
-    identity = _game_identity(p0, p1, seed, turns, configuration, engine)
+    identity = _game_identity(
+        p0, p1, seed, episode_steps, action_turns, configuration, engine
+    )
     return {
         "game_id": canonical_hash(identity),
         "game_hash_format": GAME_HASH_FORMAT,
@@ -231,13 +250,15 @@ def prepare_bundle(config_path: Path, bundle: Path) -> dict:
         raise TraceContractError(f"output bundle is not empty: {bundle}")
     bundle.mkdir(parents=True, exist_ok=True)
     config = read_json(config_path)
-    if config.get("schema_version") != "kaggriculture.trace-config.v1":
+    if config.get("schema_version") != "kaggriculture.trace-config.v2":
         raise TraceContractError("unsupported trace config schema_version")
-    turns = int(config.get("turns", 0))
-    if turns < 1:
-        raise TraceContractError("turns must be positive")
+    episode_steps = int(config.get("episode_steps", 0))
+    semantics = _episode_semantics(episode_steps)
+    action_turns = semantics["action_calls_per_seat_expected"]
     engine = _engine_identity()
-    configuration = _full_configuration(dict(config.get("configuration") or {}), turns)
+    configuration = _full_configuration(
+        dict(config.get("configuration") or {}), episode_steps
+    )
     packages_root = bundle / "packages"
     packages_root.mkdir(parents=True, exist_ok=True)
     agents = {}
@@ -256,32 +277,46 @@ def prepare_bundle(config_path: Path, bundle: Path) -> dict:
         if expected not in ("normal", "fault"):
             raise TraceContractError(f"expected must be normal or fault, got {expected!r}")
         for seed in _expand_seeds(pairing.get("seeds")):
-            jobs.append(_job(a, b, seed, expected, agents, turns, configuration, engine))
+            jobs.append(_job(
+                a, b, seed, expected, agents, episode_steps, action_turns,
+                configuration, engine,
+            ))
             if pairing.get("swap_seats", True):
-                jobs.append(_job(b, a, seed, expected, agents, turns, configuration, engine))
+                jobs.append(_job(
+                    b, a, seed, expected, agents, episode_steps, action_turns,
+                    configuration, engine,
+                ))
     ids = [job["game_id"] for job in jobs]
     if not jobs or len(ids) != len(set(ids)):
         raise TraceContractError("the expanded plan has no jobs or duplicate game identities")
 
-    schema_target = bundle / "schema" / SCHEMA_SOURCE.name
-    schema_target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(SCHEMA_SOURCE, schema_target)
+    trace_schema_target = bundle / "schema" / TRACE_SCHEMA_SOURCE.name
+    state_schema_target = bundle / "schema" / STATE_SCHEMA_SOURCE.name
+    trace_schema_target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(TRACE_SCHEMA_SOURCE, trace_schema_target)
+    shutil.copyfile(STATE_SCHEMA_SOURCE, state_schema_target)
     normalized_config = copy.deepcopy(config)
     write_json(bundle / "input-config.json", normalized_config)
     plan = {
         "schema_version": PLAN_SCHEMA_VERSION,
         "trace_schema": {
             "version": TRACE_SCHEMA_VERSION,
-            "path": "schema/turn-trace-v1.schema.json",
-            "sha256": sha256_file(schema_target),
+            "path": "schema/turn-trace-v2.schema.json",
+            "sha256": sha256_file(trace_schema_target),
+        },
+        "state_schema": {
+            "version": STATE_SCHEMA_VERSION,
+            "path": "schema/framework-state-v1.schema.json",
+            "sha256": sha256_file(state_schema_target),
         },
         "input_config": {
             "path": "input-config.json",
             "sha256": sha256_file(bundle / "input-config.json"),
         },
         "engine": engine,
-        "action_turns": turns,
-        "episode_steps": turns + 1,
+        "semantics": semantics,
+        "action_turns": action_turns,
+        "episode_steps": episode_steps,
         "configuration": configuration,
         "agents": agents,
         "jobs": jobs,
@@ -300,6 +335,15 @@ def _gzip_records(path: Path, records: list[dict]) -> tuple[str, str, int]:
                 out.write(line)
                 semantic.update(canonical_bytes(_semantic_record(record)) + b"\n")
     return sha256_file(path), semantic.hexdigest(), path.stat().st_size
+
+
+def _gzip_state_records(path: Path, records: list[dict]) -> tuple[str, int]:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("wb") as raw:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=6) as out:
+            for record in records:
+                out.write(canonical_bytes(record) + b"\n")
+    return sha256_file(path), path.stat().st_size
 
 
 def _read_gzip_records(path: Path):
@@ -340,6 +384,12 @@ def _fault_message_sha256(exc: Exception) -> str:
     return hashlib.sha256(terminal.encode("utf-8", errors="replace")).hexdigest()
 
 
+def _fault_fingerprint(faults: list[dict]) -> str | None:
+    if not faults:
+        return None
+    return canonical_hash({"format": "fault-fingerprint-v1", "faults": faults})
+
+
 def _load_agent(agent: dict, bundle: Path, configuration):
     if agent["kind"] == "builtin":
         import kaggle_environments.envs.kaggriculture.kaggriculture as engine_module
@@ -372,13 +422,13 @@ def _seat_identity(job: dict, seat: int, agents: dict, engine: dict) -> dict:
 
 
 def capture_episode(job: dict, agents: dict, engine: dict, configuration: dict,
-                    turns: int, bundle_text: str) -> dict:
+                    episode_steps: int, action_turns: int, bundle_text: str) -> dict:
     bundle = Path(bundle_text)
     if _engine_identity() != engine:
         raise TraceContractError("engine identity changed between planning and capture")
     ke = arena_engine.import_engine()
     requested = {key: value for key, value in configuration.items() if key not in ("seed",)}
-    requested.update({"episodeSteps": turns + 1, "seed": job["seed"]})
+    requested.update({"episodeSteps": episode_steps, "seed": job["seed"]})
     env = ke.make("kaggriculture", configuration=requested, debug=False)
     if to_plain(env.configuration) != configuration or int(to_plain(env.info)["seed"]) != job["seed"]:
         raise TraceContractError("engine configuration or seed contradicted the planned identity")
@@ -391,12 +441,13 @@ def capture_episode(job: dict, agents: dict, engine: dict, configuration: dict,
             closers.append(closer)
 
     records = []
+    observations_by_state = {}
     durations = [[], []]
     faults = []
     wall_start = time.perf_counter_ns()
     env.reset()
     try:
-        for turn in range(turns):
+        for turn in range(action_turns):
             if env.done:
                 raise TraceContractError(f"engine terminated before action turn {turn}")
             # Shared observation fields physically live only on state[0]. The framework's
@@ -407,6 +458,7 @@ def capture_episode(job: dict, agents: dict, engine: dict, configuration: dict,
             observations = [to_plain(state.observation) for state in shared_states]
             if any(int(obs.get("step", -1)) != turn for obs in observations):
                 raise TraceContractError(f"engine observation step contradicted action turn {turn}")
+            observations_by_state[turn] = observations
             actions = [None, None]
             turn_fault = False
             for seat in (0, 1):
@@ -430,6 +482,7 @@ def capture_episode(job: dict, agents: dict, engine: dict, configuration: dict,
                     "schema_version": TRACE_SCHEMA_VERSION,
                     "game_id": job["game_id"],
                     "turn": turn,
+                    "state_index": turn,
                     "seat": seat,
                     "identity": _seat_identity(job, seat, agents, engine),
                     "pre_action_observation": observations[seat],
@@ -446,11 +499,28 @@ def capture_episode(job: dict, agents: dict, engine: dict, configuration: dict,
         for closer in closers:
             closer.close()
 
-    normal = not faults and len(records) == turns * 2 and env.done
+    stored_state_records = [{
+        "schema_version": STATE_SCHEMA_VERSION,
+        "game_id": job["game_id"],
+        "state_index": state_index,
+        "framework_state": to_plain(state),
+        "runtime_observations": observations_by_state.get(state_index),
+    } for state_index, state in enumerate(env.steps)]
+    normal = (
+        not faults
+        and len(records) == action_turns * 2
+        and len(stored_state_records) == episode_steps
+        and env.done
+    )
     final_statuses = [str(state.status) for state in env.state]
     trace_rel = Path("traces") / f"{job['game_id']}.jsonl.gz"
     trace_path = bundle / trace_rel
     exact_sha, semantic_sha, size = _gzip_records(trace_path, records)
+    states_rel = Path("states") / f"{job['game_id']}.jsonl.gz"
+    states_path = bundle / states_rel
+    states_sha, states_size = _gzip_state_records(states_path, stored_state_records)
+    calls_by_seat = [sum(record["seat"] == seat for record in records) for seat in (0, 1)]
+    semantics = _episode_semantics(episode_steps)
     return {
         "game_id": job["game_id"],
         "p0_agent_id": agents[job["p0"]]["agent_id"],
@@ -459,14 +529,17 @@ def capture_episode(job: dict, agents: dict, engine: dict, configuration: dict,
         "expected": job["expected"],
         "completion": {
             "normal": normal,
-            "action_turns_expected": turns,
-            "turn_records_by_seat": [
-                sum(record["seat"] == seat for record in records) for seat in (0, 1)
-            ],
-            "framework_steps": len(env.steps),
+            "episode_steps_configured": episode_steps,
+            "stored_states_expected": semantics["stored_states_expected"],
+            "stored_states": len(stored_state_records),
+            "action_calls_per_seat_expected": semantics["action_calls_per_seat_expected"],
+            "action_calls_by_seat": calls_by_seat,
+            "final_action_step_expected": semantics["final_action_step"],
+            "terminal_state_index_expected": semantics["terminal_state_index"],
             "statuses": final_statuses,
         },
         "faults": faults,
+        "fault_fingerprint_sha256": _fault_fingerprint(faults),
         "timing": {
             "wall_ns": wall_ns,
             "seat0": _duration_summary(durations[0]),
@@ -480,6 +553,14 @@ def capture_episode(job: dict, agents: dict, engine: dict, configuration: dict,
             "bytes": size,
             "records": len(records),
         },
+        "states": {
+            "path": states_rel.as_posix(),
+            "sha256": states_sha,
+            "semantic_sha256": states_sha,
+            "semantic_hash_format": STATE_HASH_FORMAT,
+            "bytes": states_size,
+            "records": len(stored_state_records),
+        },
     }
 
 
@@ -491,6 +572,8 @@ def _manifest_semantic_view(manifest: dict) -> dict:
         episode.pop("timing", None)
         episode.get("trace", {}).pop("sha256", None)
         episode.get("trace", {}).pop("bytes", None)
+        episode.get("states", {}).pop("sha256", None)
+        episode.get("states", {}).pop("bytes", None)
     return value
 
 
@@ -512,7 +595,8 @@ def execute_plan(plan: dict, bundle: Path, workers: int) -> dict:
     if workers < 1:
         raise TraceContractError("workers must be positive")
     args = [(job, plan["agents"], plan["engine"], plan["configuration"],
-             plan["action_turns"], str(bundle)) for job in plan["jobs"]]
+             plan["episode_steps"], plan["action_turns"], str(bundle))
+            for job in plan["jobs"]]
     if workers == 1:
         episodes = [capture_episode(*values) for values in args]
     else:
@@ -523,6 +607,7 @@ def execute_plan(plan: dict, bundle: Path, workers: int) -> dict:
     manifest = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
         "trace_schema": plan["trace_schema"],
+        "state_schema": plan["state_schema"],
         "plan": {"path": "plan.json", "sha256": sha256_file(bundle / "plan.json")},
         "engine": plan["engine"],
         "execution": {"episode_count": len(episodes), "workers": workers},
@@ -564,12 +649,38 @@ def _verify_package(bundle: Path, agent: dict) -> None:
         raise TraceContractError(f"package hash mismatch: {agent['agent_id']}")
 
 
+def _validate_plan_contract(bundle: Path, plan: dict) -> None:
+    config = read_json(bundle / "input-config.json")
+    if config.get("schema_version") != "kaggriculture.trace-config.v2":
+        raise TraceContractError("unsupported retained trace config schema_version")
+    episode_steps = int(config.get("episode_steps", 0))
+    semantics = _episode_semantics(episode_steps)
+    if plan.get("episode_steps") != episode_steps:
+        raise TraceContractError("configured/plan episodeSteps mismatch")
+    if plan.get("action_turns") != semantics["action_calls_per_seat_expected"]:
+        raise TraceContractError("action calls do not derive from configured episodeSteps")
+    if plan.get("semantics") != semantics:
+        raise TraceContractError("stored-state/action-call semantics mismatch")
+    expected_configuration = _full_configuration(
+        dict(config.get("configuration") or {}), episode_steps
+    )
+    if plan.get("configuration") != expected_configuration:
+        raise TraceContractError("configured/plan engine configuration mismatch")
+    for job in plan.get("jobs", []):
+        expected = canonical_hash(_game_identity(
+            plan["agents"][job["p0"]], plan["agents"][job["p1"]], job["seed"],
+            episode_steps, plan["action_turns"], plan["configuration"], plan["engine"],
+        ))
+        if job.get("game_id") != expected or job.get("identity", {}).get("episode_steps") != episode_steps:
+            raise TraceContractError(f"planned game identity mismatch: {job.get('game_id')}")
+
+
 def _validate_episode(bundle: Path, plan: dict, job: dict, episode: dict) -> dict:
     if episode["game_id"] != job["game_id"]:
         raise TraceContractError("episode order or game identity mismatch")
     expected_game = canonical_hash(_game_identity(
         plan["agents"][job["p0"]], plan["agents"][job["p1"]], job["seed"],
-        plan["action_turns"], plan["configuration"], plan["engine"],
+        plan["episode_steps"], plan["action_turns"], plan["configuration"], plan["engine"],
     ))
     if expected_game != job["game_id"]:
         raise TraceContractError(f"game identity hash mismatch: {job['game_id']}")
@@ -581,6 +692,7 @@ def _validate_episode(bundle: Path, plan: dict, job: dict, episode: dict) -> dic
     per_seat = [0, 0]
     faults = []
     by_turn: dict[int, set[int]] = {}
+    calls = {}
     for record in records:
         semantic.update(canonical_bytes(_semantic_record(record)) + b"\n")
         if record.get("schema_version") != TRACE_SCHEMA_VERSION or record.get("game_id") != job["game_id"]:
@@ -588,6 +700,11 @@ def _validate_episode(bundle: Path, plan: dict, job: dict, episode: dict) -> dic
         turn, seat = record.get("turn"), record.get("seat")
         if not isinstance(turn, int) or seat not in (0, 1):
             raise TraceContractError(f"invalid turn/seat: {job['game_id']}")
+        if record.get("state_index") != turn:
+            raise TraceContractError(f"action/state index mismatch: {job['game_id']} turn={turn} seat={seat}")
+        if (turn, seat) in calls:
+            raise TraceContractError(f"duplicate action call: {job['game_id']} turn={turn} seat={seat}")
+        calls[(turn, seat)] = record
         by_turn.setdefault(turn, set()).add(seat)
         per_seat[seat] += 1
         expected_identity = _seat_identity(job, seat, plan["agents"], plan["engine"])
@@ -616,17 +733,99 @@ def _validate_episode(bundle: Path, plan: dict, job: dict, episode: dict) -> dic
         raise TraceContractError(f"trace record/semantic hash mismatch: {job['game_id']}")
     if faults != episode["faults"]:
         raise TraceContractError(f"fault manifest mismatch: {job['game_id']}")
+    if _fault_fingerprint(faults) != episode.get("fault_fingerprint_sha256"):
+        raise TraceContractError(f"fault fingerprint mismatch: {job['game_id']}")
+    if job["expected"] == "normal" and (
+        faults or per_seat != [plan["action_turns"], plan["action_turns"]]
+    ):
+        raise TraceContractError(
+            f"normal trace is not {plan['action_turns']}-call complete: {job['game_id']}"
+        )
+
+    states_path = bundle / episode["states"]["path"]
+    states_descriptor = episode["states"]
+    if (
+        sha256_file(states_path) != states_descriptor["sha256"]
+        or states_path.stat().st_size != states_descriptor["bytes"]
+        or states_descriptor.get("semantic_sha256") != states_descriptor["sha256"]
+    ):
+        raise TraceContractError(f"stored state file hash/size mismatch: {states_path}")
+    state_records = list(_read_gzip_records(states_path))
+    if len(state_records) != states_descriptor["records"]:
+        raise TraceContractError(f"stored state record count mismatch: {job['game_id']}")
+    if [state.get("state_index") for state in state_records] != list(range(len(state_records))):
+        raise TraceContractError(f"stored state indices are not contiguous: {job['game_id']}")
+    for state_record in state_records:
+        state_index = state_record["state_index"]
+        if (
+            state_record.get("schema_version") != STATE_SCHEMA_VERSION
+            or state_record.get("game_id") != job["game_id"]
+        ):
+            raise TraceContractError(f"stored state schema/game mismatch: {job['game_id']}")
+        framework_state = state_record.get("framework_state")
+        if not isinstance(framework_state, list) or len(framework_state) != 2:
+            raise TraceContractError(f"stored framework state shape mismatch: {job['game_id']} state={state_index}")
+        runtime_observations = state_record.get("runtime_observations")
+        state_calls = [calls.get((state_index, seat)) for seat in (0, 1)]
+        if any(state_calls):
+            if not isinstance(runtime_observations, list) or len(runtime_observations) != 2:
+                raise TraceContractError(f"stored runtime observation missing: {job['game_id']} state={state_index}")
+            for seat, call in enumerate(state_calls):
+                if call is None or call["pre_action_observation"] != runtime_observations[seat]:
+                    raise TraceContractError(f"action/state observation mismatch: {job['game_id']} state={state_index} seat={seat}")
+                if call["fault"] is None and (job["expected"] == "normal" or state_index < len(state_records) - 1):
+                    # The pinned framework stores a submitted action on the state
+                    # produced by that call, one index after its pre-action state.
+                    action_state_index = state_index + 1
+                    stored_action = state_records[action_state_index]["framework_state"][seat].get("action")
+                    if stored_action != call["emitted_action"]:
+                        raise TraceContractError(f"emitted action/stored state mismatch: {job['game_id']} state={state_index} seat={seat}")
+        elif runtime_observations is not None:
+            raise TraceContractError(f"stored state has observations without calls: {job['game_id']} state={state_index}")
+
     completion = episode["completion"]
-    if completion["turn_records_by_seat"] != per_seat:
+    if completion["action_calls_by_seat"] != per_seat:
         raise TraceContractError(f"completion counts mismatch: {job['game_id']}")
+    semantics = plan["semantics"]
+    expected_completion = {
+        "episode_steps_configured": plan["episode_steps"],
+        "stored_states_expected": semantics["stored_states_expected"],
+        "action_calls_per_seat_expected": semantics["action_calls_per_seat_expected"],
+        "final_action_step_expected": semantics["final_action_step"],
+        "terminal_state_index_expected": semantics["terminal_state_index"],
+    }
+    for key, value in expected_completion.items():
+        if completion.get(key) != value:
+            raise TraceContractError(f"completion semantic mismatch ({key}): {job['game_id']}")
+    if completion.get("stored_states") != len(state_records):
+        raise TraceContractError(f"stored state completion count mismatch: {job['game_id']}")
     if job["expected"] == "normal":
         if faults or per_seat != [plan["action_turns"], plan["action_turns"]]:
-            raise TraceContractError(f"normal trace is not {plan['action_turns']}-turn complete: {job['game_id']}")
-        if not completion["normal"] or completion["framework_steps"] != plan["episode_steps"] or completion["statuses"] != ["DONE", "DONE"]:
+            raise TraceContractError(f"normal trace is not {plan['action_turns']}-call complete: {job['game_id']}")
+        if sorted(by_turn) != list(range(plan["action_turns"])):
+            raise TraceContractError(f"normal action steps mismatch: {job['game_id']}")
+        if len(state_records) != plan["episode_steps"]:
+            raise TraceContractError(f"normal stored state count mismatch: {job['game_id']}")
+        final_state = state_records[-1]
+        final_statuses = [str(state.get("status")) for state in final_state["framework_state"]]
+        final_step = final_state["framework_state"][0].get("observation", {}).get("step")
+        if (
+            not completion["normal"]
+            or completion["statuses"] != ["DONE", "DONE"]
+            or final_statuses != ["DONE", "DONE"]
+            or final_state["state_index"] != semantics["terminal_state_index"]
+            or final_step != semantics["terminal_state_index"]
+            or final_state["runtime_observations"] is not None
+        ):
             raise TraceContractError(f"normal completion mismatch: {job['game_id']}")
     elif not faults or completion["normal"]:
         raise TraceContractError(f"expected synthetic fault was not retained: {job['game_id']}")
-    return {"records": len(records), "turns_by_seat": per_seat, "faults": len(faults)}
+    return {
+        "records": len(records),
+        "calls_by_seat": per_seat,
+        "stored_states": len(state_records),
+        "faults": len(faults),
+    }
 
 
 def validate_bundle(bundle: Path, write: bool = True) -> dict:
@@ -635,14 +834,26 @@ def validate_bundle(bundle: Path, write: bool = True) -> dict:
     if plan.get("schema_version") != PLAN_SCHEMA_VERSION or manifest.get("schema_version") != MANIFEST_SCHEMA_VERSION:
         raise TraceContractError("unsupported plan or manifest schema version")
     schema_path = bundle / plan["trace_schema"]["path"]
-    if sha256_file(schema_path) != plan["trace_schema"]["sha256"] or plan["trace_schema"]["version"] != TRACE_SCHEMA_VERSION:
+    if (
+        sha256_file(schema_path) != plan["trace_schema"]["sha256"]
+        or plan["trace_schema"]["version"] != TRACE_SCHEMA_VERSION
+        or manifest.get("trace_schema") != plan["trace_schema"]
+    ):
         raise TraceContractError("trace schema identity mismatch")
+    state_schema_path = bundle / plan["state_schema"]["path"]
+    if (
+        sha256_file(state_schema_path) != plan["state_schema"]["sha256"]
+        or plan["state_schema"]["version"] != STATE_SCHEMA_VERSION
+        or manifest.get("state_schema") != plan["state_schema"]
+    ):
+        raise TraceContractError("state schema identity mismatch")
     if _engine_identity() != plan["engine"] or manifest["engine"] != plan["engine"]:
         raise TraceContractError("engine identity mismatch")
     if sha256_file(bundle / "input-config.json") != plan["input_config"]["sha256"]:
         raise TraceContractError("input config identity mismatch")
     if sha256_file(bundle / "plan.json") != manifest["plan"]["sha256"]:
         raise TraceContractError("plan identity mismatch")
+    _validate_plan_contract(bundle, plan)
     for agent in plan["agents"].values():
         _verify_package(bundle, agent)
     if len(plan["jobs"]) != len(manifest["episodes"]):
@@ -661,6 +872,8 @@ def validate_bundle(bundle: Path, write: bool = True) -> dict:
         "schema_version": VALIDATION_SCHEMA_VERSION,
         "valid": True,
         "schema": plan["trace_schema"],
+        "state_schema": plan["state_schema"],
+        "semantics": plan["semantics"],
         "plan_sha256": sha256_file(bundle / "plan.json"),
         "manifest_sha256": sha256_file(bundle / "manifest.json"),
         "semantic_manifest_sha256": semantic_manifest,
@@ -669,6 +882,7 @@ def validate_bundle(bundle: Path, write: bool = True) -> dict:
         "normal_episodes": sum(job["expected"] == "normal" for job in plan["jobs"]),
         "fault_episodes": sum(job["expected"] == "fault" for job in plan["jobs"]),
         "records": sum(result["records"] for result in results),
+        "stored_states": sum(result["stored_states"] for result in results),
         "faults": sum(result["faults"] for result in results),
         "checks": [
             "schema-hash",
@@ -676,8 +890,12 @@ def validate_bundle(bundle: Path, write: bool = True) -> dict:
             "package-inventory",
             "game-identity",
             "trace-file-hash",
+            "stored-state-file-hash",
             "seat-turn-completeness",
+            "configured-state-call-semantics",
+            "terminal-state-status",
             "pre-action-observation",
+            "action-state-correspondence",
             "emitted-action-or-fault",
             "timing",
             "semantic-determinism",
@@ -709,15 +927,44 @@ def reproduce_bundle(source: Path, destination: Path, workers: int) -> dict:
     reproduced = execute_plan(plan, destination, workers)
     validation = validate_bundle(destination)
     original = read_json(source / "manifest.json")
-    original_hashes = [episode["trace"]["semantic_sha256"] for episode in original["episodes"]]
-    reproduced_hashes = [episode["trace"]["semantic_sha256"] for episode in reproduced["episodes"]]
+    normal_indices = [
+        index for index, job in enumerate(plan["jobs"]) if job["expected"] == "normal"
+    ]
+    fault_indices = [
+        index for index, job in enumerate(plan["jobs"]) if job["expected"] == "fault"
+    ]
+    original_trace_hashes = [
+        original["episodes"][index]["trace"]["semantic_sha256"] for index in normal_indices
+    ]
+    reproduced_trace_hashes = [
+        reproduced["episodes"][index]["trace"]["semantic_sha256"] for index in normal_indices
+    ]
+    original_state_hashes = [
+        original["episodes"][index]["states"]["semantic_sha256"] for index in normal_indices
+    ]
+    reproduced_state_hashes = [
+        reproduced["episodes"][index]["states"]["semantic_sha256"] for index in normal_indices
+    ]
+    original_fault_fingerprints = [
+        original["episodes"][index]["fault_fingerprint_sha256"] for index in fault_indices
+    ]
+    reproduced_fault_fingerprints = [
+        reproduced["episodes"][index]["fault_fingerprint_sha256"] for index in fault_indices
+    ]
+    trace_match = original_trace_hashes == reproduced_trace_hashes
+    state_match = original_state_hashes == reproduced_state_hashes
+    fault_match = original_fault_fingerprints == reproduced_fault_fingerprints
     result = {
-        "reproduced": original_hashes == reproduced_hashes
+        "reproduced": trace_match and state_match and fault_match
         and original["semantic_sha256"] == reproduced["semantic_sha256"],
         "source_semantic_manifest_sha256": original["semantic_sha256"],
         "reproduced_semantic_manifest_sha256": reproduced["semantic_sha256"],
-        "episode_semantic_hashes_match": original_hashes == reproduced_hashes,
-        "episodes": len(reproduced_hashes),
+        "normal_trace_semantic_hashes_match": trace_match,
+        "normal_state_semantic_hashes_match": state_match,
+        "fault_fingerprints_match": fault_match,
+        "normal_episodes": len(normal_indices),
+        "fault_episodes": len(fault_indices),
+        "episodes": len(reproduced["episodes"]),
         "validation_manifest_sha256": sha256_file(destination / "validation-manifest.json"),
     }
     write_json(destination / "reproduction.json", result)

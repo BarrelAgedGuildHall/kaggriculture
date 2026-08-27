@@ -75,13 +75,14 @@ Package-bound turn traces (capture + validation + deterministic extraction in on
 ```bash
 uv run python scripts/trace_pipeline.py run \
   --config trace_retention/configs/development.json \
-  --out data/traces/cycle05-development --workers 8
+  --out data/traces/cycle05-exact-competition-v2 --workers 8
 uv run python scripts/trace_pipeline.py reproduce \
-  --bundle data/traces/cycle05-development \
-  --out data/traces/cycle05-reproduction --workers 8
+  --bundle data/traces/cycle05-exact-competition-v2 \
+  --out data/traces/cycle05-exact-competition-v2-reproduction --workers 8
 ```
 
-The trace contract and bundle layout are documented in
+The exact competition trace contract (`episodeSteps=720`: 720 stored states, 719 paired calls
+per seat ending at step 718) and bundle layout are documented in
 [`docs/trace-retention.md`](docs/trace-retention.md).
 
 ## Evaluate (the score that decides things)

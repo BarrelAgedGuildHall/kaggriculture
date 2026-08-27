@@ -1,6 +1,6 @@
 {
-  "schema_version": "kaggriculture.trace-config.v1",
-  "turns": 720,
+  "schema_version": "kaggriculture.trace-config.v2",
+  "episode_steps": 720,
   "configuration": {},
   "agents": {
     "candidate": {"spec": "agent/main.py"},
@@ -32,4 +32,3 @@
     }
   ]
 }
-
