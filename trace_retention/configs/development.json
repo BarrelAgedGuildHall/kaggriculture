@@ -1,0 +1,35 @@
+{
+  "schema_version": "kaggriculture.trace-config.v1",
+  "turns": 720,
+  "configuration": {},
+  "agents": {
+    "candidate": {"spec": "agent/main.py"},
+    "pass-control": {"spec": "pass"},
+    "starter-control": {"spec": "starter"},
+    "synthetic-fault": {"spec": "trace_retention/fixtures/fault_agent.py"}
+  },
+  "pairings": [
+    {
+      "agent_a": "candidate",
+      "agent_b": "pass-control",
+      "seeds": {"start": 0, "count": 16},
+      "swap_seats": true,
+      "expected": "normal"
+    },
+    {
+      "agent_a": "candidate",
+      "agent_b": "starter-control",
+      "seeds": {"start": 16, "count": 16},
+      "swap_seats": true,
+      "expected": "normal"
+    },
+    {
+      "agent_a": "synthetic-fault",
+      "agent_b": "pass-control",
+      "seeds": [99],
+      "swap_seats": false,
+      "expected": "fault"
+    }
+  ]
+}
+
