@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://barrelagedguildhall.invalid/kaggriculture/turn-trace-v2.schema.json",
+  "title": "Kaggriculture package-bound pre-action call trace",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "game_id",
+    "turn",
+    "state_index",
+    "seat",
+    "identity",
+    "pre_action_observation",
+    "emitted_action",
+    "completion",
+    "fault",
+    "timing"
+  ],
+  "properties": {
+    "schema_version": {"const": "kaggriculture.turn-trace.v2"},
+    "game_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "turn": {"type": "integer", "minimum": 0},
+    "state_index": {"type": "integer", "minimum": 0},
+    "seat": {"type": "integer", "minimum": 0, "maximum": 1},
+    "identity": {
+      "type": "object",
+      "required": [
+        "agent_id",
+        "agent_package_sha256",
+        "opponent_id",
+        "opponent_package_sha256",
+        "engine_version",
+        "engine_sha256",
+        "seed",
+        "seat",
+        "game_id"
+      ],
+      "properties": {
+        "agent_id": {"type": "string"},
+        "agent_package_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "opponent_id": {"type": "string"},
+        "opponent_package_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "engine_version": {"type": "string"},
+        "engine_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "seed": {"type": "integer", "minimum": 0},
+        "seat": {"type": "integer", "minimum": 0, "maximum": 1},
+        "game_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "pre_action_observation": {"type": "object"},
+    "emitted_action": {"type": ["object", "null"]},
+    "completion": {
+      "type": "object",
+      "required": ["emitted", "faulted"],
+      "properties": {
+        "emitted": {"type": "boolean"},
+        "faulted": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "fault": {"type": ["object", "null"]},
+    "timing": {
+      "type": "object",
+      "required": ["duration_ns"],
+      "properties": {"duration_ns": {"type": "integer", "minimum": 0}},
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

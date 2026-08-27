@@ -12,6 +12,7 @@ Kaggler's entry for the Kaggle **Kaggriculture** simulation competition
 | `scripts/run_episode.py` | Play one local episode A vs B with a fixed seed; prints money + per-turn timing; saves the replay. |
 | `scripts/evaluate.py` | The gauntlet: paired seeds + side swap vs several opponents, win rate with Wilson CI, timing gates. |
 | `scripts/replay_check.py` | Re-step an official Kaggle replay through the local engine and diff every step (engine-parity proof). |
+| `scripts/trace_pipeline.py` | Capture, validate, extract, and reproduce exact package-bound pre-action state/action traces. |
 | `scripts/fetch_replays.py` | Download official replays / the episodes index with the Kaggle CLI. |
 | `scripts/make_submission.py` | Build `dist/main.py` (or `dist/submission.tar.gz`) and verify it plays standalone in a fresh venv. |
 | `scripts/engine_watch.py` | Exit 1 if PyPI has a newer `kaggle-environments` than our pin (daily cron / CI). |
@@ -68,6 +69,21 @@ Tests:
 ```bash
 uv run pytest -q
 ```
+
+Package-bound turn traces (capture + validation + deterministic extraction in one command):
+
+```bash
+uv run python scripts/trace_pipeline.py run \
+  --config trace_retention/configs/development.json \
+  --out data/traces/cycle05-exact-competition-v2 --workers 8
+uv run python scripts/trace_pipeline.py reproduce \
+  --bundle data/traces/cycle05-exact-competition-v2 \
+  --out data/traces/cycle05-exact-competition-v2-reproduction --workers 8
+```
+
+The exact competition trace contract (`episodeSteps=720`: 720 stored states, 719 paired calls
+per seat ending at step 718) and bundle layout are documented in
+[`docs/trace-retention.md`](docs/trace-retention.md).
 
 ## Evaluate (the score that decides things)
 

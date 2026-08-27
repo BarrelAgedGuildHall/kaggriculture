@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://barrelagedguildhall.invalid/kaggriculture/framework-state-v1.schema.json",
+  "title": "Kaggriculture stored framework state",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "game_id",
+    "state_index",
+    "framework_state",
+    "runtime_observations"
+  ],
+  "properties": {
+    "schema_version": {"const": "kaggriculture.framework-state.v1"},
+    "game_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "state_index": {"type": "integer", "minimum": 0},
+    "framework_state": {
+      "type": "array",
+      "prefixItems": [{"type": "object"}, {"type": "object"}],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "runtime_observations": {
+      "oneOf": [
+        {
+          "type": "array",
+          "prefixItems": [{"type": "object"}, {"type": "object"}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {"type": "null"}
+      ]
+    }
+  },
+  "additionalProperties": false
+}
