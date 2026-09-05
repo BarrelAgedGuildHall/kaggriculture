@@ -1080,3 +1080,27 @@ assumes60combined seed/labor cost and unchanged prices. Not profit proof.
 with continuousfert verify day3 five units vs day4 six. No imitation.
 Arena data/arena-boost-harvest; logs,engine-checks.json and eventual
 boost5-paired.json in data/results/brain-boost-harvest. No automatic adoption.
+
+## Early harvest result and crop retirement (resumed cycle12)
+Early wheat harvest64games,seeds350-357,both seats,zero faults. Candidate/control
+both2/16V46,0/16tape. MarginV46+731.19(CI165..1346.88),tape-462.38
+(-1770.25..692.69);ownbank+687.63/-568.94. Candidatep99 5.199ms,max102.547.
+Mixed reference result, no win lift; not promoted or expanded. Session9722 exited.
+Evidence data/results/brain-boost-harvest/boost5-paired.json.
+Crop-horizon variants require2/3harvest events left before planting ongoing
+crops, and remove corresponding seed purchases.30day plan-boundary checks perarm
+and18actual engine harvest-count fixtures pass. However719currentv4 observations
+each produce0changed actions. Parked without games, not an economic result.
+Scripts/experiment_brain_crop_horizon.py;data/results/brain-crop-horizon/engine-checks.json.
+Retained v4 unchanged21/500held-outV46,0/500tape; screen seeds excluded.
+
+Session60520: uv run python scripts/experiment_brain_crop_retirement.py --run.
+96games,seeds370-377,both seats,two workers,sequential control/stop/clear arms,
+each16games perV46/tapeselect. Stop watering ongoing crops once final production
+has arrived; clear additionally schedules DIG after all held yield is collected.
+Original engine-derived mechanism; references remain black-box opponents.
+719ownv4 saved-state calls perarm pass;17/28changed states. Four actual engine
+fixtures tomato/strawberry,with/withoutcontinuousfert preserve4/8units with no
+water on retirement day and verify emptied tile DIG. Immediate-service fixtures
+do not establish full-game gains. Arena data/arena-crop-retirement; logs and
+engine-checks.json in data/results/brain-crop-retirement. No auto adoption.
