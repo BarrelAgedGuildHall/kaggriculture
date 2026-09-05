@@ -842,3 +842,19 @@ changes15states,near3 changes70. Late-hour/final-day actions remain identical.
 Evidence data/results/brain-day-delivery/{offline-checks,action-checks}.json.
 Started96game screen after egg controller exited:seeds270-277,both seats,
 control/near1/near3 each16perV46/tapeselect,two workers sequentially.
+
+## Daytime delivery screen complete (cycle23)
+All96games completed without faults,all policies0/16 per reference.
+Near1 margin V46+$1262.00(CI -6151.06..10091.06),tapeselect+$3274.75
+(CI733.00..6474.38);own bank+6916.06/+2083.13.
+Near3 margin V46+$43.06(CI-3779.94..4335.75),tape+$4530.44
+(CI1800.06..7179.75);own bank+1338.25/+450.50.
+Neither promoted. Near1 chosen for confirmation: shorter detours, greater
+own-bank gain and larger V46 mean gain; combined reference margin gains
+are nearly tied. This is screen-based selection, requiring fresh evaluation.
+Evidence data/results/brain-day-delivery/{near1,near3}-paired.json.
+Frozen bots/brain_day_delivery/main.py; scripts/confirm_brain_day_delivery.py
+started after screen92328 exited.400games,seeds2200-2249,both seats,
+controlv4/candidate each100perV46/tapeselect,two workers sequentially.
+Conditional component runs only if both margin means positive and one
+paired interval excludes zero, with no faults. No automatic adoption/upload.
