@@ -70,8 +70,10 @@ All subsequent parallel experiments used separate arena directories.
 - `uv run pytest -q`: 175 passed, 2 pre-existing ghost-corpus failures
   (`rank1` tier and index/file mismatch), as in the preceding cycle.
 - Compilation and `git diff --check` pass. No separate lint configuration exists.
-- GitHub CLI is unauthenticated and the installed connector returns 404 for the
-  repository; a PR could not be opened. Changes remain on the feature branch.
+- GitHub access through the configured Git credential broker succeeded. Draft PR #37
+  (`feature/original-brain-fertilizer`) contains only original Brain files. No direct
+  change to main and no competition submission.
+
 
 Evidence: `data/results/{fertilizer-confirm-100,brain-v1-confirm-100,
 neardelivery-confirm-100}/results.json`, `economics-paired-deltas.json`, and
@@ -79,6 +81,24 @@ neardelivery-confirm-100}/results.json`, `economics-paired-deltas.json`, and
 The finite opening-allocation search is `scripts/search_brain_opening.py`:
 10 policies (control plus 9 cells), seeds 20?29 in both seats, V46 opponent.
 A winning cell still needs confirmation outside all seeds used above.
+
+## Opening allocation follow-up (2026-09-05)
+
+Ten original parameter settings played 200 tuning games, all without faults. The
+best screen changed opening wheat/melon and later wheat/strawberry to 50/50 each.
+On fresh seeds 1200-1249 (both seats) it beat v2 85/100, but lost 100/100 to V46
+and worsened the reference margin by $10,324/game (seed-pair bootstrap CI
+-$14,862 to -$5,674). Control v2 also went 0/100 versus V46, with a less negative
+margin. The opening is rejected and the retained Brain source is unchanged.
+
+V2's two fresh V46 bands now total 2/200 wins. Its 89/100 against v1 is real, but
+should not be presented as evidence of high ladder strength. No new submission.
+
+Evidence: `data/results/{opening-confirm-100,fertilizer-opening-control-100}/results.json`,
+`data/results/opening-paired-delta.json`, and `data/results/brain-opening-search/`.
+Next experiment: `scripts/search_brain_fertilizer_priority.py`, three task priorities
+on fresh seeds 1300-1349, both seats, 100 games per arm against V46. It does not
+change forecast values or crop allocation. Results remain pending.
 
 ---
 
