@@ -100,6 +100,50 @@ Next experiment: `scripts/search_brain_fertilizer_priority.py`, three task prior
 on fresh seeds 1300-1349, both seats, 100 games per arm against V46. It does not
 change forecast values or crop allocation. Results remain pending.
 
+## Autopilot cycle 1: labor and capital experiments
+
+The retained Brain v2 source remains unchanged. Completed comparisons:
+
+| Mechanism | Games | Result vs V46 | Decision |
+|---|---:|---|---|
+| Fertilizer priority 0 | 100 | 0 wins; margin delta -$58, CI -$1,124 to +$978 | Reject |
+| Fertilizer priority 1 | 100 | 0 wins; delta -$258, CI -$1,236 to +$737 | Reject |
+| Softer distance/priority routing | 100 | 0 wins; delta -$1,828, CI -$5,423 to +$1,657 | Reject; also 24/100 vs v2 |
+| Distance before fixed worker ownership | 20 | 0 wins; screen margin improves $2,796 | Unconfirmed |
+| Reward-per-distance job assignment | 20 | 0 wins; screen margin worsens $10,741 | Reject |
+| Limit speculative empty pastures | 20 | 0 wins; screen margin improves $3,716 | Keep as search parameter, unconfirmed |
+| Buy approved land before seeds/animals | 20 | 0 wins; screen margin worsens $6,801 | Reject |
+| Land ordering plus pasture limit | 20 | 0 wins; screen margin worsens $14,649 | Reject |
+| Keep late-season cap at 12 hands | 20 | 0 wins; delta +$523, CI -$307 to +$1,331 | Fresh-seed confirmation running |
+| Raise peak cap to 14 | 20 | 0 wins; delta +$535, CI -$425 to +$1,489 | Unconfirmed |
+
+All figures compare the same seeds and both seats with the unchanged control.
+Confidence intervals resample whole seed pairs. There were no engine crashes or
+timeouts; several local maximum-call checks exceeded the stricter 400 ms threshold
+under concurrent load. Raw evidence: `data/results/autopilot1-paired-deltas.json`,
+`late-labor-screen-deltas.json`, and the dispatch/capital/late-labor result folders.
+The combined completed priority/dispatch/capital/late-labor comparisons total 820
+games including their controls. New final-seed evidence for v2 vs V46 is 4/400 wins
+across seeds 1100-1149, 1200-1249, 1300-1349 and 1400-1449.
+
+Own-replay diagnosis (`data/results/brain-own-diagnostic/main_vs_main_seed51.json`):
+on day 4 the starting quadrant had 15 plants, 2 animals and 8 empty pastures, with
+$295 cash. Most observed plant-to-weed transitions were natural lifespan decay,
+not drought. The farmer resets to the default spawn each night, so repositioning
+him late to change the next morning's spawn was rejected from engine inspection.
+
+A bounded reward-only evolutionary search is now running. It varies 15 parameters
+of our own policy (crop/capital allocation, herd, hiring, feed, harvest threshold,
+and care priority). Four generations of 16 policies use seeds 150-157, both seats,
+against V46 and tapeselect. The objective balances final bank share across both
+opponents. Four finalists and the control use seeds 1500-1519 for selection; the
+selected policy and control then use fresh seeds 1600-1649, 100 games per opponent.
+No imitation loss, replay action targets, public-agent source, or fingerprints are
+used. `scripts/search_brain_evolution.py` has no automatic integration/submission.
+100 sampled parameter combinations compile, and its control reproduces the frozen
+v2 source exactly. The first 12 completed policies (384 games) had no faults and no
+wins against either reference; their scores are training results, not improvements.
+
 ---
 
 # Brain v1 results
