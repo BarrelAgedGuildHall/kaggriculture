@@ -1003,3 +1003,31 @@ V4 retained21/500held-outV46,0/500tape,5/107historical wins.
 Started prepared early-crew screen from unchanged v4 after40068 exited:
 96games,seeds310-317,both seats,two workers sequentially;control/floor6/floor8
 120saved-state calls each passed again. No automatic adoption/submission.
+
+## Early crew rejected; fresh v4 cash diagnostic (resumed cycle9)
+Earlycrew96games,zero faults,all arms0/16perreference. Floor6marginV46
+-318.56(CI-14343.06..13636),tape-3614.31(-10053.31..3653.81);ownbank+8869.31/+3761.50.
+Floor8marginV46+4042.63(-4564.25..12208.19),tape-4374.13(-9683.75..755.31);
+ownbank+7643.50/-577.31. Neither promoted.44880 exited.
+Evidence data/results/brain-early-crew/{floor6,floor8}-paired.json.
+
+Fresh currentv4 diagnostic seed2400,both seats sequentially: both ownbank51918
+versus84198,ownDONE,productive fraction38.51%,wages6977. Two games on one
+seed, not a strength estimate or added to held-out pooled result. Saved full
+records under data/results/brain-v4-diagnostic/seat{0,1}.json and own KPI files.
+Bench/measure_v4_diagnostic.py reproducer;81024 exited before any new arena.
+Exact engine market replay verified all719owncash transitions in seat0:
+initial3000 +grosssales78549 -expenses29631 =51918. Wheat purchases5214,
+wages6977,land3000,animals8300,seeds6140. Wool sales5353 vs sheep capital5500;
+fertilizer and feed/labor attribution are not included in that comparison.
+Do not infer sheep unprofitable solely from wool. Cash-ledger.json contains
+own operation/day breakdown; bench/reconcile_v4_cash.py reproduces.
+
+Started cow-heavy18animal screen:12cow/6sheep or18cow versus7cow/11sheep v4.
+Same herd ramp/pasture type; separates product mix from herd contraction and
+previous goose trial. Both719current-v4 saved-statecalls pass,368/439changed
+states;30day ramp/cap/housing checks perarm pass. Data/results/brain-milk-mix/
+policy-checks.json;bench/check_milk_mix.py. No opponent actions/identity inputs.
+Scripts/experiment_brain_milk_mix.py --run:96games,seeds330-337,both seats,
+two workers sequentially,control/milk12/milk18 each16perV46/tapeselect.
+No automatic adoption/submission. V4 retained unchanged.
