@@ -1,4 +1,4 @@
-﻿"""Confirm the selected original value-aware husbandry policy, then measure its mechanism.
+"""Confirm the selected original value-aware husbandry policy, then measure its mechanism.
 
 Sequential two-worker runs; fresh paired seeds; no automatic promotion/submission.
 Component games run only if both reference margins improve and at least one
@@ -61,4 +61,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
