@@ -902,3 +902,15 @@ Prepared scripts/experiment_brain_feed_pickup.py,build-only default. Optional
 --run screens64games,seeds290-297,both seats,control/value each16perV46/tape,
 two workers sequentially. NOT running. Queue behind delivery confirmation
 and prepared joint dispatch; rebuild from retained champion when started.
+
+## Delivery confirmation complete (resumed cycle3)
+400freshgames completed,seeds2200-2249,both seats,zero crashes/timeouts.
+Candidate and v4 each0/100 against both references. Candidatep99 6.289ms,
+max98.033ms. Margin +$990.40V46(CI -3522.44..5369.25),+$1294.80tapeselect
+(CI -591.34..3238.37). Own bank -1385.57/+11.29. Not promoted: both intervals
+include zero. Component criteria not met, no KPI games ran.81011 fully exited.
+Evidence data/results/day-delivery-resumed-confirm/paired.json. Interrupted
+44games excluded. V4 retained15/400held-outV46,0/400tape,5/107historical.
+Started prepared joint-dispatch screen from unchanged v4 after81011 exited;
+64games,seeds280-287,both seats,two workers sequentially. Both policies
+passed120 saved-state calls again at launch. Value-aware pickup remains queued.
