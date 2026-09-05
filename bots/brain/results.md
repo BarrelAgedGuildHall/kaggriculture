@@ -858,3 +858,14 @@ started after screen92328 exited.400games,seeds2200-2249,both seats,
 controlv4/candidate each100perV46/tapeselect,two workers sequentially.
 Conditional component runs only if both margin means positive and one
 paired interval excludes zero, with no faults. No automatic adoption/upload.
+
+## Delivery override diagnostic after resume
+On719 saved observations from our older v2 game, near1 changes17 unit actions
+across15 states:1care,2water,3pickup,1fertilizer collection and10 moves.
+No displaced watering action had consecutive_unwatered>=1. Near3 changes91
+unit actions across70states and displaces6 survival-watering actions. These
+are counterfactual policy calls, not actual losses or a measured v4 cohort.
+The active near1 confirmation remains unchanged. This supports checking
+work displacement before trying longer delivery detours again.
+Evidence data/results/brain-day-delivery/override-census.json; reproducer
+ artisans/ceo/bench/diagnose_delivery_overrides.py. Original observations only.
