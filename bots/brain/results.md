@@ -1,4 +1,4 @@
-﻿# Brain v4: value-based feeding and care
+# Brain v4: value-based feeding and care
 
 Retained 2026-09-05 after fresh paired confirmation and standalone verification.
 Current source bots/brain/main.py matches bots/brain_value_v4/main.py.
@@ -602,4 +602,3 @@ Purchase diagnostic now explicitly uses observation[t] and action[t+1];
 requested-order counts unchanged. Reproducer artisans/ceo/bench/animal_purchase_census.py.
 Active husbandry-value candidate has90/200 games observed at this update;
 no paired result available and retained champion unchanged.
-
