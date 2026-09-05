@@ -1,3 +1,36 @@
+# Brain v3: retain late-season workers
+
+2026-09-05 UTC. The sole change from v2 removes the fixed worker-cap cuts on
+days 25 and 28; hiring still requires observed work, affordable wages and cash
+reserve. Source matches `bots/brain_late_labor_keep12/main.py` exactly; v2 remains
+frozen at `bots/brain_fertilizer/main.py`. No imitation or opponent action data.
+
+Fresh seeds 1700-1749, both seats, 100 games per row:
+
+| Opponent | v3 wins | v2 wins | Paired bank-margin gain | 95% seed-pair bootstrap CI |
+|---|---:|---:|---:|---:|
+| V46 | 4 | 4 | +$901 | +$538 to +$1262 |
+| tapeselect | 0 | 0 | +$667 | +$277 to +$1098 |
+
+Retained for consistent small gains against independent references. Direct v2
+self-play is worse (28/100 wins); reference wins are unchanged. This is not a
+strong-ladder candidate and has not been submitted. Absolute v3 banks against
+V46 and tapeselect are $73,808 and $59,517 respectively.
+
+All 300 confirmation games had zero crashes or engine timeouts. The concurrent
+harness's strict 400 ms maximum gate failed (max 680 ms); p99 remained below 29 ms.
+Separate packaged 720-turn game vs random: both DONE, bank $135,422, maximum call
+21.209 ms. Artifact `dist/brain-late-labor/main.py`, using the pinned current
+interpreter in an isolated working directory, not a fresh virtual environment.
+
+Evidence: `data/results/late-labor-{keep12,control}-confirm-100/results.json`,
+`late-labor-{keep12,control}-tapeselect-100/results.json`,
+`late-labor-confirm-delta.json`, and `late-labor-tapeselect-delta.json`.
+A paired check on the fixed 107 historical top-team opponents is running. Those
+opponents are benchmarks only; their actions never enter our strategy or training.
+
+---
+
 # Brain v2 results ? original fertilizer valuation
 
 2026-09-05 UTC; branch `feature/brain-economics`. `bots/brain/main.py` is exactly
