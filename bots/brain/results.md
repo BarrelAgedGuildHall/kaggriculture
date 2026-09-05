@@ -1056,3 +1056,28 @@ Data/results/brain-crop-batch/engine-checks.json; bench/check_crop_batch.py.
 Scripts/experiment_brain_crop_batch.py --run started after10374 exited:
 96games,seeds340-347,both seats,two workers,control/batch2/batch3 each16per
 V46/tapeselect.120saved-state calls each passed. V4 retained, no auto adoption.
+
+## Crop batching rejected; earlier boosted wheat harvest (resumed cycle11)
+96games,seeds340-347,both seats,zero faults;all arms0/16perreference.
+Batch2 marginV46+51.75(CI-1517.88..1460.63),tape+718.88(-826.13..2499.06);
+ownbank-14.13/-235.81. Batch3 marginV46-1516(-2424.81..-591.06),
+tape-835.88(-2596.63..1279);ownbank-729.25/-666.25. Neither adopted.
+Evidence data/results/brain-crop-batch/{batch2,batch3}-paired.json.
+Earlier four actual engine fixtures preserved4/8units while reducing harvest
+calls, but this did not yield a demonstrated full-game gain. V4 retained.
+Fresh v4 harvest-timing.json census:0capped mature crops before target age;
+174plant-observation snapshots of five-unit wheat before target age. These
+are repeated observations, not unique plants, and motivate the next screen.
+
+
+Session9722: uv run python scripts/experiment_brain_boost_harvest.py --run.
+Started23:52UTC after crop-batch46002 exited.64games,seeds350-357,both seats,
+two workers,control/boost5 each16perV46/tapeselect. Harvest mature wheat at
+five units before target age only if the quote after6additional inventory >30.
+Heuristic: five units atday3 vs six atday4 frees land earlier; rate threshold
+assumes60combined seed/labor cost and unchanged prices. Not profit proof.
+719fresh ownv4 observations pass,38changed actions. Actual engine fixtures
+with continuousfert verify day3 five units vs day4 six. No imitation.
+Arena data/arena-boost-harvest; logs,engine-checks.json and eventual
+boost5-paired.json in data/results/brain-boost-harvest. No automatic adoption.
+
