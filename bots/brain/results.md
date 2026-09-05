@@ -869,3 +869,20 @@ The active near1 confirmation remains unchanged. This supports checking
 work displacement before trying longer delivery detours again.
 Evidence data/results/brain-day-delivery/override-census.json; reproducer
  artisans/ceo/bench/diagnose_delivery_overrides.py. Original observations only.
+
+## Prepared joint dispatch (resumed cycle2)
+Independent mechanism: assign workers jointly within each job priority group,
+minimizing total cluster departures then distance. Preserve original on-tile
+work, inventory eligibility, priority order, and fallback behavior. Dummy
+assignments permit idle workers where no eligible job exists. No opponent
+actions, identities, or imitation inputs. Baseline retained v4.
+Own rectangular assignment solver matched exhaustive optima on70 small
+random matrices (including negative costs), plus empty input.719 saved own
+observations passed,114 changed states,p99 1.568ms,max18.462ms under arena
+contention. This is functional/algorithm validation, not game performance.
+Evidence data/results/brain-joint-dispatch/{offline-checks,assignment-checks}.json;
+reproducer artisans/ceo/bench/check_joint_dispatch.py.
+Prepared scripts/experiment_brain_joint_dispatch.py; default build-only.
+Optional --run:64games,control/joint each16perV46/tapeselect,seeds280-287,
+both seats,two workers sequentially. NOT running while delivery81011 runs.
+Rebuild from retained champion if it changes before this screen starts.
