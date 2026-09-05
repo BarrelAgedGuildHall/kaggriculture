@@ -991,3 +991,15 @@ Parked without an arena run due to no observed action effect on this sample.
 This does not prove no effect elsewhere. Early-crew remains next experiment.
 Evidence data/results/brain-care-demand/{offline-checks,forecast-checks}.json;
 reproducer artisans/ceo/bench/check_care_demand.py.
+
+## Pickup confirmation complete (resumed cycle8)
+400games,seeds2300-2349,both seats,zero crashes/timeouts. Candidate4/100V46
+versusv4 6/100,both0/100tapeselect. Candidatep99 6.058ms,max95.908ms.
+MarginV46+$3253.19(CI-565.36..7221.67),tape+$352.05(-2434.23..3179.74);
+ownbank+610.49/+2643.45. Not promoted: intervals include zero and no win lift.
+Conditional component criteria not met; no KPI games ran.40068 exited.
+Evidence data/results/feed-pickup-confirm/paired.json and individual reports.
+V4 retained21/500held-outV46,0/500tape,5/107historical wins.
+Started prepared early-crew screen from unchanged v4 after40068 exited:
+96games,seeds310-317,both seats,two workers sequentially;control/floor6/floor8
+120saved-state calls each passed again. No automatic adoption/submission.
