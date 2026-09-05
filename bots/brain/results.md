@@ -407,3 +407,22 @@ No new game job was started alongside the active husbandry confirmation. Only
 after that job (including any KPI runs) finishes, `--run` starts96 paired screen
 games against the existing byte-identical v3 control on seeds190-197, two workers.
 Any apparent gain still requires fresh-seed confirmation. Main bot is unchanged.
+
+## Dispatch CPU check (not integrated)
+
+The coordinator computes legacy dispatch even when LaborB1 replaces its complete
+output. `scripts/benchmark_brain_dispatch_cost.py` creates a candidate that skips
+this discarded matching work only under the exact existing B1-ownership condition;
+the late final-day delivery path still uses the original logic.
+
+Direct policy calls on1438 recorded observations across both seats return exactly
+the same actions, with no mismatches or hidden exception fallback. Six interleaved
+full-state CPU measurements have median1.578125s for frozen v3 and1.453125s for
+the candidate:7.92% less policy CPU on this replay workload. Initial shorter batches
+were too close to the CPU timer resolution; the full-state measurements supersede
+them. This is not an arena throughput or win-rate claim.
+
+Evidence `data/results/brain-dispatch-cost/results.json`; generated source
+`bots/brain_fast_dispatch/main.py`. Retained source and running arena snapshots
+are unchanged. A standalone full-game check remains required before integration,
+after the active confirmation and any conditional component runs finish.
