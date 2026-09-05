@@ -1080,4 +1080,3 @@ assumes60combined seed/labor cost and unchanged prices. Not profit proof.
 with continuousfert verify day3 five units vs day4 six. No imitation.
 Arena data/arena-boost-harvest; logs,engine-checks.json and eventual
 boost5-paired.json in data/results/brain-boost-harvest. No automatic adoption.
-
