@@ -886,3 +886,19 @@ Prepared scripts/experiment_brain_joint_dispatch.py; default build-only.
 Optional --run:64games,control/joint each16perV46/tapeselect,seeds280-287,
 both seats,two workers sequentially. NOT running while delivery81011 runs.
 Rebuild from retained champion if it changes before this screen starts.
+
+## Prepared value-aware wheat pickup (resumed cycle3)
+Found v4 feeding jobs use survival/value gating while pickup demand still
+counts every unfed animal. Separate candidate applies the same eligibility
+to need_wheat; survival feeding remains included. Purchases, feed decisions,
+and carrier distribution remain as in v4. No opponent action/identity inputs.
+719 policy calls pass,15changedstates;696 checks show pickup demand positive
+exactly when feeding jobs exceed carried wheat and shed wheat is available.
+Summed requested pickup quantities817 ->652 on saved older own observations;
+this counts proposed jobs across states, not executed pickups or economic gain.
+Evidence data/results/brain-feed-pickup/{offline-checks,job-checks}.json;
+reproducer artisans/ceo/bench/check_feed_pickup.py.
+Prepared scripts/experiment_brain_feed_pickup.py,build-only default. Optional
+--run screens64games,seeds290-297,both seats,control/value each16perV46/tape,
+two workers sequentially. NOT running. Queue behind delivery confirmation
+and prepared joint dispatch; rebuild from retained champion when started.
