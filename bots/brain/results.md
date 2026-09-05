@@ -380,3 +380,30 @@ excluded. On the saved full720-turn seed51 replay it reproduces the independent
 census exactly:398 animal-days,285 fed,276 fed+cared, bank$82827,DONE. Aggregate
 fractions also match exactly. Evidence `feed-kpi-verified.json` in the own diagnostic
 folder. Compilation/whitespace checks pass; no new full-suite claim is made.
+
+## Prepared value-aware husbandry (not game-tested)
+
+The existing seed51 replay has day20 quotes wheat$38,milk$229,wool$11; at day25,
+wheat$39,milk$235,wool$1. Fixed equal husbandry priority ignores this difference.
+Saved quote observations: `data/results/brain-own-diagnostic/market-census.json`.
+The pinned engine confirms care is banked after production, scheduled production
+clears pending bonuses, and two unfed days cause escape.
+
+`scripts/experiment_brain_husbandry_value.py` builds three independent variants of
+frozen v3: gate care by payoff; also reduce feeding to maintenance when the bonus
+is uneconomic; add midday deadlines to economically useful husbandry. Care needs
+an in-season payment date, pending-bonus room, and a current sale quote exceeding
+half a wheat quote plus $35 labor allowance. Feeding protects a valuable pending
+bonus on a production day and always preserves the existing survival-emergency
+rule. There is no forecast trained from replay actions or opponent identities.
+
+Build-only execution is complete. Each variant passed120 direct policy calls on
+recorded own observations, bypassing the agent exception fallback, plus four
+boundary checks for low-value wool, terminal care, saturated pending bonuses and
+the production-day reset. These are functional checks, not wins or economic
+validation. `data/results/brain-husbandry-value/offline-checks.json`.
+
+No new game job was started alongside the active husbandry confirmation. Only
+after that job (including any KPI runs) finishes, `--run` starts96 paired screen
+games against the existing byte-identical v3 control on seeds190-197, two workers.
+Any apparent gain still requires fresh-seed confirmation. Main bot is unchanged.
