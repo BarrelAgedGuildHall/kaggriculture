@@ -499,3 +499,23 @@ Fresh confirmation: scripts/confirm_brain_value.py, seeds1900-1949, both seats,
 100 games per opponent per arm; two workers, sequential arms. Conditional
 40-game KPI runs per arm use the same positive-margin/no-fault gate as the
 previous controller. No automatic promotion or submission.
+
+## Prepared demand-aware herd trial (2026-09-05)
+Own-action purchase census found one requested animal purchase on/after day19
+in the saved v2 seed51 game (one sheep day26), and none in the inspected v0
+live episode105889015. These are requested orders, not verified purchases;
+two games cannot establish a population rate. Late cutoff alone is lower
+priority than herd allocation. Evidence brain-own-diagnostic/animal-purchase-census.json.
+
+Prepared scripts/experiment_brain_herd_demand.py: keep seven-cow cap, limit
+sheep cap to min(11, floor + 4 * revealed YARN_STORE count), floor2 or5.
+Duplicate shops counted, existing animals retained, no opponent actions used.
+Lower herd targets also release future pasture reservations for crops.
+This is an experimental capacity rule, not a claim of optimal shop allocation.
+Build-only: control and both variants each passed120 direct policy calls on
+our saved observations; each variant passed four shop-count boundary checks.
+No arena games launched while value confirmation is active. --run will use
+fresh matched control plus both candidates, seeds200-207, both seats against
+V46/tapeselect,96games total,two workers sequentially. Rebuild from the retained
+champion with --baseline if the active value confirmation changes it.
+Evidence data/results/brain-herd-demand/offline-checks.json.
