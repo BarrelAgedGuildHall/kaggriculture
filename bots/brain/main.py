@@ -383,7 +383,7 @@ class LaborB1:
     """
 
     FIB = (1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377)
-    PHASE_CAPS = ((0, 6), (3, 8), (6, 10), (10, 12), (25, 10), (28, 8))
+    PHASE_CAPS = ((0, 6), (3, 8), (6, 10), (10, 12))
     PRODUCTIVE_PER_UNIT_DAY = 10.5  # 44% of 24 slots, the V46/top-field throughput level
     TASK_VALUE = 24.0               # conservative blended marginal dollars/productive action
     PLANT_CUTOFF_HOUR = 16
