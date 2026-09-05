@@ -70,8 +70,10 @@ All subsequent parallel experiments used separate arena directories.
 - `uv run pytest -q`: 175 passed, 2 pre-existing ghost-corpus failures
   (`rank1` tier and index/file mismatch), as in the preceding cycle.
 - Compilation and `git diff --check` pass. No separate lint configuration exists.
-- GitHub CLI is unauthenticated and the installed connector returns 404 for the
-  repository; a PR could not be opened. Changes remain on the feature branch.
+- GitHub access through the configured Git credential broker succeeded. Draft PR #37
+  (`feature/original-brain-fertilizer`) contains only original Brain files. No direct
+  change to main and no competition submission.
+
 
 Evidence: `data/results/{fertilizer-confirm-100,brain-v1-confirm-100,
 neardelivery-confirm-100}/results.json`, `economics-paired-deltas.json`, and
