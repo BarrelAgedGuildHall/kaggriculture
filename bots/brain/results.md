@@ -653,3 +653,26 @@ passed4 allocation-boundary checks each. Build-only results in
  data/results/brain-tomato/offline-checks.json.
 Screen running from v4:96games, fresh seeds220-227,both seats,V46/tapeselect,
 two workers sequentially. Automatic paired reports, no automatic promotion.
+
+## Completed tomato screen and expansion test (cycle 13)
+96games complete, zero crashes/timeout flags, all policies0/16 wins vs each
+reference on seeds220-227 both seats. No allocation promoted.
+Tomato10 margin +$1528 V46 (seed-pair CI -1090..4557), -$748 tape
+(CI -10290..10133). Own bank -2543/+3898.
+Tomato20 margin +$3477 V46 (CI -1358..8584), -$1667 tape
+(CI -11362..11075). Own bank -2028/+5401.
+Evidence data/results/brain-tomato/{tomato10,tomato20}-paired.json.
+Controller64778 fully exited; v4 unchanged.
+
+Prepared/started scripts/experiment_brain_expansion.py from v4. Land variant
+raises target from3 to4quadrants atday12, permits third land purchase only
+throughday18, keeps existing $5200 cash threshold and first-two-land policy.
+Labor variant additionally raises the phase/config ceiling12 ->14 hands;
+existing work, marginal value and affordability gates still control actual
+hires. This does not claim14 hands will be hired or profitable.
+Control and variants120policy calls each; variants4phase/cap checks each.
+Four modified-observation checks verified BUY_LAND present day18 and absent
+day19 for both variants with3ownedquadrants,$10000,seed/feed stock.
+Evidence data/results/brain-expansion/{offline-checks,purchase-boundaries}.json.
+Screen running96games,seeds230-237,both seats,V46/tapeselect,two workers
+sequentially,session27979. No automatic promotion or submission.
