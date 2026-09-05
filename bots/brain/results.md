@@ -1,3 +1,87 @@
+# Brain v2 results ? original fertilizer valuation
+
+2026-09-05 UTC; branch `feature/brain-economics`. `bots/brain/main.py` is exactly
+`bots/brain_fertilizer/main.py`; v1 is frozen at `bots/brain_v1_frozen/main.py`.
+No public-agent code, action tapes, replay-derived opening, identity routing, or
+imitation objective is used. Engine constants and observations drive decisions.
+
+## Result
+
+Fertilizer is retained. It is reserved, purchased, carried and applied only when the
+estimated extra harvest from its three-day lifetime exceeds 1.4 times its market
+price plus $50 for labor/delivery. The seller keeps at most eight needed units.
+Existing crop, labor and selling rules otherwise remain unchanged.
+
+Held-out seeds 1100?1149, both seats, 100 games per matchup:
+
+| Matchup | Wins | 95% Wilson interval | Mean bank | Opponent bank |
+|---|---:|---:|---:|---:|
+| Brain v1 vs V46 | 2/100 | 0.5?7.0% | $69,205 | $114,267 |
+| Brain v2 vs V46 | 2/100 | 0.5?7.0% | $71,489 | $113,634 |
+| Brain v2 vs Brain v1 | 89/100 | 81.4?93.8% | $80,587 | $77,466 |
+
+Against V46, the same-seed, same-seat margin improves **$2,917/game**.
+Bootstrap resampling the 50 seed pairs gives 95% interval **+$1,581 to +$4,282**.
+This is an improvement over our own bot, not evidence of strong-ladder readiness.
+
+## Component measurement
+
+40 additional engine-instrumented games per arm, seeds 1100?1119, both seats:
+
+| KPI | v1 | v2 |
+|---|---:|---:|
+| Strawberry units sold/game | 43.6 | 65.1 |
+| Final bank | $68,178 | $71,224 |
+| Fertilizer sales revenue | $14,045 | $13,418 |
+| Productive actions | 41.29% | 41.84% |
+| Moves/productive action | 1.38 | 1.35 |
+| Wages/game | $5,669 | $5,669 |
+| Plants becoming weeds/game | 4.9 | 6.5 |
+| Final unsold marked value | $111 | $113 |
+
+The plant-loss counter also includes lifespan decay; it is not a pure drought
+measure. Increased losses warrant checking the fertilizer/water priority interaction.
+
+## Rejected experiments
+
+- Eight-animal herd: 0/12 vs V46, margin -$55,268 versus control -$44,894.
+- Forecast crop allocation: 0/12, margin -$67,922. The forecast helped the opponent.
+- Opportunistic adjacent deposits: held-out 0/100 vs V46; margin improvement
+  $770, paired-seed CI [-$3,441, +$4,818]; 59/100 vs v1. Not integrated.
+- Delivery detours: tuning 2/20 vs V46, margin -$40,441, without a convincing
+  advantage over control -$40,698. Not advanced.
+
+The first crop-forecast build failed all 12 games because Kaggle loads the last
+callable and the new class was appended after `agent`. Moving registration before
+`agent` fixed this; the reported 0/12 strategy result is the subsequent clean run.
+Concurrent registration also collided in the arena registry. The JSON was recovered
+and the original retained at `data/results/economics-registry-recovery-original.txt`.
+All subsequent parallel experiments used separate arena directories.
+
+## Verification
+
+- Candidate screen, confirmation and KPI games: zero crashes/timeouts after the
+  unrelated rejected forecast build was repaired.
+- Standalone packaged 720-turn episode: both DONE, $101,811 vs random, maximum
+  call 42.6 ms. Artifact: `dist/brain-fertilizer/main.py`.
+- Contended arena candidate p99: 20.5 ms; max 563.3 ms. The harness's stricter
+  400 ms max gate failed; no engine timeout occurred. The standalone result above
+  was obtained separately with the current pinned interpreter, not a fresh venv.
+- `uv run pytest -q`: 175 passed, 2 pre-existing ghost-corpus failures
+  (`rank1` tier and index/file mismatch), as in the preceding cycle.
+- Compilation and `git diff --check` pass. No separate lint configuration exists.
+- GitHub CLI is unauthenticated and the installed connector returns 404 for the
+  repository; a PR could not be opened. Changes remain on the feature branch.
+
+Evidence: `data/results/{fertilizer-confirm-100,brain-v1-confirm-100,
+neardelivery-confirm-100}/results.json`, `economics-paired-deltas.json`, and
+`data/results/kpi/{fertilizer-confirm-kpi-40,brain-v1-confirm-kpi-40}/kpi.json`.
+The finite opening-allocation search is `scripts/search_brain_opening.py`:
+10 policies (control plus 9 cells), seeds 20?29 in both seats, V46 opponent.
+A winning cell still needs confirmation outside all seeds used above.
+
+---
+
 # Brain v1 results
 
 Branch `bot/brain`; bot `bots/brain/main.py`. Closed-loop only: no tapes,

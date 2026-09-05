@@ -1017,6 +1017,42 @@ def _policy(obs, t0):
         for (x, y) in sorted(weeds, key=lambda p: rank.get(p, 999))[:24]:
             add(2, x, y, ["DIG"])
 
+    # Fertilizer is an investment: use it only when the next three days of
+    # extra harvest value repay the unit's market value and delivery effort.
+    fertilizer_jobs = []
+    fertilizer_quote = market_price('FERTILIZER', mkt_inv.get('FERTILIZER', MARKET_I0) - 1)
+    for x, y, tile in plants:
+        crop = tile['crop']
+        spec = CROPS[crop]
+        age = day - int(tile['planted_day'])
+        if tile.get('fertilized_until_day', -1) >= day or day >= FINAL_DAY:
+            continue
+        extra = 0
+        for offset in range(3):
+            if day + offset >= FINAL_DAY:
+                continue
+            if spec['ongoing']:
+                production_age = age + offset + 1 - spec['first_yield_day']
+                if production_age >= 0 and production_age % spec['interval'] == 0:
+                    if production_age // spec['interval'] < spec['max_yield']:
+                        extra += 1
+            elif (not (offset == 0 and tile.get('watered_today'))
+                  and WINDOW_START[crop] <= age + offset <= TARGET_AGE[crop]):
+                extra += 1
+        if not spec['ongoing']:
+            normal_remaining = max(0, TARGET_AGE[crop] - max(age, WINDOW_START[crop]) + 1)
+            extra = min(extra, max(0, spec['max_yield'] - tile.get('yield_units', 0) - normal_remaining))
+        price = market_price(crop, mkt_inv.get(crop, MARKET_I0) + 12)
+        if extra * price > fertilizer_quote * 1.4 + 50:
+            fertilizer_jobs.append((x, y))
+            add(-1, x, y, ['FERTILIZE'], need='FERTILIZER')
+    fertilizer_reserve = min(8, len(fertilizer_jobs))
+    fertilizer_carried = carried.get('FERTILIZER', 0)
+    if fertilizer_reserve > fertilizer_carried and shed.get('FERTILIZER', 0) > 0:
+        amount = min(3, fertilizer_reserve - fertilizer_carried, shed['FERTILIZER'])
+        for sx, sy in _shed_tiles(n)[:2]:
+            add(1, sx, sy, ['PICKUP', 'FERTILIZER', amount], skip='FERTILIZER')
+
     # ---- assignment --------------------------------------------------------------
     actions = {}
     if last_day and hour >= DROP_HOUR:
@@ -1109,7 +1145,9 @@ def _policy(obs, t0):
     slots = MAX_MARKET_ORDERS - len(orders)
     if slots > 0:
         wheat_reserve = 0 if day >= LIQUIDATE_DAY else (n_animals + WHEAT_FEED_BUFFER)
-        orders.extend(_sell_orders(shed, mkt_inv, day, wheat_reserve, slots))
+        sale_shed = dict(shed)
+        sale_shed['FERTILIZER'] = max(0, sale_shed.get('FERTILIZER', 0) - fertilizer_reserve)
+        orders.extend(_sell_orders(sale_shed, mkt_inv, day, wheat_reserve, slots))
 
     # Buy order matters: orders execute in list order and each one spends the bank the
     # earlier ones left behind. Feed first -- an unfed animal escapes after two days and
@@ -1169,6 +1207,10 @@ def _policy(obs, t0):
         if (0 <= n_extra < 2 and len(unlocked) < plan.target_quadrants and LAND_FIRST_DAY <= day <= LAND_LAST_DAY
                 and money >= LAND_TRIGGER[n_extra]):
             buys.append(["BUY_LAND"])
+
+    fertilizer_deficit = fertilizer_reserve - fertilizer_carried - shed.get('FERTILIZER', 0)
+    if fertilizer_deficit > 0 and money > MONEY_RESERVE + fertilizer_deficit * fertilizer_quote:
+        buys.append(['BUY_PRODUCT', 'FERTILIZER', fertilizer_deficit])
 
     for b in buys:
         if len(orders) >= MAX_MARKET_ORDERS:
