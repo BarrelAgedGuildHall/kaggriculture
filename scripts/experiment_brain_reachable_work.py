@@ -1,10 +1,14 @@
 """Build a nightly reachability filter; no games or promotion by default."""
 import argparse
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 import time
 
 from benchmark_brain_dispatch_cost import load
+from compare_paired import compare, read
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -32,6 +36,7 @@ def build(source):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--baseline', default='bots/brain/main.py')
+    parser.add_argument('--run', action='store_true', help='Run only after other experiments finish')
     args = parser.parse_args()
     source = build((ROOT/args.baseline).read_text(encoding='utf-8-sig'))
     path = ROOT/'bots/brain_reachable_work/main.py'
@@ -55,6 +60,30 @@ def main():
                   decision='Prepared only; paired game measurement required.')
     (out/'offline-checks.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
     print(json.dumps(report))
+    if args.run:
+        arena = ROOT/'data/arena-reachable-work'
+        environment = dict(os.environ, KAGGRI_ARENA_DIR=str(arena))
+        tags = {name: f'reachable-work-{name}-screen-16' for name in ('control', 'candidate')}
+        assert not any((ROOT/'data/results'/tag/'results.json').exists() for tag in tags.values()), 'Existing screen results; do not overwrite'
+        control = ROOT/'bots/brain_reachable_control/main.py'
+        control.parent.mkdir(parents=True, exist_ok=True)
+        control.write_text((ROOT/args.baseline).read_text(encoding='utf-8-sig'), encoding='utf-8')
+        for name, agent in [('control', control), ('candidate', path)]:
+            with (out/f'{name}.log').open('w', encoding='utf-8') as log:
+                subprocess.run([sys.executable, '-X', 'utf8', str(ROOT/'scripts/evaluate.py'),
+                                '--agent', str(agent), '--opponents', 'bots/v46/main.py',
+                                'bots/tapeselect/main.py', '--n', '16', '--seed-base', '210',
+                                '--workers', '2', '--tag', tags[name]], cwd=ROOT, env=environment,
+                               stdout=log, stderr=subprocess.STDOUT, check=True)
+            result = json.loads((ROOT/'data/results'/tags[name]/'results.json').read_text())
+            print(name, result['overall'], flush=True)
+        candidate_games, candidate_stats = read(arena, tags['candidate'])
+        control_games, control_stats = read(arena, tags['control'])
+        paired = dict(per_opponent=compare(candidate_games, control_games),
+                      candidate=candidate_stats, control=control_stats,
+                      decision='Screen only; no automatic promotion or submission.')
+        (out/'paired.json').write_text(json.dumps(paired, indent=2), encoding='utf-8')
+        print(json.dumps(paired), flush=True)
 
 
 if __name__ == '__main__':
