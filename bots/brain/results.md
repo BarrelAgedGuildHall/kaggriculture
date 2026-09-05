@@ -611,3 +611,24 @@ but opponent bank also rose. No promotion: reference margins uncertain.
 Evidence data/results/brain-reachable-work/paired.json. Session28951 exited.
 Herd-demand screen now running from retained v4,96games,two workers,
 fresh matched control,seeds200-207,both seats. No combination with reachability.
+
+## Herd-demand screen and broader v4 benchmark (cycle 11)
+All96games finished without crash/timeout flags; all policies0/16 wins vs
+both references, seeds200-207 both seats. No herd variant promoted.
+- Sheep2: own bank +$9942 V46/+$8917 tape; margin +$1206 V46
+  (seed-pair CI -$6583 to +$9032), -$3243 tape (CI -$15266 to +$6629).
+- Sheep5: own bank +$934 V46/+$7593 tape; margin +$5719 V46
+  (CI -$1444 to +$11678), +$1653 tape (CI -$12161 to +$12841).
+Opponents also benefited in several comparisons; higher own bank alone does
+not establish competitive improvement. These measurements do not by themselves
+identify the mechanism. data/results/brain-herd-demand/{sheep2,sheep5}-paired.json.
+Controller56292 exited. V4 unchanged.
+
+Started107game v4 historical-opponent benchmark with2workers, session26616,
+scripts/ghost_eval.py --agent bots/brain_value_v4/main.py --workers2
+--tag brain-v4-ghost-107 (use spaces after option names). Opponent tapes remain
+black-box benchmarks, not strategy inputs/training examples. No result yet.
+Added scripts/compare_ghost_results.py: asserts identical complete opponent,
+seed and seat sets, retains faults and clusters bootstrap by seed. Reproduced
+existing v3-v2 result exactly:683.663551/game,653.753968/seed,
+CI313.468254..1022.976190,107games63seeds. Evidence brain-v3-ghost-reproduced.json.
