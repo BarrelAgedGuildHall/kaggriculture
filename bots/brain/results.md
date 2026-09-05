@@ -321,3 +321,36 @@ snapshot, not a complete daily starvation count. It supports investigating feed
 routing and task deadlines; it does not establish causality. Census saved at
 `data/results/brain-own-diagnostic/feed-census.json`. No opponent actions were
 used to construct the policy.
+
+## Feed-delivery screen and next deadline experiment
+
+All128 screen games completed on eight paired seeds190-197 against both
+references, without crash/timeout flags. No delivery variant is retained.
+
+| Variant | V46 wins /16 | tapeselect wins /16 | Margin delta vs V46 | Margin delta vs tapeselect |
+|---|---:|---:|---:|---:|
+| Control | 0 | 0 | 0 | 0 |
+| One carrier | 2 | 0 | -$19725 | -$9647 |
+| Distributed | 0 | 0 | +$1164 | -$62 |
+| Distributed, earlier pickup | 2 | 0 | +$559 | +$4177 |
+
+One carrier is a clear margin regression: paired 95% seed-bootstrap intervals
+[-$32081,-$6594] against V46 and [-$18390,-$1204] against tapeselect. Both intervals
+for each distributed variant include zero. The earlier-pickup variant remains
+unconfirmed despite two wins; no promotion from this small tuning cohort.
+Evidence: `data/results/brain-feed-delivery/{results.json,concentrated-paired.json,
+distributed-paired.json,distributed-early-paired.json}`.
+
+Replaying only our own final unit actions before the daily refresh in saved v2
+seed51 confirms 398 animal-days: 71.61% fed,69.35% both fed and cared. On day20
+only5/18 animals received feed even after the final action. This is single-game
+diagnostic evidence, not an evaluation cohort. The engine unit-action phase was
+used directly; opponent actions were replaced with PASS for this own-farm census.
+`data/results/brain-own-diagnostic/feed-final-census.json`.
+
+`scripts/experiment_brain_feed_deadlines.py` tests feed priority raised at hour12,
+feed at12 plus care at16, and feed at6 plus care at12. The two-day survival
+emergency remains more urgent, delivery remains unchanged, and last-day useless
+husbandry is still excluded. The byte-identical completed v3 control is reused;
+three variants each run32 games against both references, seeds190-197, two workers.
+It is running; results must be observed before conclusions or integration.
