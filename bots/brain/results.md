@@ -1031,3 +1031,28 @@ policy-checks.json;bench/check_milk_mix.py. No opponent actions/identity inputs.
 Scripts/experiment_brain_milk_mix.py --run:96games,seeds330-337,both seats,
 two workers sequentially,control/milk12/milk18 each16perV46/tapeselect.
 No automatic adoption/submission. V4 retained unchanged.
+
+## Milk mix rejected; ongoing crop batching (resumed cycle10)
+96milk-mix games,zero faults,all arms0/16perreference. Milk12marginV46+12
+(CI-9586.75..11029),tape-1290.69(-9236.19..6412.63);ownbank-2153.75/-1919.75.
+Milk18marginV46-16771.94(-29582.69..-3738.63),tape-9458.63(-18095.81..1725.44);
+ownbank-21897.19/-16740.88. Neither adopted; all-cow clearly worseV46.
+10374 exited. Data/results/brain-milk-mix/{milk12,milk18}-paired.json.
+
+Own v4 diagnostic product-demand.json shows seed2400 town demand354strawberry,
+ours68sold; final strawberry price178 versus milk/wool/fertilizer1. This is
+one seed, not generalized unmet demand (rival supply also matters). Crop-work.json
+counts46strawberry harvest requests for68sold,31fertilize requests;13plant requests,
+4unused seeds. Requests are not verified successful actions in this census.
+
+New bounded batching for ongoing crops: require2or3held units, but flush at
+last production age, liquidation, or before next production would overflow.
+Conservatively assume fertilized next yield if fertilizer active, even if water
+is not yet applied. Other crops unchanged. Actual engine fixtures for tomato/
+strawberry,with/without continuous fertilizer, preserve4/8units. Batch3 cuts
+harvest actions4->2 in all four fixtures;batch2 cuts only unfertilized4->2.
+Fixture labor/watering/fertilizer supplied immediately; not game-profit proof.
+Data/results/brain-crop-batch/engine-checks.json; bench/check_crop_batch.py.
+Scripts/experiment_brain_crop_batch.py --run started after10374 exited:
+96games,seeds340-347,both seats,two workers,control/batch2/batch3 each16per
+V46/tapeselect.120saved-state calls each passed. V4 retained, no auto adoption.
