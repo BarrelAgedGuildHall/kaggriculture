@@ -57,7 +57,7 @@ def main():
     args = parser.parse_args()
     source = (ROOT/args.baseline).read_text(encoding='utf-8-sig')
     out = ROOT/'data/results/brain-day-delivery'
-    arena = ROOT/'data/arena-eggs'
+    arena = ROOT/'data/arena-day-delivery'
     out.mkdir(parents=True, exist_ok=True)
     variants = {'control': source, **build(source)}
     tags = {name: f'day-delivery-{name}-screen-16' for name in variants}

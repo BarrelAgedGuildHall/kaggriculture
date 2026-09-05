@@ -33,7 +33,7 @@ def main():
     args = parser.parse_args()
     source = (ROOT/args.baseline).read_text(encoding='utf-8-sig')
     out = ROOT/'data/results/brain-feed-pickup'
-    arena = ROOT/'data/arena-eggs'
+    arena = ROOT/'data/arena-feed-pickup'
     out.mkdir(parents=True, exist_ok=True)
     variants = {'control': source, **build(source)}
     tags = {name: f'feed-pickup-{name}-screen-16' for name in variants}
