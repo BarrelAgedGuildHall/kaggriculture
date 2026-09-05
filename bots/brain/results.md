@@ -114,7 +114,7 @@ The retained Brain v2 source remains unchanged. Completed comparisons:
 | Limit speculative empty pastures | 20 | 0 wins; screen margin improves $3,716 | Keep as search parameter, unconfirmed |
 | Buy approved land before seeds/animals | 20 | 0 wins; screen margin worsens $6,801 | Reject |
 | Land ordering plus pasture limit | 20 | 0 wins; screen margin worsens $14,649 | Reject |
-| Keep late-season cap at 12 hands | 20 | 0 wins; delta +$523, CI -$307 to +$1,331 | Fresh-seed confirmation running |
+| Keep late-season cap at 12 hands | 100 fresh | 4 wins; delta +$901, CI +$538 to +$1,262 | Checking second reference before promotion |
 | Raise peak cap to 14 | 20 | 0 wins; delta +$535, CI -$425 to +$1,489 | Unconfirmed |
 
 All figures compare the same seeds and both seats with the unchanged control.
@@ -123,8 +123,12 @@ timeouts; several local maximum-call checks exceeded the stricter 400 ms thresho
 under concurrent load. Raw evidence: `data/results/autopilot1-paired-deltas.json`,
 `late-labor-screen-deltas.json`, and the dispatch/capital/late-labor result folders.
 The combined completed priority/dispatch/capital/late-labor comparisons total 820
-games including their controls. New final-seed evidence for v2 vs V46 is 4/400 wins
-across seeds 1100-1149, 1200-1249, 1300-1349 and 1400-1449.
+games including their controls. With the new late-labor control, final-seed evidence for v2 vs V46 is 8/500 wins
+across seeds 1100-1149, 1200-1249, 1300-1349, 1400-1449 and 1700-1749.
+The keep12 candidate also went 4/100 vs V46 but only 28/100 vs v2. Its $901
+reference-margin gain is statistically supported; a matched 100-game comparison
+against tapeselect is running for both arms before any promotion. Both arms had
+zero crashes/timeouts, but their maxima under concurrent load exceeded 400 ms.
 
 Own-replay diagnosis (`data/results/brain-own-diagnostic/main_vs_main_seed51.json`):
 on day 4 the starting quadrant had 15 plants, 2 animals and 8 empty pastures, with
