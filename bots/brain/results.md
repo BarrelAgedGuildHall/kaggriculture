@@ -753,3 +753,19 @@ reproducer artisans/ceo/bench/verify_lean_water_growth.py.
 Optional --run ready:96games,control/early/lean,seeds250-257,both seats,
 V46/tapeselect,two workers sequentially. NOT launched while reachability
 confirmation53698 runs. Rebuild from champion if it changes before the screen.
+
+## Reachability confirmation complete (cycle 17)
+400games finished,zero crash/timeout flags. Freshseeds2000-2049,both seats:
+V4 3/100 V46,0/100tape; reachable4/100 V46,0/100tape. Candidatep99 6.751ms,
+max103.762ms. Margin +$3330.11 V46 (seed-pair CI -1517.56..8144.25),
++$874.18 tape (CI -2117.20..3843.00); own bank +1137.61/+1201.12.
+No promotion: intervals still includezero. Component gate not met, so no KPI
+jobs ran. Controller53698 fully exited. V4 retained11/200 held-outV46,
+0/200tape across1900/2000bands,5/107historical wins.
+Evidence data/results/reachable-work-confirm/paired.json and
+ data/results/reachable-work-{control,candidate}-2000-n100/results.json.
+
+Started prepared lean-water screen from retained v4,session45976 at21:04UTC:
+96games,control/early/lean each16per V46/tapeselect,seeds250-257,both seats,
+two workers sequentially. Source rebuilt and policy/boundary checks executed
+by runner. No overlap with prior controller, no automatic promotion.
