@@ -941,3 +941,20 @@ of joint matching and territory cost; prior softer greedy assignment differed.
 Both120policy calls pass. Baseline v4 unchanged, no imitation inputs.
 Scripts/experiment_brain_joint_travel.py; data/arena-joint-travel and
  data/results/brain-joint-travel. No automatic promotion/submission.
+
+## Joint-travel screen complete; pickup confirmation (resumed cycle5)
+96games,zero faults,seeds300-307,both seats. Control and soft each2/32wins;
+free0/32. Free marginV46+1457.44(CI-6100.56..9087),tape-6394.31
+(-17809.75..4625.44);ownbank+3094.44/+10316.25. SoftmarginV46+2364.63
+(-4315.94..7461.50),tape+2378(-825.06..5663.31);ownbank+1322.50/-3147.81.
+No adoption: intervals include zero and free loses reference wins.
+Evidence data/results/brain-joint-travel/{free,soft}-paired.json.23868 exited.
+
+Selected value-aware pickup for fresh confirmation: corrects a specific
+feeding/pickup mismatch and had positive ownbank/margin means against both
+references in its screen. This is screen-based selection, not confirmation.
+Frozen bots/brain_feed_pickup/main.py; scripts/confirm_brain_feed_pickup.py
+runs400games,seeds2300-2349,both seats,controlv4/candidate each100perreference,
+two workers sequentially. Conditional component measurements only if both
+margins positive and one interval excludes zero, nofaults. No auto adoption.
+Started after23868 exited. V4 retained15/400held-outV46,0/400tape.
