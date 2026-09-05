@@ -723,6 +723,33 @@ this is uncertainty resolution, not adoption. Rebuilt from v4 and rechecked
 719policy calls/4boundaries. Frozen candidate bots/brain_reachable_work/main.py.
 New scripts/confirm_brain_reachable.py:100games/opponent/arm,400total,
 fresh seeds2000-2049,both seats,two workers sequentially. Conditional40 KPI
-seeds/seats games per arm only if both margins positive, at least oneCIpositive,
+games per arm (20seeds x2seats) only if both margins positive, at least oneCIpositive,
 and no faults. No automatic promotion/submission. Rejects existing result tags
 and checks subprocess exits. Session53698 running from20:47UTC.
+
+## Lean-watering preparation and action diagnostics (cycle 16)
+Exact own unit-action census: savedv2 seed51 only5ineffective PICKUP actions
+plus109PASS; olderlivev0 only1109PASS unchanged. No failed movement in either.
+Immediate reversals:158/1811consecutive move pairs(v2),62/2336(v0). These older
+single-game diagnostics do not establish a current-v4 cohort bottleneck.
+Evidence data/results/brain-own-diagnostic/{unit-action-census,route-reversals}.json;
+reproducer artisans/ceo/bench/diagnose_unit_actions.py. Engine permits movement
+onto LOCKED tiles, so no path restriction was added.
+
+Prepared experiment_brain_lean_water.py. Early variant removes forced hourly
+watering before first yield; lean removes forced watering whenever there is
+no survival emergency, non-ongoing yield gain, or payable fertilizer bonus.
+Preserves planting-day survival (new plants start consecutive_unwatered=1),
+all yield-window watering and fertilized ongoing-production ticks.
+Both120policy calls and9fertilizer timing/capacity boundaries passed.
+Ten isolated engine fixtures (5crops xfertilized/unfertilized) preserved total
+harvest under daily,early,lean schedules with actual WATER/HARVEST/refresh calls.
+Examples: wheat5 ->4water actions,same4/6yield; strawberry17 ->9lean,same4/8yield;
+melon11 ->8unfertilized or7fertilized,same6yield. Continuous fertilizer is a
+fixture condition, not free fertilizer in the bot. Immediate labor availability
+and common harvest schedules in fixtures do not prove full-game gains.
+Evidence data/results/brain-lean-water/{offline-checks,engine-growth-checks}.json;
+reproducer artisans/ceo/bench/verify_lean_water_growth.py.
+Optional --run ready:96games,control/early/lean,seeds250-257,both seats,
+V46/tapeselect,two workers sequentially. NOT launched while reachability
+confirmation53698 runs. Rebuild from champion if it changes before the screen.
