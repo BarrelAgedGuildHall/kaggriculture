@@ -545,3 +545,22 @@ one-step task with/without enough time, empty graph). No game run yet.
 Evidence data/results/brain-reachable-work/offline-checks.json.
 Rebuild with --baseline if retained champion changes. After active controller
 finishes, screen this independently from the already prepared herd caps.
+
+## Cycle 9: reachability verification and paired runner
+Added optional --run to scripts/experiment_brain_reachable_work.py:64games,
+control/candidate each16 per V46/tapeselect, seeds210-217,both seats,two
+workers sequentially, isolated data/arena-reachable-work. Rejects existing
+result tags, checks subprocess exit, compares exact paired seed/seat sets.
+No automatic promotion. Not launched while husbandry confirmation runs.
+
+Tracing both policies on identical own saved observations verified zero
+unreachable assignments in candidate vs501 control. Control6369 assignments,
+candidate6073; fallback moves180 ->192,709 dispatcher calls each. This is a
+mechanism check, not measured full-game productivity or win improvement.
+Evidence data/results/brain-reachable-work/assignment-check.json;
+reproducer artisans/ceo/bench/diagnose_reachable_work.py (workspace root).
+Build-only checks still pass719 policy calls and4 boundaries. Whitespace clean.
+Purchase diagnostic now explicitly uses observation[t] and action[t+1];
+requested-order counts unchanged. Reproducer artisans/ceo/bench/animal_purchase_census.py.
+Active husbandry-value candidate has90/200 games observed at this update;
+no paired result available and retained champion unchanged.
