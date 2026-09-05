@@ -821,3 +821,24 @@ V4 retained with pooled15/300V46,0/300tapeselect,5/107historical wins.
 Started the prepared egg screen from unchanged v4 after the controller exited:
 96games,seeds260-267,both seats,two workers sequentially,control/egg12/egg18.
 Each policy passed120 saved-state calls again at launch. No automatic promotion.
+
+## Egg screen rejected; daytime delivery trial (cycle22)
+All96 egg games completed without crashes/timeouts; all policies0/16 against
+each reference on seeds260-267,both seats. Egg12 margin -26202.06V46
+(CI -40998.31..-11350.38),-23577.25tape(-41632.13..-8115.00).
+Egg18 -28894.63V46(-41782.19..-16696.81),-28386.31tape(-48601.56..-10465.38).
+All four intervals exclude zero negatively. Both rejected, v4 retained.
+Evidence data/results/brain-eggs/{egg12,egg18}-paired.json;62699 exited.
+
+New independent short-delivery mechanism: units carrying goods with at least
+$250 expected sale value may detour to a shed within1 or3 steps throughhour18.
+Exclude wheat carriers, unplaced animals and fertilizer carriers when crop
+fertilizer is reserved. Reserve shed capacity across proposed deliveries.
+Use own market-price/sale functions; sale occurs after shed observation updates.
+No opponent action or identity input. This sacrifices work for earlier sales;
+there is no measured benefit yet. Source scripts/experiment_brain_day_delivery.py.
+Both variants passed120 policy calls then719 full saved-state calls;near1
+changes15states,near3 changes70. Late-hour/final-day actions remain identical.
+Evidence data/results/brain-day-delivery/{offline-checks,action-checks}.json.
+Started96game screen after egg controller exited:seeds270-277,both seats,
+control/near1/near3 each16perV46/tapeselect,two workers sequentially.
