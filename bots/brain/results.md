@@ -958,3 +958,22 @@ runs400games,seeds2300-2349,both seats,controlv4/candidate each100perreference,
 two workers sequentially. Conditional component measurements only if both
 margins positive and one interval excludes zero, nofaults. No auto adoption.
 Started after23868 exited. V4 retained15/400held-outV46,0/400tape.
+
+## Prepared earlier crew investment (resumed cycle6)
+Observed retained-v4 component aggregate: four hands/day through day6,
+mean bank$368.20 atstep240(day10),$25150.43 at480,$75226.45 terminal.
+Evidence data/results/kpi/husbandry-value-candidate-kpi-40/kpi.json; this
+is a40game measured cohort, not a causal proof that labor is constrained.
+Test higher desired hire floors6/8 beforeday10 under existing phase caps,
+wage-value and cash-reserve checks. Initial plan cap5 still applies, so the
+variant names do not promise6/8 actual hands. Day10 onward unchanged.
+Both719policycalls pass:floor6 changes23states,34extra requested hires;
+floor8 changes27states,68extra requested hires across older saved own states.
+Each1438 zero-cash/late-hour checks pass; later-day actions identical.
+These are counterfactual requests, not executed hires or economic gain.
+Evidence data/results/brain-early-crew/{offline-checks,hiring-checks}.json;
+reproducer artisans/ceo/bench/check_early_crew.py.
+Prepared scripts/experiment_brain_early_crew.py; build-only default.
+Optional --run:96games,seeds310-317,both seats,control/floor6/floor8 each16per
+V46/tapeselect,two workers sequentially. NOT running while pickup40068 runs.
+Rebuild from retained champion if it changes. No imitation inputs.
