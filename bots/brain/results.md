@@ -482,3 +482,20 @@ remains available. Artifact `dist/brain-fast-dispatch/main.py`.
 The previous controller has exited. Value-aware husbandry now runs with two
 workers: `scripts/experiment_brain_husbandry_value.py --run`, three variants,
 96 games, matched existing v3 control, isolated arena. No new submission.
+
+## Value-aware husbandry screen (2026-09-05)
+All 96 games completed without crash/timeout flags, seeds190-197 both seats.
+Current quotes and exact production timing only; no imitation. Comparisons use
+matched frozen v3 control from feed-delivery-control-screen-16.
+- Care-only gating: 0/16 wins against each reference. Margin -$8706 vs V46
+  (seed-pair CI -$19106 to -$756), +$4237 vs tapeselect (CI -$1319 to +$9482). Rejected.
+- Maintenance feeding: 2/16 V46, 0/16 tapeselect. Margin +$2125 vs V46
+  (CI -$9531 to +$12358), +$4526 vs tapeselect (CI +$1399 to +$7657).
+- Value-aware deadlines: 2/16 V46, 0/16 tapeselect. Margin +$761 vs V46
+  (CI -$9546 to +$10614), +$8136 vs tapeselect (CI +$3404 to +$13117).
+  Own bank gains $4330/$4213. Selected for fresh confirmation, not promoted.
+Evidence: data/results/brain-husbandry-value/{results.json,*-paired.json}.
+Fresh confirmation: scripts/confirm_brain_value.py, seeds1900-1949, both seats,
+100 games per opponent per arm; two workers, sequential arms. Conditional
+40-game KPI runs per arm use the same positive-margin/no-fault gate as the
+previous controller. No automatic promotion or submission.
