@@ -807,3 +807,17 @@ Two saved original games also checked for terminal stock: older v2 carried
 one fertilizer; live v0 carried3milk/1wool, with zero sellable shed stock in
 both. This is not a v4 cohort and does not rule out terminal losses elsewhere.
 Evidence data/results/brain-own-diagnostic/terminal-stock.json.
+
+## Conservative watering confirmation complete (cycle21)
+400 games on fresh seeds2100-2149,both seats,zero crashes/timeouts.
+Candidate8/100V46 versus v4 4/100;both0/100tapeselect. Candidatep99 5.659ms,
+max102.29ms. Paired margin V46+$2600.36 (CI -3458.38..7988.27),tapeselect
+-$1123.57 (CI -5045.10..2626.64). Own bank +6159.07/-9.65.
+No promotion: neither margin interval excludes zero and tape mean is negative.
+Conditional component criteria were not met; no additional KPI games ran.
+Evidence data/results/early-water-confirm/paired.json and individual
+ early-water-{control,candidate}-2100-n100/results.json. Controller7316 exited.
+V4 retained with pooled15/300V46,0/300tapeselect,5/107historical wins.
+Started the prepared egg screen from unchanged v4 after the controller exited:
+96games,seeds260-267,both seats,two workers sequentially,control/egg12/egg18.
+Each policy passed120 saved-state calls again at launch. No automatic promotion.
