@@ -426,3 +426,32 @@ Evidence `data/results/brain-dispatch-cost/results.json`; generated source
 `bots/brain_fast_dispatch/main.py`. Retained source and running arena snapshots
 are unchanged. A standalone full-game check remains required before integration,
 after the active confirmation and any conditional component runs finish.
+
+## Fresh husbandry confirmation
+
+All400 paired games finished, seeds1800-1849 against both references. Candidate
+and v3 each win2/100 against V46 and0/100 against tapeselect; no crash/timeout
+flags. Candidate p99 7.354ms,maximum100.220ms. Candidate margin gains are +$2009
+against V46 (95% seed-pair CI -$2747 to +$6723) and +$4610 against tapeselect
+(CI +$1433 to +$7677). Own bank gains are $1334 and $557 respectively; much of the
+tapeselect margin gain comes from lower opponent revenue. Wins have not improved.
+
+`data/results/husbandry-confirm/paired.json` qualifies the policy for component
+measurement, not automatic promotion. Control40 KPI games are complete; candidate40
+KPI games are running. Retained v3 is unchanged and no submission was made.
+
+## Original live submission diagnostic
+
+Own submission56023381 metadata returned39 scored completed games,18 wins and
+mean bank$64833. This is its observed low-rating cohort, not the strong local
+benchmark. Latest inspected own episode105889015 completed720 turns, both DONE,
+own statuses only ACTIVE/DONE, bank$47320 versus$124526. It does not show an engine
+crash or timeout. Exact phase analysis reports productive-action fraction30.81%,
+1109 idle unit-slots,$7434 wages,398animal-days,353fed,352fed+care, and zero plants
+lost at the deadline. This is the older live v0 and a different board, so it is not
+a paired comparison with v3. Evidence in `data/results/brain-live-diagnostic/`:
+`episodes.json`, `episode-105889015-replay.json`, and `kpi.json`.
+
+Authenticated leaderboard at2026-09-05 19:43UTC: original v0 rating637.3; historical
+v47 2183.4; historical tapeselect2235.1. Leader Jesse Bullard2959.3, tenth2837.6.
+Only our own replay was fetched for diagnosis; no actions enter strategy training.
