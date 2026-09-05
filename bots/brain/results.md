@@ -914,3 +914,30 @@ Evidence data/results/day-delivery-resumed-confirm/paired.json. Interrupted
 Started prepared joint-dispatch screen from unchanged v4 after81011 exited;
 64games,seeds280-287,both seats,two workers sequentially. Both policies
 passed120 saved-state calls again at launch. Value-aware pickup remains queued.
+
+## Joint dispatch and pickup screens complete (resumed cycle4)
+Joint:64games,zero faults,all arms0/16perreference. MarginV46+$6302.75
+(CI83..12699.50),tape-$5436.44(-11782.50..1320.13);ownbank-2300.81/-3387.44.
+Not promoted: mixed reference performance and lower ownbank.37988 exited.
+Pickup:64games,zero faults,all arms0/16perreference. MarginV46+$4223.50
+(CI-6266.44..15420.88),tape+$1419.94(-5057.56..9886.19);ownbank+8204.19/+1775.
+Positive means but wide intervals; unconfirmed, not promoted.22364 exited.
+Reports data/results/brain-joint-dispatch/joint-paired.json and
+ data/results/brain-feed-pickup/value-paired.json.
+
+Storage correction: day-delivery, joint-dispatch and feed-pickup screens
+used data/arena-eggs due to a copied runner default. Their unique tags and
+sequential execution kept results separate. Read-only checks verified all
+seven32game arms, identical pair sets within each experiment and zero faults.
+Evidence data/results/brain-day-delivery/arena-location-checks.json.
+Historical rows stay in that arena. Defaults now use separate directories;
+existing result guards still prevent overwriting tags. Confirmations already
+used their own correct directories. No bot policy changed in this correction.
+
+Started joint-travel screen after22364 exited:96games,seeds300-307,both seats,
+control/free/soft each16perV46/tape,two workers sequentially. Uses the tested
+joint solver, with territory penalty0 or4 instead of1000. This tests interaction
+of joint matching and territory cost; prior softer greedy assignment differed.
+Both120policy calls pass. Baseline v4 unchanged, no imitation inputs.
+Scripts/experiment_brain_joint_travel.py; data/arena-joint-travel and
+ data/results/brain-joint-travel. No automatic promotion/submission.
