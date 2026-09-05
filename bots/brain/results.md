@@ -295,3 +295,29 @@ This supports a margin gain against one reference, with uncertainty against the
 other and no wins. The comparison against current v3 was interrupted at the
 founder's request; after explicit resumption it is being rerun with two workers
 under `evolution-v3-resumed-final-100`. Do not treat that incomplete run as evidence.
+
+## Resumed comparison against current v3
+
+The full two-worker rerun completed 200 games on seeds 1600-1649: v3 wins 1/100
+against V46 and 0/100 against tapeselect. Zero crashes/timeouts; p99 8.327 ms,
+maximum 159.274 ms. Combined with the prior 1700-1749 band, v3 is 5/200 versus V46.
+
+Selected search policy 0058 versus current v3: paired margin +$2099 against V46
+(95% seed-pair CI -$2277 to +$6428) and +$7064 against tapeselect (CI +$1389 to
++$13007). The search candidate still wins 0/100 against each reference. It is not
+promoted: a reference margin improves, but V46 improvement remains uncertain and
+wins have not increased. Evidence `data/results/evolution-v3-resumed-final-100/`
+and `data/results/brain-evolution/paired-v3-final.json`.
+
+Next mechanism: feed distribution, holding herd size and economics fixed.
+`scripts/experiment_brain_feed_delivery.py` tests control, one carrier, up to eight
+carriers with smaller loads, and distributed pickup at an earlier priority. Each
+gets eight seeds (190-197), both seats, against V46 and tapeselect: 128 games total,
+two workers, sequential registrations. No promotion from a tuning result alone.
+
+Diagnostic evidence from our existing v2 seed-51 replay: day20/hour23 has 13 of
+18 animals still unfed while six workers carry 35 wheat. This is a pre-final-action
+snapshot, not a complete daily starvation count. It supports investigating feed
+routing and task deadlines; it does not establish causality. Census saved at
+`data/results/brain-own-diagnostic/feed-census.json`. No opponent actions were
+used to construct the policy.
