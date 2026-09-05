@@ -354,3 +354,29 @@ emergency remains more urgent, delivery remains unchanged, and last-day useless
 husbandry is still excluded. The byte-identical completed v3 control is reused;
 three variants each run32 games against both references, seeds190-197, two workers.
 It is running; results must be observed before conclusions or integration.
+
+## Husbandry deadline screening
+
+All96 deadline games completed, zero crash/timeout flags. Against the matched
+control, feed12 changes margins -$6376 vs V46 /+$12554 vs tapeselect; feed6/care12
+changes -$3628/+$6071. Both are rejected for weakening the V46 point estimate.
+
+Selected feed12/care16:2/16 wins vs V46,0/16 vs tapeselect, control0/16 each.
+Paired margin gains +$2659 against V46 (95% seed-pair CI -$6698 to +$11668) and
++$10917 against tapeselect (CI +$2966 to +$20452). This small tuning cohort
+supports further testing, not promotion. `data/results/brain-feed-deadlines/`.
+
+Fresh confirmation now runs through `scripts/confirm_brain_husbandry.py`: frozen
+v3 and `bots/brain_feed_deadline_both12/main.py`, each100 games per reference,
+seeds1800-1849, both seats, two workers sequentially. Total400 games. It writes
+`data/results/husbandry-confirm/paired.json`. Only if both reference point margins
+improve and at least one interval excludes zero, with no fault flags, does it
+run40 instrumented games per arm against V46. No automatic integration/submission.
+
+The existing engine-phase KPI extractor is now included in this branch with
+animal-day, fed-animal-day and fed+cared-animal-day counters. These are captured
+after final daily unit actions and before refresh; days without a refresh are
+excluded. On the saved full720-turn seed51 replay it reproduces the independent
+census exactly:398 animal-days,285 fed,276 fed+cared, bank$82827,DONE. Aggregate
+fractions also match exactly. Evidence `feed-kpi-verified.json` in the own diagnostic
+folder. Compilation/whitespace checks pass; no new full-suite claim is made.
