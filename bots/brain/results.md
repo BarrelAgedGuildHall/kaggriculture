@@ -977,3 +977,17 @@ Prepared scripts/experiment_brain_early_crew.py; build-only default.
 Optional --run:96games,seeds310-317,both seats,control/floor6/floor8 each16per
 V46/tapeselect,two workers sequentially. NOT running while pickup40068 runs.
 Rebuild from retained champion if it changes. No imitation inputs.
+
+## Care-demand idea parked after functional checks (resumed cycle8)
+Prepared scripts/experiment_brain_care_demand.py to price care bonuses using
+half/full revealed town consumption through the next bonus date, capped at
+three days. Pending immediate production retains current quote. No opponent
+sales/actions/identities modeled; future player supply is unmodeled, so this
+is an optimistic hypothetical input, not a dependable price forecast.
+648consumption boundary checks perarm passed (duplicates,unknownshops,
+interval endpoints,zerohorizon);719policycalls each passed with finalday
+identical. Both variants changed ZERO actions on the older own replay.
+Parked without an arena run due to no observed action effect on this sample.
+This does not prove no effect elsewhere. Early-crew remains next experiment.
+Evidence data/results/brain-care-demand/{offline-checks,forecast-checks}.json;
+reproducer artisans/ceo/bench/check_care_demand.py.
