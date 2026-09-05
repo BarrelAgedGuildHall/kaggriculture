@@ -699,3 +699,30 @@ v4 actions on120modified observations with no rival tiles,zero mismatches.
 Evidence data/results/brain-market-pressure/{offline-checks,zero-exposure-check}.json.
 Running96games from v4,fresh seeds240-247,both seats,V46/tapeselect,two workers
 sequentially,session2729. Automatic paired reports,no automatic adoption.
+
+## Shared-price screen and diagnostic follow-up (cycle 15)
+96games complete,zero faults. V4 control4/16 V46 wins; half/full pressure
+variants2/16 each. All0/16 tape. Neither variant promoted.
+Half margin -$1223 V46 (seed-pair CI -2893..77), +$895 tape (CI -442..1937).
+Full margin -$524 V46 (CI -2528..1318), +$65 tape (CI -2410..1979).
+Evidence data/results/brain-market-pressure/{half,full}-paired.json.2729 exited.
+
+Independent engine-phase reconstruction of our inventories verified all29
+nightly shed and bank states in each of two saved games. Overflow losses:
+v2 seed51 lost9units (5carrot,1melon,3wheat); older livev0 lost29units
+(9fertilizer,16wool,3milk,1strawberry). Not current-v4 cohort evidence or
+realized-money loss. Lower-priority lead. data/results/brain-own-diagnostic/overnight-loss.json;
+reproducer artisans/ceo/bench/diagnose_overnight_loss.py. No strategy training.
+V4 on saved own v2 observations:84duplicate travel destinations among3699
+travel assignments across719calls. Lower-priority lead; no game effect claim.
+Evidence duplicate-travel.json; reproducer artisans/ceo/bench/diagnose_duplicate_travel.py.
+
+Returning to reachable-work for a larger fresh confirmation. Its earlier
+8-seed screen had positive margins both references but intervals crossingzero;
+this is uncertainty resolution, not adoption. Rebuilt from v4 and rechecked
+719policy calls/4boundaries. Frozen candidate bots/brain_reachable_work/main.py.
+New scripts/confirm_brain_reachable.py:100games/opponent/arm,400total,
+fresh seeds2000-2049,both seats,two workers sequentially. Conditional40 KPI
+seeds/seats games per arm only if both margins positive, at least oneCIpositive,
+and no faults. No automatic promotion/submission. Rejects existing result tags
+and checks subprocess exits. Session53698 running from20:47UTC.
