@@ -769,3 +769,20 @@ Started prepared lean-water screen from retained v4,session45976 at21:04UTC:
 96games,control/early/lean each16per V46/tapeselect,seeds250-257,both seats,
 two workers sequentially. Source rebuilt and policy/boundary checks executed
 by runner. No overlap with prior controller, no automatic promotion.
+
+## Watering screen and fresh confirmation (cycle 18)
+All 96 screen games completed without crashes/timeouts. All arms won 0/16
+against each reference on paired seeds250-257, both seats.
+Early: margin +3463.50 V46 (CI -13581.38..14534.25), +11048.69 tapeselect
+(CI -64.06..23725.81); own bank +11655.56/+9321.56.
+Lean: margin +3538.81 V46 (CI -13492.88..14562.44), +10776.50 tapeselect
+(CI -1315.13..24310.31); own bank +11810.44/+7843.69.
+Neither adopted; intervals include zero. Evidence:
+data/results/brain-lean-water/{early,lean}-paired.json.
+Conservative early variant selected for fresh confirmation because its
+combined margin is slightly higher and it removes fewer watering actions.
+Frozen bots/brain_early_water/main.py; scripts/confirm_brain_early_water.py
+runs 400 games on seeds2100-2149, both seats, two workers sequentially,
+against retained v4 and both black-box references. Conditional component
+checks follow only if both margins improve and one interval excludes zero.
+No automatic promotion or submission. Controller started 21:10UTC.
