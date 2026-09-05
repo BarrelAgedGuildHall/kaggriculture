@@ -2,7 +2,8 @@
 
 2026-09-05 UTC. The sole change from v2 removes the fixed worker-cap cuts on
 days 25 and 28; hiring still requires observed work, affordable wages and cash
-reserve. Source matches `bots/brain_late_labor_keep12/main.py` exactly; v2 remains
+reserve. Source now skips discarded legacy dispatch work, with unchanged tested v3 actions;
+its pre-optimization policy is frozen at `bots/brain_late_labor_keep12/main.py`. V2 remains
 frozen at `bots/brain_fertilizer/main.py`. No imitation or opponent action data.
 
 Fresh seeds 1700-1749, both seats, 100 games per row:
@@ -455,3 +456,29 @@ a paired comparison with v3. Evidence in `data/results/brain-live-diagnostic/`:
 Authenticated leaderboard at2026-09-05 19:43UTC: original v0 rating637.3; historical
 v47 2183.4; historical tapeselect2235.1. Leader Jesse Bullard2959.3, tenth2837.6.
 Only our own replay was fetched for diagnosis; no actions enter strategy training.
+
+## Completed husbandry component result and retained CPU improvement
+
+Forty matched instrumented games per arm completed with no faults. Fed fraction
+rose72.44% to81.09%; fed+cared fraction70.62% to80.15%. However, bank declined
+$79004.575 to$77382.225 (-$1622.35) on this40-game subset. The arena database gives
+exactly the same subset banks; this differs from the full100-game mean because it
+covers only the first20 seeds, not because of instrumentation divergence.
+
+Milk units154.525 to158.7 but milk income fell$2084.15; wool units150.6 to173.2 and
+income rose$2469. Strawberry income fell$824.725 and wheat income$1363.525. Wages
+fell$49.4; productive fraction40.66% to41.13%. Better husbandry alone has not
+established a reliable broad economic or win improvement. The deadline candidate
+is not promoted; its full-cohort positive tapeselect margin remains recorded.
+Evidence `data/results/kpi/husbandry-{control,candidate}-kpi-40/kpi.json`.
+
+The CPU-only candidate passed isolated packaged720-turn verification: both DONE,
+bank$101315 vs random, mean1.277ms,max43.842ms. Current pinned interpreter, not a
+fresh venv. With1438 action-equivalence checks and the measured7.92% policy CPU
+reduction, the redundant-dispatch skip is now retained in `bots/brain/main.py`.
+This changes runtime, not the tested strategy; no new win-rate claim. Frozen v3
+remains available. Artifact `dist/brain-fast-dispatch/main.py`.
+
+The previous controller has exited. Value-aware husbandry now runs with two
+workers: `scripts/experiment_brain_husbandry_value.py --run`, three variants,
+96 games, matched existing v3 control, isolated arena. No new submission.

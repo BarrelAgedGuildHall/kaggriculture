@@ -1073,7 +1073,7 @@ def _policy(obs, t0):
     budget_hit = False
     idx = 0
     total = len(tasks)
-    while idx < total and free and not budget_hit:
+    while idx < total and free and not budget_hit and not (labor_module is LaborB1 and not (last_day and hour >= DROP_HOUR)):
         prio = tasks[idx][0]
         bucket = []
         while idx < total and tasks[idx][0] == prio:
