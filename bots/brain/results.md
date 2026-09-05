@@ -786,3 +786,24 @@ runs 400 games on seeds2100-2149, both seats, two workers sequentially,
 against retained v4 and both black-box references. Conditional component
 checks follow only if both margins improve and one interval excludes zero.
 No automatic promotion or submission. Controller started 21:10UTC.
+
+## Prepared egg production screen (cycle 19)
+Independent mechanism: replace premium cow/sheep output with earlier goose
+production. Test caps12 and18 against retained v4; use COOP construction in
+both dispatch paths. No opponent actions or identities enter the strategy.
+Both variants and control passed120 policy calls. Variant outputs buy only
+geese and never request pasture construction on these saved own states.
+Actual engine fixture built a coop, placed a goose and verified seven daily
+feed/care/harvest refreshes: held output0,0,0,4,2,2,2 and8 harvested eggs.
+Fixture supplies immediate labor/feed, so it establishes mechanics, not profit.
+Evidence data/results/brain-eggs/{offline-checks,engine-checks}.json;
+fixture reproducer artisans/ceo/bench/verify_goose_growth.py.
+Prepared scripts/experiment_brain_eggs.py (build-only default). Optional --run
+screens96 games, seeds260-267, both seats, V46/tapeselect, two workers
+sequentially. NOT started while watering confirmation7316 is active. Rebuild
+from the retained champion before running if watering changes that champion.
+
+Two saved original games also checked for terminal stock: older v2 carried
+one fertilizer; live v0 carried3milk/1wool, with zero sellable shed stock in
+both. This is not a v4 cohort and does not rule out terminal losses elsewhere.
+Evidence data/results/brain-own-diagnostic/terminal-stock.json.
