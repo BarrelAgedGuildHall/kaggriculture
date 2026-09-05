@@ -632,3 +632,24 @@ Added scripts/compare_ghost_results.py: asserts identical complete opponent,
 seed and seat sets, retains faults and clusters bootstrap by seed. Reproduced
 existing v3-v2 result exactly:683.663551/game,653.753968/seed,
 CI313.468254..1022.976190,107games63seeds. Evidence brain-v3-ghost-reproduced.json.
+
+## Completed v4 broader benchmark and tomato screen (cycle 12)
+Historical opponent benchmark completed107/107:5wins102losses, unchanged
+wins from v3, zero crashes/engine timeouts/local >1s turns. Mean bank70529.3,
+mean margin -48332.3; p50 1.619ms,p99 4.167ms. Different worker counts from
+historical v3 prevent attributing timing differences to policy changes.
+Matched result: margin +$5152.327103/game over v3;63-distinct-seed mean
++$5694.206349,seed-bootstrap CI +$2954.920635 to +$8475.396825.
+Supports retaining v4, but still loses102/107 historical games. No live submission.
+Evidence data/results/brain-v4-ghost-107/ghost_eval.json and brain-v4-ghost-paired.json.
+Session26616 fully exited.
+
+Added scripts/experiment_brain_tomato.py. Two engine-supported crop allocations
+replace10 or20 percentage points of post-bootstrap wheat with tomato; strawberry
+and melon shares stay25%/20%. Bootstrap unchanged. Tomato seed cap24.
+Only original observation-driven policy; no opponent actions or imitation.
+Control and both candidates each passed120 direct policy calls; candidates
+passed4 allocation-boundary checks each. Build-only results in
+ data/results/brain-tomato/offline-checks.json.
+Screen running from v4:96games, fresh seeds220-227,both seats,V46/tapeselect,
+two workers sequentially. Automatic paired reports, no automatic promotion.
