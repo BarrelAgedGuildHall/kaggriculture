@@ -26,8 +26,28 @@ interpreter in an isolated working directory, not a fresh virtual environment.
 Evidence: `data/results/late-labor-{keep12,control}-confirm-100/results.json`,
 `late-labor-{keep12,control}-tapeselect-100/results.json`,
 `late-labor-confirm-delta.json`, and `late-labor-tapeselect-delta.json`.
-A paired check on the fixed 107 historical top-team opponents is running. Those
-opponents are benchmarks only; their actions never enter our strategy or training.
+Fixed historical top-team opponents: v3 and v2 each win 5/107 (4.67%). Bank-margin
+means are -$53,485 and -$54,168: gain $684/game. Averaging within the 63 distinct
+seeds gives gain $654/seed, bootstrap CI +$313 to +$1023. Both runs have zero
+crashes/engine timeouts and p99 below 26 ms. Evidence:
+`data/results/brain-v{2,3}-ghost-107/ghost_eval.json`, `brain-v3-ghost-paired.json`.
+The first completed runs hit a Windows console encoding error before saving;
+rerunning with `python -X utf8` saved identical game results. Those opponents are
+benchmarks only; their actions never enter our strategy or training.
+
+The short-cycle opening experiment played 160 games across control, all-wheat,
+50/50 wheat/carrot, and all-carrot on seeds 180-189 against both references.
+Every variant won 0/40; control won 2/40. Carrot variants did not improve both
+reference margins. All-wheat gains were +$1021 vs V46 (CI -$13435 to +$14541) and
++$3527 vs tapeselect (CI -$5329 to +$12354): insufficient evidence, not retained.
+All 160 games had zero crash/timeout flags. Evidence:
+`data/results/brain-short-opening/results.json`, `short-opening-wheat-paired.json`.
+
+`scripts/compare_paired.py` checks identical complete opponent/seed/seat sets and
+reports whole-seed bootstrap intervals without dropping faulted games. Its actual
+late-labor replay of stored results reproduces the previous $667.24 estimate and
+[$277.17, $1097.77] interval exactly. Full suite remains 175 passed and the same two
+external-corpus failures; compilation and whitespace checks pass.
 
 ---
 
@@ -257,3 +277,21 @@ V46's bank. The next biggest leak is **midseason task value / market realization
 (crop-livestock mix and selling), not more hands. Next test: integrate Team B's
 quote-aware selling module, then use realized dollars per productive action to prune
 safe-day watering and low-value routes.
+
+## Reward-only search final comparison
+
+The completed search measured 52 unique tuning policies, five validation policies,
+and two final policies (2464 games). The selected policy is
+`bots/brain_search_0058/main.py`; it has not replaced v3.
+
+Unseen seeds 1600-1649, both seats, 100 games per opponent: selected policy wins
+0/100 against V46 and 0/100 against tapeselect. Compared with frozen v2, paired
+bank-margin gains are +$2921 against V46 (95% seed-pair bootstrap CI -$1382 to
++$7212) and +$7610 against tapeselect (CI +$1873 to +$13627). Final candidate
+and control have no crash/timeout flags. Candidate p99 is below 8 ms and maximum
+208.229 ms. Evidence: `data/results/brain-evolution/{final.json,paired-final.json}`.
+
+This supports a margin gain against one reference, with uncertainty against the
+other and no wins. The comparison against current v3 was interrupted at the
+founder's request; after explicit resumption it is being rerun with two workers
+under `evolution-v3-resumed-final-100`. Do not treat that incomplete run as evidence.
