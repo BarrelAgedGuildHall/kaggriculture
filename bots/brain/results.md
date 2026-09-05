@@ -1,4 +1,42 @@
-# Brain v3: retain late-season workers
+﻿# Brain v4: value-based feeding and care
+
+Retained 2026-09-05 after fresh paired confirmation and standalone verification.
+Current source bots/brain/main.py matches bots/brain_value_v4/main.py.
+Care must have a payable production date, spare bonus capacity and enough
+current product value to cover feed and labor. Feeding conserves uneconomic
+work while preserving survival and pending bonus payments; deadlines are
+feed at hour12 and care at16. Observation/engine rules only, no imitation.
+
+Fresh seeds1900-1949, both seats,100games per opponent per arm:
+- V46: v4 8/100 vs v3 2/100; paired margin +$6447.26,
+  seed-pair CI +$2407.71 to +$10559.25; own bank +$3336.40.
+- Tapeselect: both0/100; paired margin +$6174.12,
+  CI +$2720.08 to +$9633.73; own bank +$2251.72.
+All400games had no crash/timeout flags. Candidatep99 6.793ms,max94.158ms.
+V46 gained6 wins and lost none relative to control, but whole-seed win-rate
+bootstrap interval is0 to14 percentage points. Margin evidence is clearer.
+This is a local improvement, not demonstrated strong-ladder performance.
+
+Matched40game V46 economic subset: bank71287 ->75226.45 (+$3939.45),
+fed fraction72.98% ->72.99%, fed+cared71.22% ->55.92%, wages6945.55 ->6934.25.
+Productive-action fraction40.91% ->39.74%; action count is not economic value.
+Milk units157.8 ->136.5,wool148.025 ->152.825,wheat316.4 ->322.925.
+Both80 KPI games had zero faults. Controller81517 fully exited.
+Evidence data/results/husbandry-value-confirm/{paired.json,paired-wins.json}
+and data/results/kpi/husbandry-value-{control,candidate}-kpi-40/kpi.json.
+
+Retained CPU optimization added to measured policy with1438/1438 identical
+saved-state actions. Packaged dist/brain-value-v4/main.py passed720turns,
+bothDONE, bank98379 vs random,mean1.286ms,max60.188ms. Current pinned
+interpreter; random is unseeded, so its bank is not a paired benchmark.
+No submission: current original live rating637.3 at last prior20:01 reading;
+v4 still far weaker than the historical active benchmark in local tests.
+
+Next: reachable-work screen running against v4,64games,two workers,
+seeds210-217,both seats; no automatic promotion. Herd caps remain a separate
+prepared experiment and must rebuild from v4 before testing.
+
+## Historical v3: retain late-season workers
 
 2026-09-05 UTC. The sole change from v2 removes the fixed worker-cap cuts on
 days 25 and 28; hiring still requires observed work, affordable wages and cash
@@ -564,3 +602,4 @@ Purchase diagnostic now explicitly uses observation[t] and action[t+1];
 requested-order counts unchanged. Reproducer artisans/ceo/bench/animal_purchase_census.py.
 Active husbandry-value candidate has90/200 games observed at this update;
 no paired result available and retained champion unchanged.
+

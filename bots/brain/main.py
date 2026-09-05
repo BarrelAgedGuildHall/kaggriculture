@@ -803,6 +803,24 @@ def _sell_orders(shed, mkt_inv, day, wheat_reserve, slots):
 # The policy
 # --------------------------------------------------------------------------------------
 
+def _animal_work_value(a, tile, day, market_inventory):
+    product_quote = market_price(a["product"], market_inventory.get(a["product"], MARKET_I0) + 2)
+    wheat_quote = market_price("WHEAT", market_inventory.get("WHEAT", MARKET_I0) - 1)
+    first = int(tile.get("placed_day", day)) + a["first_yield_day"]
+    next_bonus_day = first
+    # Today's care is banked AFTER tonight's production, so cannot pay tonight.
+    while next_bonus_day <= day + 1:
+        next_bonus_day += a["interval"]
+    pending = int(tile.get("pending_care_bonus", 0))
+    due = day + 1 >= first and (day + 1 - first) % a["interval"] == 0
+    pending_after_production = 0 if due else pending
+    care_worth = (next_bonus_day <= FINAL_DAY and pending_after_production < a["max_held"] - 1
+                  and product_quote > 0.5 * wheat_quote + 35)
+    usable_bonus = min(pending, max(0, a["max_held"] - int(tile.get("yield_units", 0)) - 1))
+    feed_worth = care_worth or (due and usable_bonus * product_quote > wheat_quote)
+    return care_worth, feed_worth
+
+
 def _policy(obs, t0):
     # The observation is normalised once. Swappable modules see only this snapshot.
     view = View.from_obs(obs)
@@ -933,15 +951,16 @@ def _policy(obs, t0):
         cared = bool(t.get("cared_today", False))
         unfed = int(t.get("consecutive_unfed", 0))
         yu = int(t.get("yield_units", 0))
+        care_worth, feed_worth = _animal_work_value(a, t, day, mkt_inv)
         # Day 29 never runs an end-of-day refresh, so feeding and caring are worthless then.
-        if not last_day and not fed:
-            add(-2 if unfed >= 1 else 3, x, y, ["FEED"], need="WHEAT")
+        if not last_day and not fed and (unfed >= 1 or feed_worth):
+            add(-2 if unfed >= 1 else (-1 if hour >= 12 else 3), x, y, ["FEED"], need="WHEAT")
         if t.get("fertilizer_available", False):
             add(3, x, y, ["COLLECT_FERTILIZER"])
         if yu > 0 and (yu >= a["max_held"] or yu >= ANIMAL_HARVEST_MIN or day >= LIQUIDATE_DAY):
             add(0, x, y, ["HARVEST"])
-        if not last_day and not cared:
-            add(3, x, y, ["CARE"])
+        if not last_day and not cared and care_worth:
+            add(-1 if hour >= 16 else 3, x, y, ["CARE"])
 
     # ---- animal placement / coop building ----------------------------------------
     if not last_day:
