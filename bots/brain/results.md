@@ -519,3 +519,29 @@ fresh matched control plus both candidates, seeds200-207, both seats against
 V46/tapeselect,96games total,two workers sequentially. Rebuild from the retained
 champion with --baseline if the active value confirmation changes it.
 Evidence data/results/brain-herd-demand/offline-checks.json.
+
+## Cycle 8: fresh control and nightly reachability diagnostic
+Fresh1900-1949 control COMPLETE200games:2/100 V46,0/100 tapeselect,
+no crash/timeout flags,p99 6.071ms,max95.937ms. Banks72095.9 vs113921.8
+(V46),63665.4 vs124728.8(tapeselect). Retained v3 now9/400 V46 (2.25%)
+on four disjoint seed bands1600-1900,0/400 tapeselect. Candidate arm running;
+no comparison or promotion yet. data/results/husbandry-value-control-1900-n100/results.json.
+
+Authenticated API20:01:44UTC: original v0 637.3, historical v47 2182.7,
+tapeselect2235.1; leader Jesse Bullard2948.6,tenth2834.7. No submission.
+
+On current v3 evaluated against our saved v2 seed51 observations, tracing
+709 B1 calls found180 fallback moves among6630 unit actions, all beforeday11.
+Separately,501/6369 task assignments had travel distance exceeding the number
+of remaining moves before a final action at hour23. This is observational
+policy diagnostics, not a full-game causal estimate or win improvement.
+Evidence data/results/brain-own-diagnostic/{dispatch-fallback,unreachable-work}.json.
+Prepared scripts/experiment_brain_reachable_work.py: rejects travel assignments
+that cannot execute before night; same filter on fallback travel. Exact
+on-tile actions remain available at hour23. Hands vanish and farmer resets
+nightly, so unreachable late travel has no next-day positioning value.
+Passed719 direct policy calls and4 boundary checks (exact task at final hour,
+one-step task with/without enough time, empty graph). No game run yet.
+Evidence data/results/brain-reachable-work/offline-checks.json.
+Rebuild with --baseline if retained champion changes. After active controller
+finishes, screen this independently from the already prepared herd caps.
