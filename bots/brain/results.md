@@ -602,3 +602,12 @@ Purchase diagnostic now explicitly uses observation[t] and action[t+1];
 requested-order counts unchanged. Reproducer artisans/ceo/bench/animal_purchase_census.py.
 Active husbandry-value candidate has90/200 games observed at this update;
 no paired result available and retained champion unchanged.
+
+## Reachability screen against v4 (completed cycle 10)
+64games complete, seeds210-217 both seats, zero faults. Both policies0/16
+wins against each reference. Margin gain +$2260 V46 (seed-pair CI -$4783 to
++$8395), +$974 tapeselect (CI -$3838 to +$7320). Own bank +$5375/+$6579,
+but opponent bank also rose. No promotion: reference margins uncertain.
+Evidence data/results/brain-reachable-work/paired.json. Session28951 exited.
+Herd-demand screen now running from retained v4,96games,two workers,
+fresh matched control,seeds200-207,both seats. No combination with reachability.
