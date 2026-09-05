@@ -676,3 +676,26 @@ day19 for both variants with3ownedquadrants,$10000,seed/feed stock.
 Evidence data/results/brain-expansion/{offline-checks,purchase-boundaries}.json.
 Screen running96games,seeds230-237,both seats,V46/tapeselect,two workers
 sequentially,session27979. No automatic promotion or submission.
+
+## Expansion rejected; shared-price screen (cycle 14)
+All96expansion games complete,zero faults,allpolicies0/16wins vs each reference.
+Fourth land: margin -$9428 V46 (seed-pair CI -14985..-4556), -$6384 tape
+(CI -10142..-2831). Own bank -2434/+2372.
+Fourth land + higher labor ceiling: margin -$11860 V46 (CI -18660..-6825),
+-$7556 tape (CI -11843..-3556). Own bank -1203/-1923.
+Allfour margin intervals belowzero; both rejected. No causal attribution to
+land versus changed market effects from these game totals alone.
+Evidence data/results/brain-expansion/{land,labor}-paired.json;27979 exited.
+
+New script experiment_brain_market_pressure.py uses public rival animal tiles
+and exact engine prices. Estimates visible held product plus base production
+and existing pending bonuses over3days,capped at24units per product. Adds
+half/full estimated rival-revenue reduction from our added unit to the v4
+care/feed value. Floor-price sales add no stock and get zero pressure value.
+This assumes some rival output sells after our added unit; it is a testable
+approximation, not an exact forecast or copied action. No opponent identity.
+Both variants120policy calls and4boundary checks passed. Full weight matched
+v4 actions on120modified observations with no rival tiles,zero mismatches.
+Evidence data/results/brain-market-pressure/{offline-checks,zero-exposure-check}.json.
+Running96games from v4,fresh seeds240-247,both seats,V46/tapeselect,two workers
+sequentially,session2729. Automatic paired reports,no automatic adoption.
