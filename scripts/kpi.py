@@ -222,6 +222,7 @@ def _blank_game(seed: int, seat: int) -> dict[str, Any]:
         "hands_per_day": [0] * 30,
         "wages_paid": 0.0,
         "productive_actions": 0,
+        "successful_unit_actions": {op: 0 for op in sorted(PRODUCTIVE | MOVES)},
         "unit_slots": 0,
         "no_op_count": 0,
         "idle_unit_slots": 0,
@@ -297,6 +298,8 @@ def _analyze(env: Any, candidate_seat: int, seed: int) -> dict[str, Any]:
             row["unit_slots"] += len(outcomes[seat])
             for outcome in outcomes[seat]:
                 op, changed = outcome["op"], outcome["changed"]
+                if changed and op in row["successful_unit_actions"]:
+                    row["successful_unit_actions"][op] += 1
                 if changed and op in PRODUCTIVE:
                     row["productive_actions"] += 1
                 if changed and op in MOVES:
@@ -476,6 +479,10 @@ def _aggregate(rows: list[dict[str, Any]], bases: dict[str, float]) -> dict[str,
     }
     return {
         "games": games,
+        "successful_unit_actions": {
+            op: statistics.fmean(row["successful_unit_actions"][op] for row in rows)
+            for op in sorted(PRODUCTIVE | MOVES)
+        },
         "faults": sum(row["status"] != "DONE" for row in rows),
         "watered_fraction_of_eligible_plant_days": total("watered_plant_days") / max(1, total("eligible_plant_days")),
         "brain_compatible_watered_fraction": (
