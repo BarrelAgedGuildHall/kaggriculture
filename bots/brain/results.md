@@ -1479,3 +1479,16 @@ actual town demand for component comparisons. Do not preselect screen seeds
 from an assumed policy-independent town schedule. Duplicate-shop screen stays
 on predeclared430-437 and observes only current shops, with no identity routing.
 Sale-floor confirmation87598 still running; no overlapping game experiment.
+
+## Realized town demand reviewed (new autopilot cycle7)
+scripts/review_brain_town_demand.py validates matching complete seed/seat pairs
+in stored KPI reports. Fertilizer collection v5-v4:8/40games across5/20seeds
+have different per-product demand totals. Candidate minus control mean demand:
+carrot-5.4,egg+4.5,strawberry+2.7,wheat+4.5,wool-3.6;others0.
+Husbandry v4-v3:38/40games across19/20seeds differ;carrot+31.5,milk-27.9,
+strawberry-5.85,wheat-13.05,wool+32.4,tomato-16.2,egg-0.45;melon/fertilizer0.
+Evidence data/results/{fertilizer-collection-confirm,husbandry-value-confirm}/
+town-demand-review.json. These are existing component games, not new games or
+new win evidence. Equal totals need not imply equal demand timing. Observed
+bank gains remain measured overall policy effects; component changes do not
+isolate labor efficiency from changed realized demand. No change to retained v5.
