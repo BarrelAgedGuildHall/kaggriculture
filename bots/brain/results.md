@@ -1454,3 +1454,14 @@ No game run yet. Optional --run is96games,seeds430-437,both seats,V46/tapeselect
 sequential control/count/cap2,workers2,arena data/arena-duplicate-shops.
 Start only after sale-floor confirmation87598 exits and its result is reviewed.
 No imitation, bot promotion or upload.
+
+## V5 held-out totals refreshed (new autopilot cycle5)
+Sale-floor control completed200games, fresh2700-2749,both seats:4/100V46,
+0/100tapeselect,zero crashes/timeouts,p995.228ms,max133.896ms,meanbank71937.94.
+scripts/summarize_brain_v5_holdouts.py validates600completed database outcomes
+across2500/2600/2700cohorts, requires both seats and rejects duplicate opponent/
+seed/seat keys. Retained sources main/v5/fertilizer_collection are identical.
+Totals V46 9/200(4.5%),v47 0/100,tapeselect0/300;zero ties,zero faults.
+Excludes tuning screens, historical107 and all v4/candidate games. Evidence
+data/results/brain-v5-heldout-summary.json. No competitive readiness claim.
+Sale-floor candidate is running;wait for complete paired result before decision.
