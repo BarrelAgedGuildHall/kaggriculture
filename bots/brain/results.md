@@ -1617,3 +1617,17 @@ clear negative V46 economic effect and lower banks;not adopted. Candidatep99
 6.222ms,max101.473ms. No components,packaging or upload. Retainedv6 unchanged.
 Evidence data/results/duplicate-shops-confirm/{paired,paired-outcomes}.json.
 37345 exited0 before new screen. Small-screen gain did not generalize.
+
+## Wheat inventory screen prepared (new autopilot cycle19)
+scripts/experiment_brain_wheat_buffer.py builds v6 buffer12/buffer32 variants:
+fromday14,replace four-unit wheat buffer with12/32 for purchase target and
+sales quantity reserve. Opening and liquidation behavior unchanged. Hypothesis:
+reduce unfavorable feed purchases;cost is tied-up cash and shared shed capacity.
+No projected price or profit claim. scripts/check_brain_wheat_buffer.py verifies
+719own observations+15day/stock boundaries perarm,order/quantity caps,all unit
+actions unchanged on matched observations.180/293market actions differ;383
+outside-window observations preserve entire action.120smoke calls/arm also pass.
+Data/results/brain-wheat-buffer/{offline-checks,policy-checks}.json. No games yet.
+Optional --run:96games,seeds450-457,both seats,V46/tapeselect,workers2,
+isolated data/arena-wheat-buffer,sequential control/buffer12/buffer32.
+Rescue-water87017 remains the only game job. V6 retained;no upload.
