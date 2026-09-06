@@ -1598,3 +1598,12 @@ brain-rescue-water/{offline-checks,job-checks}.json. No game gain claimed.
 Optional --run:96games,seeds440-447,both seats,V46/tapeselect,workers2,
 isolated data/arena-rescue-water,sequential control/rescue12/rescue18.
 NOT STARTED;shop confirmation37345 remains the sole game job. Retainedv6 unchanged.
+
+## V6 control complete (new autopilot cycle16)
+Duplicate-shop control200games2900-2949:2/100V46,0/100tapeselect,zero faults,
+p996.091ms,max105.556ms,meanbank71812.53. Candidate running under37345.
+Bench/summarize_v6_holdouts.py verified600database outcomes across2700/2800/
+2900bands with both seats and no duplicate opponent/seed/seat keys. V6 totals
+6/200V46,0/100v47,0/300tapeselect,zero ties/faults. Excludes screens,components,
+v5 and incomplete candidate. Evidence data/results/brain-v6-heldout-summary.json.
+No win-lift or candidate-result claim. Retainedv6 unsubmitted.
