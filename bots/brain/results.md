@@ -1692,3 +1692,16 @@ without carrot shops identical. None variant never orders/plants carrot seeds
 in these checks,while existing carrots can still be serviced/harvested.
 120smoke calls/arm pass. Data/results/brain-carrot-boost/policy-checks.json.
 No claim that reversing a failed change guarantees improvement.
+
+## Weaker carrot boosts inconclusive (autopilot cycle22)
+Completed96games480-487,both seats;control,half,none each0/32 wins,
+zero crashes/timeouts. Half margin V46+1897.1875
+(seed-pair95%CI-996.4375..5943.3125),tapeselect-339.0625
+(-1934.5..1215.6875);ownbank+1555.6875/+2567.1875.
+None margin V46+149.9375(-4884.9375..5640.6875),tapeselect-3143.5
+(-10258.125..1057.875);ownbank+1798.125/-7168.125.
+All margin intervals include zero. Neither adopted;v6 retained unchanged.
+Half p99/max4.708/98.233ms;none4.442/98.469ms. Session69917 exited0.
+Evidence data/results/brain-carrot-boost/{half,none}-paired.json.
+Next: inspect an own-v6 replay for labor travel and unfinished profitable jobs
+before choosing another allocation change. No opponent strategy inspection.
