@@ -1607,3 +1607,13 @@ Bench/summarize_v6_holdouts.py verified600database outcomes across2700/2800/
 6/200V46,0/100v47,0/300tapeselect,zero ties/faults. Excludes screens,components,
 v5 and incomplete candidate. Evidence data/results/brain-v6-heldout-summary.json.
 No win-lift or candidate-result claim. Retainedv6 unsubmitted.
+
+## Duplicate-shop confirmation rejected (new autopilot cycle18)
+400fresh games2900-2949,both seats,zero faults. Cap2 V46margin-913.45
+(paired95%CI-1484.26..-350.9),tape-1.22(-724.41..827.75). Ownbank-597.59/
+-1499.0. Candidate4/100V46 vscontrol2/100;2gained,0lost;win-score+2pp interval
+0..6pp includes0. Both0/100tape. More observed wins but no established win lift,
+clear negative V46 economic effect and lower banks;not adopted. Candidatep99
+6.222ms,max101.473ms. No components,packaging or upload. Retainedv6 unchanged.
+Evidence data/results/duplicate-shops-confirm/{paired,paired-outcomes}.json.
+37345 exited0 before new screen. Small-screen gain did not generalize.
