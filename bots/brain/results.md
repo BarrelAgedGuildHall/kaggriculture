@@ -1104,3 +1104,28 @@ fixtures tomato/strawberry,with/withoutcontinuousfert preserve4/8units with no
 water on retirement day and verify emptied tile DIG. Immediate-service fixtures
 do not establish full-game gains. Arena data/arena-crop-retirement; logs and
 engine-checks.json in data/results/brain-crop-retirement. No auto adoption.
+
+## Crop retirement result and unique travel (resumed cycle13)
+96games,seeds370-377,both seats,zero faults,all arms0/16perreference.
+Stop marginV46-640.88(CI-1420.13..97.25),tape-235.44(-723.75..207.13),
+ownbank-487.50/-89.88. Clear marginV46-547.69(-1128.25..29.31),
+tape+214.75(-560..975),ownbank-559.75/+221.56. Neither adopted.
+Data/results/brain-crop-retirement/{stop,clear}-paired.json;60520 fully exited.
+Fixture savings did not translate into demonstrated game gains. V4 retained.
+Exact engine own-unit census on seed2400 validates all719cash transitions:
+4189movement actions,126intentional PASS,only3unchanged PICKUP actions. Allother
+requested unit actions changed state. This is one game, not population evidence.
+Data/results/brain-v4-diagnostic/noops.json;bench/diagnose_v4_noops.py.
+Motivates avoiding redundant travel rather than treating general invalid commands
+as the throughput problem. Reference actions used solely for exact engine phases,
+never action imitation or strategy fitting.
+
+Session45190: uv run python scripts/experiment_brain_unique_travel.py --run.
+Started00:02UTC after60520 exited.64games,seeds380-387,both seats,two workers,
+sequential control/unique,each16perV46/tapeselect. Preserve existing simultaneous
+on-tile jobs, then reserve each target against duplicate travel assignments.
+Remove fallback travel toward remaining jobs that require unavailable supplies.
+Original task-matching mechanism, no opponent action or identity routing.
+Six targeted assignment checks pass,719currentv4 saved-state calls pass with139
+changed actions. Arena data/arena-unique-travel;data/results/brain-unique-travel/
+contains dispatch-checks.json,logs and eventual unique-paired.json. No auto adoption.
