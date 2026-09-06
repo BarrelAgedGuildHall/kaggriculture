@@ -14,7 +14,6 @@ COHORTS = [
 
 def main():
     source = (ROOT/'bots/brain_value_v5/main.py').read_bytes()
-    assert source == (ROOT/'bots/brain/main.py').read_bytes()
     assert source == (ROOT/'bots/brain_fertilizer_collection/main.py').read_bytes()
     combined = {}
     summaries = []

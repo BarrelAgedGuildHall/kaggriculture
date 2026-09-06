@@ -755,6 +755,7 @@ def _step_toward(ux, uy, tx, ty):
 # --------------------------------------------------------------------------------------
 
 def _reservation(item, day, pressure):
+    if item != "WHEAT": return 0
     r = RESERVATION.get(item, 0)
     if day >= FINAL_DAY:
         return 0

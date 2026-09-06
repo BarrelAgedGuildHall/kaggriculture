@@ -35,16 +35,17 @@ def build(source):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--baseline', default='bots/brain/main.py')
     parser.add_argument('--run', action='store_true')
     args = parser.parse_args()
-    variants = build((ROOT/'bots/brain_value_v5/main.py').read_text(encoding='utf-8-sig'))
+    variants = build((ROOT/args.baseline).read_text(encoding='utf-8-sig'))
     tags = {name: f'duplicate-shops-{name}-screen-16' for name in variants}
     if args.run:
         assert not any((ROOT/'data/results'/tag/'results.json').exists() for tag in tags.values()), 'Existing results; do not overwrite'
     OUT.mkdir(parents=True, exist_ok=True)
     states = [step[0]['observation'] for step in json.loads(
         (ROOT/'data/results/brain-v4-diagnostic/seat0.json').read_text(encoding='utf-8'))['steps'][:-1]]
-    base = load(ROOT/'bots/brain_value_v5/main.py', 'duplicate_base')
+    base = load(ROOT/args.baseline, 'duplicate_base')
     reference = [base._policy(obs, time.perf_counter()) for obs in states]
     counterfactual = []
     for obs in states[::6]:
