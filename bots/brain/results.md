@@ -1745,3 +1745,21 @@ same job graphs and market orders;2791 on-tile assignments preserved each;
 46/58changedactions. Five assignment fixtures each verify bundle preference,
 need/skip eligibility,priority preservation,on-tile execution.
 scripts/check_brain_bundle_credit.py;brain-bundle-credit/policy-checks.json.
+
+## Bundle routing rejected (cycle25)
+Completed96games500-507,both seats;all arms zero crashes/timeouts.
+Control4/16V46 wins;credit1 2/16 (0gained,2lost);credit2 0/16
+(0gained,4lost). All arms0/16tapeselect,no ties. Not pooled into held-out totals.
+Credit1 marginV46-10225 (seed-pair95%CI-23760.125..2819.875),tapeselect
+-3143.625(-9487.8125..1763.625);ownbank-4512.4375/+853.3125.
+Credit2 marginV46-12266.5(-24089.75..-1165.375),tapeselect
+-6292.875(-13252.25..885);ownbank-4837.75/+746.
+V46 credit2 margin clearly worse;both variants lose wins and have negative
+mean margins against both references. Neither adopted. V6 retained unchanged.
+Candidatep99/max credit1:8.284/95.888ms;credit2:6.334/136.388ms;
+control4.451/95.721ms. All timing gates passed.39504 exited0.
+Evidence data/results/brain-bundle-credit/{credit1,credit2}-paired.json and
+{credit1,credit2}-outcomes.json;actual outcomes verified against arena rows.
+No game jobs running,no submission. Next investigate a post-bootstrap shift
+from wheat into strawberry allocation,checking prior search coverage first;
+preserve existing feed purchases and opening. No gain claimed or variant built.
