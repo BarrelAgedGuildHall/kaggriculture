@@ -1373,3 +1373,30 @@ This does not support replacing the stronger historical active submission;
 no upload. V5 remains locally best on earlier economics,not competitive on this
 direct test. Added100tapeselect games once to V5 heldouttotal0/200;v47 tracked
 separately fromV46. #1 objective not achieved; no founder input needed now.
+
+## Urgency result and sale-floor screen (new autopilot cycle1)
+## Running now
+Session45828: uv run python scripts/experiment_brain_sale_floors.py --run.
+Started02:11UTC after63652 fully exited.96games,seeds420-427,both seats,two workers,
+sequential control/nonwheat/all each16perV46/tapeselect. Source frozenv5.
+Nonwheat removes reservation-price floors except wheat;all removes all sale-price
+floors. Wheat quantity reserve and crop-use fertilizer quantity reserve unchanged.
+Hypothesis:withholding low-priced surplus may leave demand for the opponent;
+actual game margins decide. More sell orders may compete with purchase slots.
+36order/reserve boundary checks and719own saved observations perarm pass;
+138/308changedactions. Engine fixture sells15milk/wool/fertilizer units for15
+without changing market inventory. Initial fixture wrongly assumed all products
+reach$1; corrected after default-engine wheat15 andegg30 atinventory100000.
+Only the fixture changed;no candidate defect found. Validation completed during
+the control phase. Arena data/arena-sale-floors;logs,policy-checks.json and eventual
+nonwheat/all-paired.json under data/results/brain-sale-floors. Control32/32 finished
+zero faults,0wins. No auto promotion or submission;v5 retained.
+
+## Urgency screen finished (new autopilot cycle1)
+96games,seeds410-417,both seats,zero faults,all arms0/16perreference.
+Near1 marginV46+1993.31(CI-8348.75..12670),tape-4858.56(-14761.75..4927.5);
+ownbank+7060.88/+2105.75. Near2 marginV46-16225.94(-25961.31..-6592.31),
+tape-13703.81(-24072.5..-3472);ownbank-3571.31/+7116.19.
+Near2 clearly worse on both references;near1 inconclusive. Neither promoted.
+Data/results/brain-nearby-urgency/{near1,near2}-paired.json;63652 exited.
+Higher own bank can accompany larger opponent gains in the shared market.
