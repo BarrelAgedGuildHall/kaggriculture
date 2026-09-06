@@ -1309,3 +1309,27 @@ ownbank+1922.50/+228.38. Value90 marginV46+851.50(-1380..3543),
 tape-59.38(-1098.06..1062),ownbank+757.25/-502.56. No promotion or confirmation.
 All intervals include0 and references disagree. V5 remains retained.
 Data/results/brain-animal-harvest-value/{value30,value90}-paired.json;75558 exited.
+
+## Historical result and active-reference evaluation (resumed cycle23)
+## Running now
+Session8991: uv run python scripts/evaluate.py --agent bots/brain_value_v5/main.py
+--opponents bots/v47/main.py bots/tapeselect/main.py --n 100 --seed-base 2600
+--workers 2 --tag v5-active-reference-2600-n100.
+KAGGRI_ARENA_DIR=data/arena-v5-active-reference. Started00:44UTC after7465 exited.
+200fresh games,seeds2600-2649,both seats; one experiment,two workers. Historical
+v47 is the stronger latest-two submission reference; both opponents black-box.
+No source/actions copied or routed into v5. Direct test of replacement readiness,
+not a new policy or a promotion. Results data/results/v5-active-reference-2600-n100/results.json.
+Do not combine v47 wins with V46 wins. V5 remains unchanged and unsubmitted.
+
+## V5 historical evaluation complete (resumed cycle23)
+107games,63distinctseeds:5wins,102losses,0ties,matching v4 with0winsgained/lost.
+Zero crashes,engine timeouts,local>1s turns. Meanbank71405.72,meanmargin-47771,
+p501.587ms,p993.943ms. No causal speed claim from separate timed runs.
+Paired v5-v4 margin+561.308gameweighted;seedweighted+480.5,CI-77.214..1074.325
+includes0. Ownbank+876.411gameweighted;seedweighted+771.627,CI228.532..1329.873.
+Bank improves, broader margin remains uncertain; no new win evidence or ladder claim.
+Exactepisode/seat/seed/team/recordedbank matches verified;faults retained.
+Data/results/brain-v5-ghost-107/ghost_eval.json and brain-v5-ghost-paired.json.
+7465 fully exited. V5 retained based on earlier fresh V46 economic improvement;
+direct active-reference measurement now addresses submission replacement risk.
