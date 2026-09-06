@@ -13,7 +13,7 @@ def compare_reports(candidate, control):
         assert len(rows) == len(report['rows']) == report['games'], 'Duplicate or missing games'
         return rows
     a, b = index(candidate), index(control)
-    assert a.keys() == b.keys(), 'Different fixed-reference sets'
+    assert a and a.keys() == b.keys(), 'Empty or different fixed-reference sets'
     grouped = {}
     margin_deltas = []
     bank_deltas = []
@@ -45,13 +45,26 @@ def compare_reports(candidate, control):
                 limitation='Fixed historical opponents; not independent live ladder evidence. No fault exclusions.')
 
 
+def compare(candidate, control):
+    """Keep the existing margin fields alongside the additional outcome metrics."""
+    result = compare_reports(candidate, control)
+    result.update(
+        distinct_seeds=result['seeds'],
+        mean_game_margin_delta=result['game_weighted_margin_delta'],
+        mean_seed_margin_delta=result['metrics']['margin']['seed_weighted_delta'],
+        seed_bootstrap_ci95=result['metrics']['margin']['seed_ci95'],
+        candidate={k: candidate[k] for k in ('wins', 'crashes', 'timeouts', 'over_budget_turns')},
+        control={k: control[k] for k in ('wins', 'crashes', 'timeouts', 'over_budget_turns')})
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--candidate', type=Path, required=True)
     parser.add_argument('--control', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
-    result = compare_reports(json.loads(args.candidate.read_text(encoding='utf-8')),
+    result = compare(json.loads(args.candidate.read_text(encoding='utf-8')),
                              json.loads(args.control.read_text(encoding='utf-8')))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2), encoding='utf-8')
