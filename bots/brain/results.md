@@ -1283,3 +1283,29 @@ salevalue30/90 for animalharvest; other jobs unchanged. No automatic adoption.
 from v4's actual game,not new v5 games. Arena data/arena-animal-harvest-value;
 logs,policy-checks.json and eventual paired.json under data/results/brain-animal-harvest-value.
 Next: assess this screen, then broaden v5 reference evaluation if no new candidate.
+
+## Animal-harvest result and broader v5 evaluation (resumed cycle22)
+## Running now
+Session7465: uv run python -X utf8 scripts/ghost_eval.py --agent
+bots/brain_value_v5/main.py --ghost-dir D:/GuildhallData/kaggler/datasets/
+kaggriculture/tapes/top10-2026-09-04 --workers 2 --tag brain-v5-ghost-107.
+Started00:39UTC after75558 fully exited.107fixed historical games; all filenames
+match v4's episode/seat set. Black-box opponents only; no imitation or identity
+routing in our policy. Log data/results/brain-v5-ghost-107/run.log, eventual
+ghost_eval.json. No concurrent game. V5 retained unchanged and unsubmitted.
+On completion: scripts/compare_ghost_results.py --candidate
+data/results/brain-v5-ghost-107/ghost_eval.json --control
+data/results/brain-v4-ghost-107/ghost_eval.json --out data/results/brain-v5-ghost-paired.json.
+Reviewer matches episodes,seats,seeds,teams,recorded banks; clusters by sharedseed,
+retains faults. Actual prior v4-v3 result reproduced exactly:107games,63seeds,
+margin+5152.327gameweighted,+5694.206seedweightedCI2954.921..8475.397,0wins gained/lost.
+Evidence data/results/brain-v4-ghost-paired-recheck.json. Fixed ghosts do not
+establish live ladder strength. Do not treat multiple episodes as independentseeds.
+
+## Animal harvest screen completed (resumed cycle22)
+96games,seeds400-407,both seats,zero faults,all arms0/16perreference.
+Value30 marginV46-426.44(CI-2056.94..793.69),tape+733.50(-220.63..1802),
+ownbank+1922.50/+228.38. Value90 marginV46+851.50(-1380..3543),
+tape-59.38(-1098.06..1062),ownbank+757.25/-502.56. No promotion or confirmation.
+All intervals include0 and references disagree. V5 remains retained.
+Data/results/brain-animal-harvest-value/{value30,value90}-paired.json;75558 exited.
