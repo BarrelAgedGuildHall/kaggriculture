@@ -1400,3 +1400,26 @@ tape-13703.81(-24072.5..-3472);ownbank-3571.31/+7116.19.
 Near2 clearly worse on both references;near1 inconclusive. Neither promoted.
 Data/results/brain-nearby-urgency/{near1,near2}-paired.json;63652 exited.
 Higher own bank can accompany larger opponent gains in the shared market.
+
+## Running now
+Session87598: uv run python scripts/confirm_brain_sale_floors.py.
+Fresh2700-2749,both seats,400games total,V46/tapeselect,one arena,two workers.
+Sequential frozen v5 control then nonwheat candidate;100games per reference/arm.
+Candidate source is checked against the exact screened transformation before run.
+Arena data/arena-sale-floors-confirm;logs and eventual paired.json plus
+paired-outcomes.json in data/results/sale-floors-confirm. No auto promotion,
+component games or submission. Session45828 exited cleanly before launch.
+
+## Sale-floor screen finished (new autopilot cycle2)
+96games,seeds420-427,both seats;all arms0/16 per reference,zero faults.
+Nonwheat margin V46+659.3125(CI168.375..1156.25),tape+129.875(-380.875..582.25);
+ownbank+540.6875/+304.375. Small V46 gain; tape effect uncertain; fresh confirmation
+running. All-floor removal margin V46+4710.8125(-6499.375..14201.1875),
+tape-6419.875(-10707.75..-2385.375);ownbank+5885.9375/+1504.9375.
+Reject all-floor removal: higher own bank accompanies a clear tape margin loss.
+Control/nonwheat/all p99 4.442/4.498/4.547ms,max98.942/96.129/100.553ms.
+Data/results/brain-sale-floors/{nonwheat,all}-paired.json. V5 retained unchanged.
+Both variants preserve quantity reserves. Prior validation:36 boundary cases
+and719own states per arm;138/308 changed actions. Engine fixture verified15
+milk/wool/fertilizer units sold for15 without inventory increase; default wheat
+and egg do not share that floor. No imitation inputs or competitor source used.
