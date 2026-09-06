@@ -1641,3 +1641,18 @@ confirmation. Higher tape bank forrescue18 accompanies worse relative margin.
 Candidatep99/max:rescue12 5.534/98.06ms,rescue18 5.646/99.652ms.
 Evidence data/results/brain-rescue-water/{rescue12,rescue18}-paired.json.
 87017 exited0;retainedv6 unchanged,unsubmitted.
+
+## Larger wheat reserves rejected (new autopilot cycle20)
+96games450-457,both seats,zero faults. Buffer12 marginV46-1767(CI-2461..-1095.375),
+tape-1028.75(-2280.125..669.375);ownbank-1133.5/+369.125. Buffer32 marginV46
+-13212.4375(-14741.875..-11611.8125),tape-7446.875(-8883.25..-6081.75);
+ownbank-9282.5/-2529.5. Overall wins control4/32,buffer12 4/32,buffer32 2/32.
+Larger inventories do not improve this screen;neither adopted. Timingp99/max
+buffer12 5.081/94.54ms,buffer32 5.798/96.6ms.10413 exited0.
+Evidence data/results/brain-wheat-buffer/{buffer12,buffer32}-paired.json.
+Opposite-direction test prepared and checked:afterday14 buffers0/2,opening4
+and liquidation unchanged.719own states+15boundaries perarm pass;49/48market
+actions change,all unit actions same;383outside-window full actions preserved.
+Scripts experiment_brain_wheat_buffer_low.py/check_brain_wheat_buffer_low.py.
+Data/results/brain-wheat-buffer-low/{offline-checks,policy-checks}.json.
+No result for smaller buffers yet;not a claim that the reverse change must win.
