@@ -1350,3 +1350,26 @@ Build-only completed. After8991 exits and its replacement-readiness result is
 recorded, run --run for96games,seeds410-417,both seats,two workers,sequential
 control/near1/near2 each16perV46/tapeselect. Arena data/arena-nearby-urgency.
 Do not overlap arenas or promote from offline checks.
+
+## Replacement benchmark result and urgency screen (resumed cycle25)
+## Running now
+Session63652: uv run python scripts/experiment_brain_nearby_urgency.py --run.
+Started00:53UTC after8991 fully exited.96games,seeds410-417,both seats,two workers,
+sequential control/near1/near2 each16perV46/tapeselect. All built from frozenv5.
+On-tile priority>=2 jobs relinquish automatic precedence when eligible urgent
+priority<=0 work is1/2steps away and not covered by another available eligible
+worker already at that target. Existing remote assignment and urgent-on-tile
+work preserved. Seven focused checks and719own observations perarm already pass.
+Arena data/arena-nearby-urgency; logs and eventual near1/near2-paired.json under
+data/results/brain-nearby-urgency. No overlapping arena or automatic promotion.
+Next:review complete paired results;confirm promising candidate on fresh seeds.
+
+## Active-reference benchmark finished (resumed cycle25)
+200fresh games,seeds2600-2649,both seats:V5 0/100v47 and0/100tapeselect.
+Zero crashes/timeouts,p995.433ms,max101.831. Meanownbank68516vs122776(v47),
+66600vs123129(tape). Moneymeans rounded; exact summary in
+data/results/v5-active-reference-2600-n100/results.json.8991 fully exited.
+This does not support replacing the stronger historical active submission;
+no upload. V5 remains locally best on earlier economics,not competitive on this
+direct test. Added100tapeselect games once to V5 heldouttotal0/200;v47 tracked
+separately fromV46. #1 objective not achieved; no founder input needed now.
