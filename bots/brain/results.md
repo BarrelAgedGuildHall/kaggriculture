@@ -1673,3 +1673,22 @@ experiment_brain_compact_herd.py/check_brain_compact_herd.py.30day-boundary
 checks and719own policy calls perarm pass;24/14changedactions,96opening states
 identical.120smoke calls/arm also pass. No competitor source or action fitting.
 Data/results/brain-compact-herd/{offline-checks,policy-checks}.json.
+
+## Modest herd reductions inconclusive (new autopilot cycle22)
+96games470-477,both seats,zero faults. Herd13 marginV46-1792.6875
+(CI-13045.8125..8618.3125),tape+2727.6875(-4188.25..11385.0625);ownbank
++9961.9375/+1294.4375. Herd15 marginV46-1437.6875(-8328.625..6159.125),
+tape+2239.875(-1186.5..5412.5625);ownbank+7791.6875/+5476.0.
+All margin intervals include0. Overall wins control0/32,herd13 2/32,herd15 0/32;
+no established broad improvement,neither adopted. Candidatep99/max herd13
+4.514/97.004ms,herd15 3.942/105.949ms.9824 exited0. Evidence
+data/results/brain-compact-herd/{herd13,herd15}-paired.json.
+
+Next opposite-direction allocation screen halves or removes existing carrot
+shop boosts,following failed duplicate-shop boost confirmation. Other day-plan
+fields unchanged. Scripts experiment_brain_carrot_boost.py/check_brain_carrot_boost.py.
+25plan boundaries+719own states perarm pass;66/123changedactions,72observations
+without carrot shops identical. None variant never orders/plants carrot seeds
+in these checks,while existing carrots can still be serviced/harvested.
+120smoke calls/arm pass. Data/results/brain-carrot-boost/policy-checks.json.
+No claim that reversing a failed change guarantees improvement.
