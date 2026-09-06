@@ -1226,3 +1226,26 @@ New counts match independent exact census:364COLLECT_FERTILIZER,51FERTILIZE,
 Two-row aggregate preserves same means. Data/results/brain-v4-diagnostic/
 kpi-action-checks.json;bench/check_kpi_action_counts.py. This lets us distinguish
 less collection from less profitable fertilizer use if confirmation passes.
+
+## Running now
+Session77840 now executing conditional KPI phase of
+scripts/confirm_brain_fertilizer_collection.py after400arena games completed.
+80component games:control then frozen candidate,40V46games each,seeds2500-2519
+both seats,two workers. Control10/40 at00:28UTC. Per-operation action metrics
+enabled and verified for both runs. Tags fertilizer-collection-{control,candidate}-kpi-40;
+reports under data/results/kpi/. No concurrent game job.
+Frozen bots/brain_fertilizer_collection/main.py equals screen floor30. V4 retained
+pending KPI review and standalone game. Staged67,201-byte dist/
+brain-fertilizer-collection-review/main.py exactly matches candidate and compiles;
+staging ran no game and no upload. Package verification waits until77840 exits.
+
+## Fertilizer fresh confirmation complete (resumed cycle20)
+400games,seeds2500-2549,both seats,zero crashes/timeouts. Candidate5/100V46
+vscontrol3/100;both0/100tape. V46margin+1259.04(CI714.94..1803.54),
+tape+650.07(-51.49..1374.09);ownbank+1465.84/+1528.76. Candidatep995.425ms,
+max109.166. Both means positive,one clear interval:preplanned KPI phase triggered.
+Actual-outcome paired review:4V46wins gained,2lost,score+2pp with seed-pairCI
+-4..8pp includes0. No established win-rate lift. Tape0difference. Economic
+evidence strongest vsV46; tape margin remains uncertain. No automatic promotion.
+Data/results/fertilizer-collection-confirm/{paired,paired-outcomes}.json.
+V4 control band2500 already counted:24/600V46,0/600tapeselect. Do not doublecount.
