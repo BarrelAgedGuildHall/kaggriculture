@@ -1566,3 +1566,18 @@ Ourmean66553 vs119953v47,65938 vs121525tape (rounded arena display).
 Evidence data/results/v6-active-reference-2800-n100/results.json;44632 exited0.
 V6 held-out totals now4/100V46,0/100v47,0/200tapeselect on2700/2800bands.
 Do not inherit v5 totals. No stronger-ladder readiness demonstrated;no upload.
+
+## Crop-loss causes measured (new autopilot cycle14)
+scripts/diagnose_brain_crop_losses.py reconstructs exact engine unit/market,
+lifespan and plant-refresh operations on one own v4 saved game (seed2400,seat0).
+All719cash totals and complete plant-state transitions match the recorded game.
+25plant deaths:9drought,16lifespan. Drought:2new plants day13,6plants clustered
+atx8-9/y0-2 day23,1new carrot day25. Other deaths include spent strawberries;
+aggregate plants_lost is not a pure survival failure. Report records every cause,
+age,position and held units at loss:brain-v4-diagnostic/crop-loss-causes.json.
+Actions used solely for exact accounting;no imitation/training or competitor
+source. No new game or profit claim;this is one historical original-policy seed.
+Next independent idea:prioritize rescue water late in the day and relax territory
+only for those rescue jobs. Existing early-water/global travel screens were
+inconclusive;this narrower drought-specific mechanism is not implemented yet.
+Current37345shop confirmation continues;control50/200 observed,no overlap.
