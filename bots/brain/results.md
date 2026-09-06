@@ -1333,3 +1333,20 @@ Exactepisode/seat/seed/team/recordedbank matches verified;faults retained.
 Data/results/brain-v5-ghost-107/ghost_eval.json and brain-v5-ghost-paired.json.
 7465 fully exited. V5 retained based on earlier fresh V46 economic improvement;
 direct active-reference measurement now addresses submission replacement risk.
+
+## Nearby urgency prepared (resumed cycle24)
+Current direct v47/tapeselect benchmark8991 continues,90/200completed at00:49UTC.
+No result inferred from partial games. Retained v5 and submission unchanged.
+Prepared scripts/experiment_brain_nearby_urgency.py: exact on-tile work of priority
+>=2 yields its automatic precedence if an eligible priority<=0 job is within
+1or2steps and no other available eligible worker is already on that target.
+Urgent on-tile jobs remain first; existing remote matcher handles released workers.
+Independent original dispatch idea; no opponent source/actions/identity features.
+Seven assignment cases perarm pass(nearby,covered,urgent-on-tile,inventory,
+distance boundary,nonurgent).719own savedv4 observations againstv5 each pass;
+210/274changedstates,all10final-liquidationstates identical. No game gain claimed.
+Data/results/brain-nearby-urgency/dispatch-checks.json;bench/check_nearby_urgency.py.
+Build-only completed. After8991 exits and its replacement-readiness result is
+recorded, run --run for96games,seeds410-417,both seats,two workers,sequential
+control/near1/near2 each16perV46/tapeselect. Arena data/arena-nearby-urgency.
+Do not overlap arenas or promote from offline checks.
