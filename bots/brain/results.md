@@ -1465,3 +1465,17 @@ Totals V46 9/200(4.5%),v47 0/100,tapeselect0/300;zero ties,zero faults.
 Excludes tuning screens, historical107 and all v4/candidate games. Evidence
 data/results/brain-v5-heldout-summary.json. No competitive readiness claim.
 Sale-floor candidate is running;wait for complete paired result before decision.
+
+## Paired-seed interpretation checked (new autopilot cycle6)
+Actual engine fixture scripts/check_brain_shop_rng.py: same seed/day2, replace
+one empty tile with an empty PASTURE. First shop differs on7/8seeds430-437.
+Both states reproduce exactly on rerun (32refresh calls). _end_of_day shares RNG
+between _spawn_weeds (draws once per empty tile) and shop choice. Thus policy
+changes that alter empty tiles can alter shops on identical seeds. Evidence
+data/results/brain-duplicate-shops/rng-coupling.json. Fixture is not a game result.
+Paired performance comparisons remain valid overall policy measurements, but
+economic attribution must not assume identical realized shop demand. Record
+actual town demand for component comparisons. Do not preselect screen seeds
+from an assumed policy-independent town schedule. Duplicate-shop screen stays
+on predeclared430-437 and observes only current shops, with no identity routing.
+Sale-floor confirmation87598 still running; no overlapping game experiment.
