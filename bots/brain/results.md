@@ -1209,3 +1209,20 @@ fertilizer-collection-{candidate,control}-2500-n100 and output
 data/results/fertilizer-collection-confirm/paired-outcomes.json.
 Current77840control140/200 at00:17UTC; candidate pending. No competing game,
 no promotion, no upload. V4 retained while fresh confirmation finishes.
+
+## Confirmation control complete; action metrics verified (resumed cycle18)
+Control200/200completed:3/100V46,0/100tape,zero crash/timeout flags,
+p996.637ms,max94.520. Ownmeanbank75393.4/61471.1; opponents111006/117815.8.
+Result data/results/fertilizer-collection-control-2500-n100/results.json.
+V4 pooled now24/600V46,0/600tapeselect; completed control band2500 added once.
+Candidate phase of77840 started00:19UTC,200games pending; no extra arena.
+
+KPI analyzer now includes per-operation successful_unit_actions, from existing
+exact engine unit-call outcomes, and their mean over games. Both future
+conditional component runs will use this same analyzer. Neither bot changed.
+Replay validation preserves all45old fields exactly on actualv4 seed2400.
+New counts match independent exact census:364COLLECT_FERTILIZER,51FERTILIZE,
+134successful PICKUP(137requested),4189moves; all17operationcounts match.
+Two-row aggregate preserves same means. Data/results/brain-v4-diagnostic/
+kpi-action-checks.json;bench/check_kpi_action_counts.py. This lets us distinguish
+less collection from less profitable fertilizer use if confirmation passes.
