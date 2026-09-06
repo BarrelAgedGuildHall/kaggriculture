@@ -1129,3 +1129,24 @@ Original task-matching mechanism, no opponent action or identity routing.
 Six targeted assignment checks pass,719currentv4 saved-state calls pass with139
 changed actions. Arena data/arena-unique-travel;data/results/brain-unique-travel/
 contains dispatch-checks.json,logs and eventual unique-paired.json. No auto adoption.
+
+## Unique travel result and priced fertilizer collection (resumed cycle14)
+64games,seeds380-387,both seats,zero faults. Candidate2/16V46 vscontrol0,
+both0/16tapeselect. MarginV46+3060.13(CI-5485.50..11253.25),tape-1921.94
+(-7251.44..2885.94);ownbank-116.56/-408.31. Candidatep99 4.926ms,max126.359.
+Both intervals include0 and references disagree; not promoted or expanded.
+45190 fully exited. Data/results/brain-unique-travel/unique-paired.json.
+V4 retained21/500held-outV46,0/500tapeselect; screen seeds excluded.
+
+Session28814: uv run python scripts/experiment_brain_fertilizer_collection.py --run.
+Started00:06UTC after45190 exited.96games,seeds390-397,both seats,two workers,
+sequential control/floor10/floor30,each16perV46/tapeselect. Suppress fertilizer
+collection when conservative sale quote <=10/30 and shed+carried stock covers
+max(2,current profitable fertilizer-job reserve); no buffer on terminalday29.
+Existing fertilizer investments and job ordering preserved. No imitation.
+719currentv4 saved-state calls each pass;30/92changed states. All653/534states
+with high quote or stock below2 preserve exact baseline actions. Own diagnostic
+364collections includes52atquote<=10 and132atquote<=30; quotes at observation,
+not realized sale prices. Data/results/brain-fertilizer-collection/policy-checks.json.
+Arena data/arena-fertilizer-collection; logs and eventual floor10/floor30-paired.json
+under same result directory. No automatic adoption or submission.
