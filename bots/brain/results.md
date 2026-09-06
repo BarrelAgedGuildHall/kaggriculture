@@ -1436,3 +1436,21 @@ production. No bot change or additional game job. Initial diagnostic needed a
 LOCKED-string tile guard; fixed and rerun all719states successfully.
 Evidence data/results/brain-v4-diagnostic/survival-feed.json. Engine recall used
 only for mechanics, not stored strategy recommendations or competitor behavior.
+
+## Duplicate-shop allocation prepared (new autopilot cycle4)
+scripts/experiment_brain_duplicate_shops.py builds from frozen v5. Current carrot
+allocation uses a set of shops, ignoring repeated instances. Count variant scales
+the existing PET_CAFE0.2/FARMERS_MARKET0.1 boosts by instance count; cap2 limits
+each to two. Other day-plan fields unchanged, including original crop weights.
+225boundary checks per arm pass.719actual own saved observations per arm all
+preserve actions in this sample.120 counterfactual observations with three PET
+and one FARMERS_MARKET produce10changedactions per candidate vs matched v5.
+Counterfactuals verify behavior, not competitive gain. Cross-module dataclass
+equality check initially failed; corrected to compare field dictionaries.
+Actual engine45shop-count fixtures pass: each PET removes2carrots per shop tick,
+each FARMERS_MARKET1; duplicates add. Bench/check_duplicate_shop_engine.py;
+data/results/brain-duplicate-shops/{policy-checks,engine-checks}.json.
+No game run yet. Optional --run is96games,seeds430-437,both seats,V46/tapeselect,
+sequential control/count/cap2,workers2,arena data/arena-duplicate-shops.
+Start only after sale-floor confirmation87598 exits and its result is reviewed.
+No imitation, bot promotion or upload.
