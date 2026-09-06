@@ -1501,3 +1501,16 @@ Ownbank+737.99/+450.42. Candidatep995.217ms,max131.337ms. Clear small V46
 economic gain;tapeselect effect uncertain,no observed win lift. V5 retained
 pending component and packaging review;no submission. Session87598 exited0.
 Evidence data/results/sale-floors-confirm/{paired,paired-outcomes}.json.
+
+## Sale-floor component review progress (new autopilot cycle8)
+Control40/40 completed,allDONE,zero faults,meanbank76622.1. All40bank totals
+exactly match confirmation2700-2719V46;both seats verified. Candidate component
+run is now active under55035;no candidate component result claimed yet.
+scripts/review_brain_component_banks.py adds reusable arena reconciliation and
+whole-seed intervals for bank,wages,sales,units,unsold value and product revenue.
+Verified against previous80fertilizer-component banks, reproducing +1106.775
+bank(CI366.45..1918.45). Those are old games, not additional evidence. Prior
+fertilizer sales revenue+1406.7 despite55.1fewer total units;product counts alone
+are insufficient. Evidence fertilizer-collection-confirm/economics-review.json.
+Prepared dist/brain-sale-floors-review/main.py,67235bytes,onefile;no upload and
+no standalone game yet. Run standalone only after55035 fully exits. V5 retained.
