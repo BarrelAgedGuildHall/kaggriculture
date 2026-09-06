@@ -1705,3 +1705,20 @@ Half p99/max4.708/98.233ms;none4.442/98.469ms. Session69917 exited0.
 Evidence data/results/brain-carrot-boost/{half,none}-paired.json.
 Next: inspect an own-v6 replay for labor travel and unfinished profitable jobs
 before choosing another allocation change. No opponent strategy inspection.
+
+## Own-v6 labor diagnostic and harvest priority screen (cycle23)
+Two real games,seed3000,both seats,DONE:own109083 vs150260 V46 in each.
+Diagnostic only,not pooled into held-out win totals. Saved replay/KPI under
+data/results/brain-v6-diagnostic. Recomputed719 own actions exactly match seat0.
+4090 moves,184 immediate reversals;32 ready-harvest snapshots at hour22,
+25 with current aggregate quote>=400. Quotes are not realised/lost profit;
+repeated snapshots are not unique harvests. scripts/diagnose_brain_v6_labor.py.
+The diagnostic loader's initial opponent-path typo was fixed before either game.
+Next original hypothesis: raise existing harvest job priority to-1 afterhour12
+when current held-yield quote>=400/800;leave last day and all other jobs alone.
+scripts/experiment_brain_harvest_priority.py builds reproducibly from frozenv6.
+120smoke calls perarm;719 complete own states pervariant verified same job
+multiset except qualifying priorities,371 outside-window actions unchanged.
+400 threshold changes165jobgraphs/69actions;800 changes69/19.
+Checker tie-order/fallback-order assumptions corrected;bot code unchanged.
+Data/results/brain-harvest-priority/policy-checks.json. No imitation inputs.
