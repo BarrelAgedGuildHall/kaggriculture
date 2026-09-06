@@ -1193,3 +1193,19 @@ Evidence data/results/fertilizer-collection-confirm/job-checks.json.
 Confirmation77840 continues unchanged:control70/200completed at00:14UTC,
 candidate not started. No competing game job; two workers. No decision from
 partial runs. Prepared animal-harvest screen remains unrun.
+
+## Outcome review prepared (resumed cycle17)
+scripts/compare_paired_outcomes.py reads actual arena result0 rather than inferring
+outcomes from money margins. Ties counthalf, faults remain included. It validates
+complete matching seed/seat sets and reproduces aggregate evaluator win score.
+Verified on two completed32+32game comparisons: unique travel gains2V46wins,
+0losses,score difference+12.5pp but whole-seedCI0..37.5pp includes0; tape0.
+Fertilizer floor30 screen gains0wins vsboth despite positive money margins.
+Evidence brain-unique-travel/paired-outcomes.json and
+brain-fertilizer-collection/paired-outcomes.json under data/results/.
+After confirmation completion run this reviewer with arena
+data/arena-fertilizer-collection-confirm, candidate/control tags
+fertilizer-collection-{candidate,control}-2500-n100 and output
+data/results/fertilizer-collection-confirm/paired-outcomes.json.
+Current77840control140/200 at00:17UTC; candidate pending. No competing game,
+no promotion, no upload. V4 retained while fresh confirmation finishes.
