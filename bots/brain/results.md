@@ -1514,3 +1514,23 @@ fertilizer sales revenue+1406.7 despite55.1fewer total units;product counts alon
 are insufficient. Evidence fertilizer-collection-confirm/economics-review.json.
 Prepared dist/brain-sale-floors-review/main.py,67235bytes,onefile;no upload and
 no standalone game yet. Run standalone only after55035 fully exits. V5 retained.
+
+## Local promotion (new autopilot cycle9)
+## Retained original best: Brain v6
+bots/brain/main.py equals frozen bots/brain_value_v6/main.py and verified
+dist/brain-sale-floors-review/main.py. V5 plus removal of non-wheat sale-price
+floors. Wheat price floor and all quantity reserves preserved. Fresh2700-2749:
+4/100V46,0/100tapeselect,exactly same wins as v5. Margin vs v5 V46+824.18
+(paired95%CI551.58..1115.42),tapeselect+69.87(-548.43..584.72). No win lift;
+small clear V46 economic gain,uncertain tape effect.400games zero faults.
+V6 has no v47 or historical benchmark yet;do not inherit v5's pooled totals.
+80component games completed,all80banks exactly match confirmation subset;
+control76622.1->candidate77228.7(+606.6,CI295.175..943.3). Wages unchanged
+6936.55;sales revenue+592.25(CI283.35..926.55),units+13.225(7.325..19.4).
+Terminal unsold value-2.775(CI-7.725..0). Town demand totals differ3/40games
+across2seeds;these component measurements do not isolate demand from sales policy.
+Evidence sale-floors-confirm/{component-review,town-demand-review,paired,paired-outcomes}.json.
+Standalone67235bytes,720turns,bothDONE,bank120992vsunseededrandom,mean1.197ms,
+max31.569ms. This is packaging evidence,not paired performance.55035 exited0
+before standalone. Locally promoted after review;unsubmitted,no ladder rating.
+No stronger active submission evicted. #1 not achieved.

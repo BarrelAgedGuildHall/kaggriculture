@@ -15,7 +15,7 @@ ARENA = ROOT/'data/arena-sale-floors-confirm'
 
 def main():
     policies = [('control', 'bots/brain_value_v5/main.py'),
-                ('candidate', 'bots/brain_sale_floors_nonwheat/main.py')]
+                ('candidate', 'bots/brain_value_v6/main.py')]
     source = (ROOT/policies[0][1]).read_text(encoding='utf-8-sig')
     assert (ROOT/policies[1][1]).read_text(encoding='utf-8-sig') == build(source)['nonwheat']
     tags = {name: f'sale-floors-{name}-2700-n100' for name, _ in policies}
