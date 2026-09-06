@@ -1150,3 +1150,33 @@ with high quote or stock below2 preserve exact baseline actions. Own diagnostic
 not realized sale prices. Data/results/brain-fertilizer-collection/policy-checks.json.
 Arena data/arena-fertilizer-collection; logs and eventual floor10/floor30-paired.json
 under same result directory. No automatic adoption or submission.
+
+## Positive fertilizer screen and fresh confirmation (resumed cycle15)
+96games,seeds390-397,both seats,zero faults,all arms0/16perreference.
+Floor10 marginV46+1409.94(CI680.50..2252.88),tape+1731.50(771.25..2778.25),
+ownbank+1201.63/+1565. Floor30 marginV46+1900.88(85.31..4218.63),
+tape+2416.38(453.75..4752),ownbank+1744.19/+1449.75. Floor30p995.025ms,
+max102.233. Both margin intervals exclude0 for both variants; neither wins.
+Choose floor30 for larger mean reference gains; its superiority to floor10
+is not established. Fresh confirmation handles screen selection uncertainty.
+Data/results/brain-fertilizer-collection/{floor10,floor30}-paired.json;28814 exited.
+Mechanism: skip collection at quote<=30 when currentstock coversmax(2,profitable
+crop-use reserve);terminaldaybuffer0. Existing fertilizer investment unchanged.
+
+Prepared animal-harvest value30/value90 variants using heldyield times conservative
+post-harvest inventory quote.719currentv4 calls each pass,89/96changed states;
+452/448states without eligible low-value harvest retain exact baseline actions.
+Own90harvest census:50heldvalues<=30,58<=90. Quotes,not realized proceeds.
+No games started; prioritize fertilizer confirmation. Source
+scripts/experiment_brain_animal_harvest_value.py;data/results/brain-animal-harvest-value/
+policy-checks.json. Both preserve feeding/care rules; no economic gain established.
+
+Session77840: uv run python scripts/confirm_brain_fertilizer_collection.py.
+Started00:11UTC after28814 exited.400fresh games,seeds2500-2549,both seats,
+two workers sequential control/candidate,each100perV46/tapeselect. Frozen
+candidate bots/brain_fertilizer_collection/main.py equals screen floor30.
+Retained control bots/brain_value_v4/main.py. Arena data/arena-fertilizer-collection-confirm;
+logs and eventual paired.json under data/results/fertilizer-collection-confirm.
+If both margins improve and at least one seed-pair CI excludes0, with zero
+crash/timeout flags, runner follows with40V46KPI games each(80total) on2500-2519.
+No automatic promotion or submission. V4 remains best pending confirmation.
