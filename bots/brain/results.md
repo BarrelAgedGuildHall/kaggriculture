@@ -1558,3 +1558,11 @@ Exact candidate matches build(v6)['cap2'];compilation passes. Isolated arena
 data/arena-duplicate-shops-confirm,results duplicate-shops-confirm. Does not
 auto promote,submit or run components. NOT STARTED;wait for44632 benchmark.
 V6 direct reference benchmark observed50/200 at02:50UTC;no final result yet.
+
+## V6 direct reference benchmark completed (new autopilot cycle13)
+Fresh2800-2849,both seats,200games:0/100v47,0/100tapeselect,zero crashes or
+timeouts. All timing gates pass,p995.574ms,max98.526ms;meanbank66245.66.
+Ourmean66553 vs119953v47,65938 vs121525tape (rounded arena display).
+Evidence data/results/v6-active-reference-2800-n100/results.json;44632 exited0.
+V6 held-out totals now4/100V46,0/100v47,0/200tapeselect on2700/2800bands.
+Do not inherit v5 totals. No stronger-ladder readiness demonstrated;no upload.
