@@ -1581,3 +1581,20 @@ Next independent idea:prioritize rescue water late in the day and relax territor
 only for those rescue jobs. Existing early-water/global travel screens were
 inconclusive;this narrower drought-specific mechanism is not implemented yet.
 Current37345shop confirmation continues;control50/200 observed,no overlap.
+
+## Rescue-water screen prepared (new autopilot cycle15)
+scripts/experiment_brain_rescue_water.py builds original v6 rescue12/rescue18:
+after hour12/18, existing viable WATER jobs with consecutive_unwatered>=1 get
+priority-3. Only those WATER jobs bypass territory cost when assigning available
+workers;exact on-tile assignments remain first. Final-day branch unchanged.
+No job added/removed. scripts/check_brain_rescue_water.py checks complete sorted
+job graphs on719own saved observations/arm,plus10hour/day boundaries and4
+assignment checks. Rescue12:119joblists and38actions changed;rescue18:38joblists
+and11actions changed. Outside-window/final-day actions371/545 preserved.
+Initial fixture chose the wrong territory owner;corrected test coordinates.
+Expected job-list checker then needed coordinator priority/x/y sorting;fixed
+and rerun successfully. No candidate defect identified. Data/results/
+brain-rescue-water/{offline-checks,job-checks}.json. No game gain claimed.
+Optional --run:96games,seeds440-447,both seats,V46/tapeselect,workers2,
+isolated data/arena-rescue-water,sequential control/rescue12/rescue18.
+NOT STARTED;shop confirmation37345 remains the sole game job. Retainedv6 unchanged.
