@@ -1656,3 +1656,20 @@ actions change,all unit actions same;383outside-window full actions preserved.
 Scripts experiment_brain_wheat_buffer_low.py/check_brain_wheat_buffer_low.py.
 Data/results/brain-wheat-buffer-low/{offline-checks,policy-checks}.json.
 No result for smaller buffers yet;not a claim that the reverse change must win.
+
+## Smaller wheat reserves not adopted (new autopilot cycle21)
+96games460-467,both seats,all0wins,zero faults. Buffer0 marginV46+1044.875
+(CI-94.8125..2727.6875),tape-1849.6875(-4647..682.8125);ownbank-500.4375/
++5268.4375. Buffer2 marginV46+203.75(-485.25..822.875),tape-1503.25
+(-2747.125..-263.5);ownbank+2.375/+2460.5. No established V46 gain,clear tape
+loss forbuffer2. Retain original four-unit buffer. Candidatep99/max:buffer0
+4.593/95.375ms,buffer2 4.76/94.235ms.97511 exited0.
+Evidence data/results/brain-wheat-buffer-low/{buffer0,buffer2}-paired.json.
+
+Prepared modest herd reduction under v6:herd13=5cow8sheep,herd15=6cow9sheep.
+This tests reduced capital/feed burden after priced collection was introduced;
+the old eight-animal v1 screen failed,so no gain presumed. Scripts
+experiment_brain_compact_herd.py/check_brain_compact_herd.py.30day-boundary
+checks and719own policy calls perarm pass;24/14changedactions,96opening states
+identical.120smoke calls/arm also pass. No competitor source or action fitting.
+Data/results/brain-compact-herd/{offline-checks,policy-checks}.json.
