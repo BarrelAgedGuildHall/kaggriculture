@@ -1544,3 +1544,17 @@ cap2p994.518ms,max96.0. V46 screen improvement; tape inconclusive,neither adopte
 Evidence data/results/brain-duplicate-shops/{count,cap2}-paired.json.58038 exited0.
 Consider fresh confirmation of cap2 after retainedv6 direct reference benchmark;
 do not infer a general benefit or identical shops from this small screen.
+
+## Duplicate-shop confirmation prepared (new autopilot cycle11)
+Cap2 screen sensitivity:V46 four positive seed-pair margins,four zero,no negative;
+seed431 contributes18784 of24853 summed margin gain. Full mean3106.625 stays
+unchanged. Descriptive leave-largest-out mean867;not an excluded-game result.
+Tape one positive,three negative,four zero;full mean-103.375. No seed dropped
+from measurements or used for policy fitting. Evidence brain-duplicate-shops/
+seed-sensitivity.json;bench/review_duplicate_seed_sensitivity.py.
+scripts/confirm_brain_duplicate_shops.py prepared:400games,2900-2949,both seats,
+V46/tapeselect,100perreference/arm,sequential frozenv6/cap2,two workers.
+Exact candidate matches build(v6)['cap2'];compilation passes. Isolated arena
+data/arena-duplicate-shops-confirm,results duplicate-shops-confirm. Does not
+auto promote,submit or run components. NOT STARTED;wait for44632 benchmark.
+V6 direct reference benchmark observed50/200 at02:50UTC;no final result yet.
