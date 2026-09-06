@@ -1492,3 +1492,12 @@ town-demand-review.json. These are existing component games, not new games or
 new win evidence. Equal totals need not imply equal demand timing. Observed
 bank gains remain measured overall policy effects; component changes do not
 isolate labor efficiency from changed realized demand. No change to retained v5.
+
+## Sale-floor confirmation completed (new autopilot cycle7)
+400fresh games2700-2749,both seats;candidate/control each4/100V46,0/100tapeselect.
+No wins gained/lost,ties,crashes or timeouts. Nonwheat margin gain V46+824.18
+(seed-pair95%CI551.58..1115.42),tapeselect+69.87(-548.43..584.72).
+Ownbank+737.99/+450.42. Candidatep995.217ms,max131.337ms. Clear small V46
+economic gain;tapeselect effect uncertain,no observed win lift. V5 retained
+pending component and packaging review;no submission. Session87598 exited0.
+Evidence data/results/sale-floors-confirm/{paired,paired-outcomes}.json.
