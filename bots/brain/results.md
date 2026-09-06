@@ -1423,3 +1423,16 @@ Both variants preserve quantity reserves. Prior validation:36 boundary cases
 and719own states per arm;138/308 changed actions. Engine fixture verified15
 milk/wool/fertilizer units sold for15 without inventory increase; default wheat
 and egg do not share that floor. No imitation inputs or competitor source used.
+
+## Late survival-feed diagnostic (new autopilot cycle3)
+scripts/diagnose_brain_survival_feed.py evaluates frozen v5 on719own v4 seed2400
+seat0 observations. Of256 requested FEED actions, only1 targets an empty animal
+with no pending care bonus, no payable feed bonus, product and fertilizer
+quotes<=10, and consecutive_unfed>=1 after day20 (also after day25).
+22 eligible animal snapshots across5distinct tile-days; repeated snapshots are
+not games or successful actions. No profit estimate. Park this narrow retirement
+idea; potential savings look small in this one sample and escape loses future
+production. No bot change or additional game job. Initial diagnostic needed a
+LOCKED-string tile guard; fixed and rerun all719states successfully.
+Evidence data/results/brain-v4-diagnostic/survival-feed.json. Engine recall used
+only for mechanics, not stored strategy recommendations or competitor behavior.
