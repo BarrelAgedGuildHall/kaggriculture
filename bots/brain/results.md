@@ -1534,3 +1534,13 @@ Standalone67235bytes,720turns,bothDONE,bank120992vsunseededrandom,mean1.197ms,
 max31.569ms. This is packaging evidence,not paired performance.55035 exited0
 before standalone. Locally promoted after review;unsubmitted,no ladder rating.
 No stronger active submission evicted. #1 not achieved.
+
+## Duplicate-shop screen completed (new autopilot cycle10)
+96games,seeds430-437,both seats,V46/tapeselect,frozenv6control;all arms0wins,
+zero crashes/timeouts. Count and cap2 each gain V46margin3106.625(CI238..7802.625),
+ownbank3306.625. Tape count margin-122.375(CI-691.625..432.75),bank-404;
+cap2 margin-103.375(-690.375..489.75),bank-377.25. Countp994.578ms,max95.611;
+cap2p994.518ms,max96.0. V46 screen improvement; tape inconclusive,neither adopted.
+Evidence data/results/brain-duplicate-shops/{count,cap2}-paired.json.58038 exited0.
+Consider fresh confirmation of cap2 after retainedv6 direct reference benchmark;
+do not infer a general benefit or identical shops from this small screen.
