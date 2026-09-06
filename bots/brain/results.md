@@ -1722,3 +1722,26 @@ multiset except qualifying priorities,371 outside-window actions unchanged.
 400 threshold changes165jobgraphs/69actions;800 changes69/19.
 Checker tie-order/fallback-order assumptions corrected;bot code unchanged.
 Data/results/brain-harvest-priority/policy-checks.json. No imitation inputs.
+
+## Valuable harvest priority not adopted; bundle routing screen (cycle24)
+Harvest-priority94011 completed96games490-497,both seats,zero wins/crashes/
+timeouts in all three arms. Threshold400 marginV46-215.75
+(paired95%CI-1916.5..1273.5),tapeselect-2136.5(-5228.125..729.75);
+ownbank-96.125/-595. Threshold800 marginV46-300.3125(-1485.625..681.375),
+tapeselect-1307.5625(-3534.5..801.75);ownbank+72.125/+1699.0625.
+All mean margins negative and intervals include zero;neither adopted.
+Candidate p99/max400:4.807/121.834ms;800:4.265/100.302ms.
+Evidence data/results/brain-harvest-priority/{value400,value800}-paired.json.
+
+Own v6 diagnostic719states:3799 assigned travel destinations,eligible pending
+job counts1:2806,2:366,3:529,4:98. Thus993 snapshots have multiple eligible
+jobs;not guaranteed execution/profit. scripts/diagnose_brain_v6_bundles.py;
+data/results/brain-v6-diagnostic/bundles.json. No opponent actions inspected.
+Next mechanism gives distance a bounded1/2step credit for additional eligible
+pending jobs at the same destination,within existing priority/territory ordering.
+On-tile execution unchanged. scripts/experiment_brain_bundle_credit.py builds
+from frozenv6. Both variants passed120smoke calls and719own-state checks:
+same job graphs and market orders;2791 on-tile assignments preserved each;
+46/58changedactions. Five assignment fixtures each verify bundle preference,
+need/skip eligibility,priority preservation,on-tile execution.
+scripts/check_brain_bundle_credit.py;brain-bundle-credit/policy-checks.json.
