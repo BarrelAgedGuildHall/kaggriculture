@@ -1631,3 +1631,13 @@ Data/results/brain-wheat-buffer/{offline-checks,policy-checks}.json. No games ye
 Optional --run:96games,seeds450-457,both seats,V46/tapeselect,workers2,
 isolated data/arena-wheat-buffer,sequential control/buffer12/buffer32.
 Rescue-water87017 remains the only game job. V6 retained;no upload.
+
+## Rescue-water screen inconclusive (new autopilot cycle19)
+96games440-447,both seats,all arms0wins,zero faults. Rescue12 marginV46+300.75
+(CI-3058..3771),tape+2526.875(-2908.125..7802);ownbank+2856.375/+4659.125.
+Rescue18 marginV46-50.75(-1299.625..1262.625),tape-2435.5625(-5407.875..727.5);
+ownbank-1412.25/+9488.25. Every margin interval includes0;no adoption or expanded
+confirmation. Higher tape bank forrescue18 accompanies worse relative margin.
+Candidatep99/max:rescue12 5.534/98.06ms,rescue18 5.646/99.652ms.
+Evidence data/results/brain-rescue-water/{rescue12,rescue18}-paired.json.
+87017 exited0;retainedv6 unchanged,unsubmitted.
