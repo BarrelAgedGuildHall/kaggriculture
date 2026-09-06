@@ -1067,6 +1067,11 @@ def _policy(obs, t0):
             add(-1, x, y, ['FERTILIZE'], need='FERTILIZER')
     fertilizer_reserve = min(8, len(fertilizer_jobs))
     fertilizer_carried = carried.get('FERTILIZER', 0)
+    collection_stock = fertilizer_carried + shed.get('FERTILIZER', 0)
+    collection_buffer = 0 if last_day else max(2, fertilizer_reserve)
+    collection_value = market_price('FERTILIZER', mkt_inv.get('FERTILIZER', MARKET_I0)+1)
+    if collection_value <= 30 and collection_stock >= collection_buffer:
+        tasks = [job for job in tasks if job[3][0] != 'COLLECT_FERTILIZER']
     if fertilizer_reserve > fertilizer_carried and shed.get('FERTILIZER', 0) > 0:
         amount = min(3, fertilizer_reserve - fertilizer_carried, shed['FERTILIZER'])
         for sx, sy in _shed_tiles(n)[:2]:

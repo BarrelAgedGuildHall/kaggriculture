@@ -1249,3 +1249,37 @@ Actual-outcome paired review:4V46wins gained,2lost,score+2pp with seed-pairCI
 evidence strongest vsV46; tape margin remains uncertain. No automatic promotion.
 Data/results/fertilizer-collection-confirm/{paired,paired-outcomes}.json.
 V4 control band2500 already counted:24/600V46,0/600tapeselect. Do not doublecount.
+
+## V5 retained after component and standalone review (resumed cycle21)
+bots/brain/main.py matches bots/brain_value_v5/main.py and frozen
+bots/brain_fertilizer_collection/main.py. V4 plus priced fertilizer collection:
+skip at conservativequote<=30 when stock coversmax(2,profitable crop-job reserve),
+terminaldaybuffer0. All other job types/order unchanged on matched observations.
+Fresh2500-2549 both seats:5/100V46 vs v4 3/100,0/100tapeselect for both.
+MarginV46+1259.04(seed-pairCI714.94..1803.54),tape+650.07(-51.49..1374.09).
+Ownbank+1465.84/+1528.76.4winsgained,2lost;win-scoreCI-4..8pp includes0.
+All400games zero faults;candidatep995.425ms,max109.166. Economic improvement
+established vsV46; tape margin uncertain. Do not transfer v4's pooled wins to v5.
+80KPI games completed,all40+40banks exactly match confirmation subset.
+Bank69986.875->71093.65(+1106.775,CI366.45..1918.45);collections350.9->243.975;
+applications46.125->34.575. Fewer fertilizer applications, not preserved usage.
+Crop units618.275->634.1,all five crop unit means nondecreasing(4increase,tomato0).
+Wages6943.8->6947.4;productivefraction39.48%->38.15%. Counts are not value.
+Evidence data/results/fertilizer-collection-confirm/{paired,paired-outcomes,component-review}.json
+and data/results/kpi/fertilizer-collection-{control,candidate}-kpi-40/kpi.json.
+Standalone dist/brain-fertilizer-collection-review/main.py matches frozen candidate;
+720turns,bothDONE,bank108623 vsunseededrandom,mean1.273ms,max40.721ms.
+Random bank is not paired performance. Review passed;v5 promoted locally only.
+V5 unsubmitted, not strong-ladder ready. V4 retained frozen for comparison.
+
+## Running now
+Session75558: uv run python scripts/experiment_brain_animal_harvest_value.py --run.
+Started00:35UTC after77840 fully exited and standalone review passed.96games,
+seeds400-407,both seats,two workers,sequential control/value30/value90 arms,
+each16perV46/tapeselect. Built from newly retained v5,not v4. Minimum held-yield
+salevalue30/90 for animalharvest; other jobs unchanged. No automatic adoption.
+719own savedv4 observations perarm pass againstv5 reference;91/99changedactions,
+452/448states without low-value jobs preserve exact v5 actions. Census remains
+from v4's actual game,not new v5 games. Arena data/arena-animal-harvest-value;
+logs,policy-checks.json and eventual paired.json under data/results/brain-animal-harvest-value.
+Next: assess this screen, then broaden v5 reference evaluation if no new candidate.
