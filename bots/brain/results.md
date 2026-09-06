@@ -1180,3 +1180,16 @@ logs and eventual paired.json under data/results/fertilizer-collection-confirm.
 If both margins improve and at least one seed-pair CI excludes0, with zero
 crash/timeout flags, runner follows with40V46KPI games each(80total) on2500-2519.
 No automatic promotion or submission. V4 remains best pending confirmation.
+
+## Collection supply checks (resumed cycle16)
+scripts/check_brain_collection_jobs.py passes1438own saved observations from
+both currentv4 diagnostic seats:326job lists filtered,184actions changed.
+Candidate job list exactly equals baseline minus eligible fertilizer-collection
+jobs; all other jobs and ordering preserved.21synthetic inventory/stock boundary
+cases pass,including2where stock>=2 but below profitable crop-job reserve.
+Those cases retain collection and exact baseline actions. This verifies the
+functional guard, not realized crop supply or full-game economic benefit.
+Evidence data/results/fertilizer-collection-confirm/job-checks.json.
+Confirmation77840 continues unchanged:control70/200completed at00:14UTC,
+candidate not started. No competing game job; two workers. No decision from
+partial runs. Prepared animal-harvest screen remains unrun.
