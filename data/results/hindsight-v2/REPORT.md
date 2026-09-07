@@ -103,12 +103,12 @@ The best searched plan **did not beat the raw brain_strawberry baseline**. Its p
 
 Each row has 16 games. Margin intervals use a whole-seed paired bootstrap (10,000 resamples). Both bots had zero crashes and zero timeouts. A single host-jitter turn made the arena max-time gate fail for each bot, but p99 remained far below budget.
 
-| bot | opponent | mean bank | mean paired margin | paired 95% CI | faults | p99 turn |
-|---|---|---:|---:|---:|---:|---:|
-| brain_hs2 | V46 | $55,479 | $−60,328 | [$−83,468, $−37,404] | 0 | 4.32 ms |
-| brain_strawberry | V46 | $78,462 | $−35,557 | [$−49,078, $−26,461] | 0 | 7.85 ms |
-| brain_hs2 | tapeselect | $47,227 | $−90,723 | [$−99,789, $−81,930] | 0 | 4.35 ms |
-| brain_strawberry | tapeselect | $78,130 | $−56,825 | [$−59,699, $−53,799] | 0 | 7.98 ms |
+| bot | opponent | mean bank [95% CI] | mean paired margin [95% CI] | faults | p99 turn |
+|---|---|---:|---:|---:|---:|
+| brain_hs2 | V46 | $55,479 [$40,136, $70,238] | $−60,328 [$−83,468, $−37,404] | 0 | 4.32 ms |
+| brain_strawberry | V46 | $78,462 [$63,825, $92,324] | $−35,557 [$−49,078, $−26,461] | 0 | 7.85 ms |
+| brain_hs2 | tapeselect | $47,227 [$38,615, $56,519] | $−90,723 [$−99,789, $−81,930] | 0 | 4.35 ms |
+| brain_strawberry | tapeselect | $78,130 [$62,628, $89,102] | $−56,825 [$−59,699, $−53,799] | 0 | 7.98 ms |
 
 Paired directly against the control on identical games, hs2 lost $24,771 margin/game versus V46 (95% CI $−42,627 to $−7,438) and $33,898 versus tapeselect (95% CI $−42,427 to $−25,108).
 
