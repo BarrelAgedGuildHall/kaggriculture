@@ -1,0 +1,36 @@
+{
+  "candidate": "hs2-screen",
+  "control": "hs2-control",
+  "candidate_faults": {
+    "crashes": 0,
+    "timeouts": 0
+  },
+  "control_faults": {
+    "crashes": 0,
+    "timeouts": 0
+  },
+  "per_opponent": [
+    {
+      "opponent": "main@a63d154",
+      "seeds": 8,
+      "games": 16,
+      "margin_delta": -33897.75,
+      "bank_delta": -30903.1875,
+      "seed_pair_ci95": [
+        -42427.0625,
+        -25108.1875
+      ]
+    },
+    {
+      "opponent": "main@h1b8c525dd4",
+      "seeds": 8,
+      "games": 16,
+      "margin_delta": -24771.25,
+      "bank_delta": -22983.6875,
+      "seed_pair_ci95": [
+        -42626.6875,
+        -7437.875
+      ]
+    }
+  ]
+}

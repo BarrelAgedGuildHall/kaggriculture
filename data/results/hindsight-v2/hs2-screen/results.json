@@ -1,0 +1,78 @@
+{
+  "tag": "hs2-screen",
+  "engine": "1.32.7",
+  "agent": "main@h61807b0a19",
+  "opponents": [
+    "main@h1b8c525dd4",
+    "main@a63d154"
+  ],
+  "episodes_per_opponent": 16,
+  "seed_base": 4000,
+  "seeds": [
+    4000,
+    4007
+  ],
+  "steps": 720,
+  "wall_s": 32.8,
+  "run_id": "20260907-153620-959d6f",
+  "per_opponent": [
+    {
+      "opponent": "main@h1b8c525dd4",
+      "n": 16,
+      "win_rate": 0.0,
+      "ci95": [
+        0.0,
+        0.1936
+      ],
+      "money_us_mean": 55478.8,
+      "money_us_std": 21796.9,
+      "money_them_mean": 115807.1,
+      "money_them_std": 30673.1,
+      "crashes": 0,
+      "timeouts": 0,
+      "turn_ms_p99_max": 4.32,
+      "turn_ms_max": 421.03
+    },
+    {
+      "opponent": "main@a63d154",
+      "n": 16,
+      "win_rate": 0.0,
+      "ci95": [
+        0.0,
+        0.1936
+      ],
+      "money_us_mean": 47226.9,
+      "money_us_std": 13046.4,
+      "money_them_mean": 137949.5,
+      "money_them_std": 16323.7,
+      "crashes": 0,
+      "timeouts": 0,
+      "turn_ms_p99_max": 4.349,
+      "turn_ms_max": 399.083
+    }
+  ],
+  "overall": {
+    "n": 32,
+    "win_rate": 0.0,
+    "ci95": [
+      0.0,
+      0.1072
+    ],
+    "games": 32,
+    "crashes": 0,
+    "timeouts": 0,
+    "p99_ms": 4.349,
+    "max_ms": 421.03,
+    "money_mean": 51352.84375,
+    "money_std": 18430.408633067145
+  },
+  "gates": {
+    "no_crashes": true,
+    "no_timeouts": true,
+    "p99_under_budget": true,
+    "max_under_budget": false
+  },
+  "gates_passed": false,
+  "p99_ms_budget": 150.0,
+  "max_ms_budget": 400.0
+}

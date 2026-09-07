@@ -1,0 +1,118 @@
+
+# Inlined Hindsight v2 plan adapter. Generated into a copy of brain_strawberry.
+_HS_PLAN = __PLAN_LITERAL__
+_BASE_AGENT = agent
+_HS_ALL_CROPS = ("WHEAT", "CARROT", "TOMATO", "STRAWBERRY", "MELON")
+_HS_ANIMALS = ("GOOSE", "COW", "SHEEP")
+_HS_LAND_COST = (1000, 2000, 4000)
+
+def _hs_animal_target(animal, day):
+    a = _HS_PLAN["animals"][animal]
+    if a["batch"] <= 0 or day < a["start_day"]:
+        return 0
+    return min(a["total"], (1 + (day - a["start_day"]) // a["interval"]) * a["batch"])
+
+def _hs_phase_mix(day):
+    phase = "opening" if day <= 9 else "days_10_16" if day <= 16 else "days_17_22" if day <= 22 else "days_23_26"
+    mix = dict(_HS_PLAN["crop_mix"][phase])
+    return {c: w for c, w in mix.items() if day <= _HS_PLAN["last_plant_day"].get(c, -1) and w > 0}
+
+class HindsightSeason:
+    @staticmethod
+    def plan_day(view):
+        targets = {a: _hs_animal_target(a, view.day) for a in _HS_ANIMALS}
+        phase = "opening" if view.day <= 9 else "days_10_16" if view.day <= 16 else "days_17_22" if view.day <= 22 else "days_23_26"
+        return DayPlan(phase, _HS_PLAN["hands_by_5day"][min(5, view.day // 5)], 4,
+                       tuple(sorted(_hs_phase_mix(view.day).items())), tuple(sorted(targets.items())),
+                       tuple(sorted(RESERVATION.items())), view.day >= LIQUIDATE_DAY, _HS_PLAN["cash_reserve"])
+
+class HindsightLabor:
+    @staticmethod
+    def hire_count(view, day_plan):
+        if view.hour > 2:
+            return 0
+        count = max(0, day_plan.target_hands - len(view.hands))
+        money, accepted = float(view.money), 0
+        for hire_index in range(int(view.hires_today), int(view.hires_today) + count):
+            wage = _fib(hire_index)
+            if money - wage < day_plan.reserve_cash:
+                break
+            money -= wage
+            accepted += 1
+        return accepted
+
+    @staticmethod
+    def dispatch(view, day_plan):
+        jobs, build_positions = [], []
+        for job in view.jobs:
+            action = tuple(job[2])
+            if action and action[0] == "FERTILIZE":
+                crop_at = {(x, y): _labor_dict(tile).get("crop") for x, y, tile in view.plants}
+                if not _HS_PLAN["fertilize"].get(crop_at.get(tuple(job[1])), False):
+                    continue
+            if action and action[0] in ("BUILD_COOP", "BUILD_PASTURE"):
+                build_positions.append(tuple(job[1])); continue
+            if action and action[0] == "PLACE":
+                continue
+            jobs.append(job)
+        live = {a: 0 for a in _HS_ANIMALS}
+        empty = {"COOP": [], "PASTURE": []}
+        for _x, _y, tile in view.animals:
+            animal = _labor_dict(tile).get("animal")
+            if animal in live: live[animal] += 1
+        for x, y, tile in view.empty_structures:
+            kind = _labor_dict(tile).get("kind")
+            if kind in empty: empty[kind].append((x, y))
+        desired = dict(day_plan.animal_targets)
+        need_coop = max(0, desired.get("GOOSE", 0) - live["GOOSE"] - len(empty["COOP"]))
+        need_pasture = max(0, desired.get("COW", 0) + desired.get("SHEEP", 0) - live["COW"] - live["SHEEP"] - len(empty["PASTURE"]))
+        for pos, kind in zip(build_positions, ["COOP"] * need_coop + ["PASTURE"] * need_pasture):
+            jobs.append((1, pos, ("BUILD_" + kind,), None, None))
+        inventories = [dict(_labor_dict(x) or ()) for x in view.unit_inventories]
+        carried = {a: sum(int(inv.get(a, 0) or 0) for inv in inventories) for a in _HS_ANIMALS}
+        for animal, structure in (("GOOSE", "COOP"), ("COW", "PASTURE"), ("SHEEP", "PASTURE")):
+            n = min(carried[animal], len(empty[structure]))
+            for pos in empty[structure][:n]: jobs.append((1, pos, ("PLACE", animal), animal, None))
+            empty[structure] = empty[structure][n:]
+        return LaborB1.dispatch(view.__class__(**{**view.__dict__, "jobs": tuple(jobs)}), day_plan)
+
+class HindsightMarket:
+    @staticmethod
+    def orders(view, day_plan):
+        extra = len(view.unlocked_quadrants) - 1
+        days = [_HS_PLAN["land_days"][q] for q in ("NE", "SW", "SE")]
+        if 0 <= extra < 3 and view.day >= days[extra] and days[extra] < 30:
+            if view.money - _HS_LAND_COST[extra] >= day_plan.reserve_cash:
+                return [["BUY_LAND"]]
+        return []
+
+def _hs_sell(shed, mkt_inv, day, wheat_reserve, slots, step=None, town_shops=()):
+    out = []
+    for item in SELL_ORDER:
+        if len(out) >= slots: break
+        qty = int(shed.get(item, 0)) - (wheat_reserve if item == "WHEAT" else 0)
+        if qty <= 0: continue
+        if day < LIQUIDATE_DAY and _HS_PLAN["sell_policy"][item] == "metered":
+            if step is None or step % 4 != 1: continue
+            qty = min(qty, town_drain(step - 1, town_shops).get(item, 0))
+        if qty > 0: out.append(["SELL", item, qty])
+    return out
+
+LAND_FIRST_DAY = 99
+ANIMAL_TARGETS = {a: _HS_PLAN["animals"][a]["total"] for a in _HS_ANIMALS}
+config["animal_targets"] = ANIMAL_TARGETS
+config["max_animals"] = sum(ANIMAL_TARGETS.values())
+SEED_CAP = {c: 100 for c in _HS_ALL_CROPS}
+MONEY_RESERVE = _HS_PLAN["cash_reserve"]
+register_module("season", "hindsight", HindsightSeason)
+register_module("labor", "hindsight", HindsightLabor)
+register_module("market", "hindsight", HindsightMarket)
+config["modules"].update(season="hindsight", labor="hindsight", market="hindsight")
+_sell_orders = _hs_sell
+
+del agent
+def agent(obs, config=None):
+    action = _BASE_AGENT(obs, config)
+    if not any(_HS_PLAN["fertilize"].values()):
+        action["market"] = [o for o in action.get("market", []) if not (len(o) >= 2 and o[0] == "BUY_PRODUCT" and o[1] == "FERTILIZER")]
+    return action
