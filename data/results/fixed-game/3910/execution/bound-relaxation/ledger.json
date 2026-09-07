@@ -1,0 +1,2043 @@
+{
+  "seed": 3910,
+  "engine": "kaggle-environments 1.32.7",
+  "status": "DONE",
+  "final_bank": 0.0,
+  "faults": 0,
+  "timing_ms": {
+    "p99": 2.1958998404443264,
+    "max": 61.206100042909384,
+    "mean": 1.231686089716344
+  },
+  "execution_loss": {
+    "travel": 0.0,
+    "idle": 0.0,
+    "undelivered": 0.0,
+    "rotted": 0.0,
+    "price_slippage": 0.0
+  },
+  "days": [
+    {
+      "day": 0,
+      "bank": 15.0,
+      "bank_change": -2985.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 243,
+      "produced": {},
+      "sold": {
+        "WHEAT": 9
+      },
+      "undelivered": {
+        "WHEAT": 5
+      },
+      "rotted": {
+        "WHEAT": 5
+      },
+      "hand_turns": {
+        "moving": 29,
+        "acting": 18
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 1,
+      "bank": 5.0,
+      "bank_change": -10.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {
+        "WHEAT": 5
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 4,
+        "moving": 20
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 2,
+      "bank": 85.0,
+      "bank_change": 80.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 1400,
+      "produced": {},
+      "sold": {
+        "WHEAT": 50
+      },
+      "undelivered": {},
+      "rotted": {
+        "WHEAT": 9
+      },
+      "hand_turns": {
+        "acting": 22,
+        "moving": 48
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 3,
+      "bank": 83.0,
+      "bank_change": -2.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 700,
+      "produced": {},
+      "sold": {
+        "WHEAT": 25
+      },
+      "undelivered": {},
+      "rotted": {
+        "WHEAT": 1
+      },
+      "hand_turns": {
+        "moving": 61,
+        "acting": 9
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 4,
+      "bank": 25.0,
+      "bank_change": -58.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 616,
+      "produced": {},
+      "sold": {
+        "WHEAT": 22
+      },
+      "undelivered": {
+        "WHEAT": 2
+      },
+      "rotted": {},
+      "hand_turns": {
+        "moving": 58,
+        "acting": 12
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 5,
+      "bank": 74.0,
+      "bank_change": 49.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 56,
+      "produced": {},
+      "sold": {
+        "WHEAT": 2
+      },
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "moving": 45,
+        "acting": 33,
+        "idle": 38
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 6,
+      "bank": 67.0,
+      "bank_change": -7.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 116
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 7,
+      "bank": 55.0,
+      "bank_change": -12.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 139
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 8,
+      "bank": 35.0,
+      "bank_change": -20.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 162
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 9,
+      "bank": 2.0,
+      "bank_change": -33.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 185
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 10,
+      "bank": 0.0,
+      "bank_change": -2.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 70
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 11,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 12,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 13,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 14,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 15,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 16,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 17,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 18,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 19,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 20,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 21,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 22,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 23,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 24,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 25,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 26,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 27,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 28,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 24
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 29,
+      "bank": 0.0,
+      "bank_change": 0.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "idle": 23
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    }
+  ],
+  "substitutions": [
+    {
+      "day": 0,
+      "kind": "build",
+      "requested": [
+        5,
+        0
+      ],
+      "actual": [
+        4,
+        1
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "build",
+      "requested": [
+        6,
+        0
+      ],
+      "actual": [
+        4,
+        2
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "build",
+      "requested": [
+        6,
+        0
+      ],
+      "actual": [
+        3,
+        1
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "build",
+      "requested": [
+        7,
+        0
+      ],
+      "actual": [
+        4,
+        3
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        0
+      ],
+      "actual": [
+        7,
+        1
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        1
+      ],
+      "actual": [
+        7,
+        2
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        2
+      ],
+      "actual": [
+        7,
+        3
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        3
+      ],
+      "actual": [
+        7,
+        4
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        4
+      ],
+      "actual": [
+        8,
+        4
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        8,
+        4
+      ],
+      "actual": [
+        9,
+        4
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "build",
+      "requested": [
+        6,
+        0
+      ],
+      "actual": [
+        6,
+        1
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        1
+      ],
+      "actual": [
+        6,
+        2
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        2
+      ],
+      "actual": [
+        6,
+        3
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        3
+      ],
+      "actual": [
+        6,
+        4
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        4
+      ],
+      "actual": [
+        8,
+        4
+      ]
+    },
+    {
+      "day": 0,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        4
+      ],
+      "actual": [
+        9,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        5,
+        0
+      ],
+      "actual": [
+        5,
+        1
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        0
+      ],
+      "actual": [
+        6,
+        2
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        0
+      ],
+      "actual": [
+        7,
+        1
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        5,
+        1
+      ],
+      "actual": [
+        4,
+        1
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        1
+      ],
+      "actual": [
+        5,
+        2
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        1
+      ],
+      "actual": [
+        7,
+        2
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        5,
+        2
+      ],
+      "actual": [
+        4,
+        2
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        2
+      ],
+      "actual": [
+        6,
+        3
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        2
+      ],
+      "actual": [
+        7,
+        3
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        3
+      ],
+      "actual": [
+        6,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        3
+      ],
+      "actual": [
+        7,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        4
+      ],
+      "actual": [
+        4,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        4
+      ],
+      "actual": [
+        8,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        8,
+        4
+      ],
+      "actual": [
+        9,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        9,
+        4
+      ],
+      "actual": [
+        3,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        0,
+        5
+      ],
+      "actual": [
+        0,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        1,
+        5
+      ],
+      "actual": [
+        1,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        2,
+        5
+      ],
+      "actual": [
+        2,
+        4
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        3,
+        5
+      ],
+      "actual": [
+        3,
+        3
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        4,
+        5
+      ],
+      "actual": [
+        4,
+        3
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        0,
+        6
+      ],
+      "actual": [
+        0,
+        3
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        1,
+        6
+      ],
+      "actual": [
+        1,
+        3
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        2,
+        6
+      ],
+      "actual": [
+        2,
+        3
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        3,
+        6
+      ],
+      "actual": [
+        3,
+        2
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        4,
+        6
+      ],
+      "actual": [
+        3,
+        1
+      ]
+    },
+    {
+      "day": 1,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        0,
+        7
+      ],
+      "actual": [
+        2,
+        1
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        0,
+        5
+      ],
+      "actual": [
+        0,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        0,
+        5
+      ],
+      "actual": [
+        1,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        1,
+        5
+      ],
+      "actual": [
+        2,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        2,
+        5
+      ],
+      "actual": [
+        3,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        3,
+        5
+      ],
+      "actual": [
+        4,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        4,
+        5
+      ],
+      "actual": [
+        4,
+        3
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        0,
+        6
+      ],
+      "actual": [
+        0,
+        3
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        1,
+        6
+      ],
+      "actual": [
+        1,
+        3
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "build",
+      "requested": [
+        2,
+        6
+      ],
+      "actual": [
+        2,
+        3
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        2,
+        6
+      ],
+      "actual": [
+        3,
+        3
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        3,
+        6
+      ],
+      "actual": [
+        5,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        4,
+        6
+      ],
+      "actual": [
+        4,
+        2
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        0,
+        7
+      ],
+      "actual": [
+        3,
+        2
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        1,
+        7
+      ],
+      "actual": [
+        2,
+        1
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        2,
+        7
+      ],
+      "actual": [
+        5,
+        3
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        3,
+        7
+      ],
+      "actual": [
+        6,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        4,
+        7
+      ],
+      "actual": [
+        4,
+        1
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        0,
+        8
+      ],
+      "actual": [
+        3,
+        1
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        1,
+        8
+      ],
+      "actual": [
+        5,
+        2
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        2,
+        8
+      ],
+      "actual": [
+        6,
+        3
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        3,
+        8
+      ],
+      "actual": [
+        7,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        4,
+        8
+      ],
+      "actual": [
+        5,
+        1
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        0,
+        9
+      ],
+      "actual": [
+        6,
+        2
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        1,
+        9
+      ],
+      "actual": [
+        7,
+        3
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        2,
+        9
+      ],
+      "actual": [
+        8,
+        4
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        3,
+        9
+      ],
+      "actual": [
+        7,
+        2
+      ]
+    },
+    {
+      "day": 2,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        4,
+        9
+      ],
+      "actual": [
+        8,
+        3
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "build",
+      "requested": [
+        7,
+        0
+      ],
+      "actual": [
+        7,
+        1
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "build",
+      "requested": [
+        0,
+        1
+      ],
+      "actual": [
+        5,
+        1
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "build",
+      "requested": [
+        1,
+        1
+      ],
+      "actual": [
+        5,
+        2
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "build",
+      "requested": [
+        2,
+        1
+      ],
+      "actual": [
+        6,
+        2
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "build",
+      "requested": [
+        3,
+        1
+      ],
+      "actual": [
+        7,
+        2
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "build",
+      "requested": [
+        4,
+        1
+      ],
+      "actual": [
+        8,
+        1
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        4,
+        1
+      ],
+      "actual": [
+        7,
+        3
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        5,
+        1
+      ],
+      "actual": [
+        8,
+        2
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        6,
+        1
+      ],
+      "actual": [
+        9,
+        1
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        7,
+        1
+      ],
+      "actual": [
+        7,
+        4
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        8,
+        1
+      ],
+      "actual": [
+        8,
+        3
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        9,
+        1
+      ],
+      "actual": [
+        9,
+        2
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        0,
+        2
+      ],
+      "actual": [
+        8,
+        4
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        1,
+        2
+      ],
+      "actual": [
+        9,
+        3
+      ]
+    },
+    {
+      "day": 3,
+      "kind": "plant",
+      "crop": "WHEAT",
+      "requested": [
+        2,
+        2
+      ],
+      "actual": [
+        9,
+        4
+      ]
+    },
+    {
+      "day": 4,
+      "kind": "build",
+      "requested": [
+        5,
+        0
+      ],
+      "actual": [
+        7,
+        3
+      ]
+    },
+    {
+      "day": 4,
+      "kind": "build",
+      "requested": [
+        6,
+        0
+      ],
+      "actual": [
+        9,
+        1
+      ]
+    },
+    {
+      "day": 4,
+      "kind": "build",
+      "requested": [
+        7,
+        0
+      ],
+      "actual": [
+        7,
+        4
+      ]
+    },
+    {
+      "day": 4,
+      "kind": "build",
+      "requested": [
+        8,
+        0
+      ],
+      "actual": [
+        8,
+        3
+      ]
+    },
+    {
+      "day": 4,
+      "kind": "build",
+      "requested": [
+        9,
+        0
+      ],
+      "actual": [
+        9,
+        2
+      ]
+    },
+    {
+      "day": 4,
+      "kind": "build",
+      "requested": [
+        5,
+        1
+      ],
+      "actual": [
+        8,
+        4
+      ]
+    },
+    {
+      "day": 4,
+      "kind": "build",
+      "requested": [
+        6,
+        1
+      ],
+      "actual": [
+        9,
+        3
+      ]
+    },
+    {
+      "day": 4,
+      "kind": "build",
+      "requested": [
+        7,
+        1
+      ],
+      "actual": [
+        9,
+        4
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        8,
+        1
+      ],
+      "actual": [
+        5,
+        4
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        5,
+        2
+      ],
+      "actual": [
+        4,
+        2
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        6,
+        2
+      ],
+      "actual": [
+        3,
+        3
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        7,
+        2
+      ],
+      "actual": [
+        5,
+        3
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        8,
+        2
+      ],
+      "actual": [
+        6,
+        4
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        6,
+        3
+      ],
+      "actual": [
+        3,
+        2
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        0,
+        5
+      ],
+      "actual": [
+        6,
+        3
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        1,
+        5
+      ],
+      "actual": [
+        4,
+        1
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        2,
+        5
+      ],
+      "actual": [
+        3,
+        1
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        3,
+        5
+      ],
+      "actual": [
+        2,
+        2
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        4,
+        5
+      ],
+      "actual": [
+        8,
+        2
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        0,
+        6
+      ],
+      "actual": [
+        2,
+        1
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        1,
+        6
+      ],
+      "actual": [
+        1,
+        1
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        2,
+        6
+      ],
+      "actual": [
+        1,
+        2
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        3,
+        6
+      ],
+      "actual": [
+        0,
+        1
+      ]
+    },
+    {
+      "day": 5,
+      "kind": "build",
+      "requested": [
+        4,
+        6
+      ],
+      "actual": [
+        0,
+        2
+      ]
+    }
+  ],
+  "expectation_basis": "schedule.expected_revenue_by_day when supplied; otherwise realised production at engine base prices"
+}

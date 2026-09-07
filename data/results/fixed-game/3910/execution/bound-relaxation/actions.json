@@ -1,0 +1,9001 @@
+[
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "BUY_SEED",
+        "WHEAT",
+        35
+      ],
+      [
+        "BUY_LAND"
+      ],
+      [
+        "BUY_ANIMAL",
+        "GOOSE",
+        6
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "PICKUP",
+        "GOOSE",
+        4
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_COOP"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "BUILD_COOP"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_COOP"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "BUILD_COOP"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_COOP"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "BUILD_COOP"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_COOP"
+    ],
+    "hands": [
+      [
+        "SOUTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "PLACE",
+        "GOOSE"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        4
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "PLACE",
+        "GOOSE"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        4
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "PLACE",
+        "GOOSE"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PICKUP",
+      "GOOSE",
+      2
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        6
+      ],
+      [
+        "BUY_SEED",
+        "WHEAT",
+        10
+      ],
+      [
+        "BUY_LAND"
+      ],
+      [
+        "BUY_LAND"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PLACE",
+      "GOOSE"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PLACE",
+      "GOOSE"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PICKUP",
+      "WHEAT",
+      5
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "BUY_SEED",
+        "WHEAT",
+        15
+      ],
+      [
+        "BUY_LAND"
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "SOUTH"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "PICKUP",
+        "WHEAT",
+        2
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "PLANT",
+        "WHEAT"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "PLANT",
+        "WHEAT"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "SOUTH"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "PLANT",
+        "WHEAT"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "FEED"
+      ]
+    ],
+    "market": [
+      [
+        "SELL",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "PLANT",
+        "WHEAT"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        4
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PLANT",
+      "WHEAT"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "FEED"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        1
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "PLANT",
+        "WHEAT"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        2
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "BUY_SEED",
+        "WHEAT",
+        26
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "SOUTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "PLANT",
+        "WHEAT"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "SOUTH"
+      ],
+      [
+        "SOUTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "EAST"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "EAST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "SOUTH"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "SOUTH"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "SOUTH"
+      ],
+      [
+        "SOUTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        5
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "PICKUP",
+        "WHEAT",
+        2
+      ],
+      [
+        "SOUTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": [
+      [
+        "BUY_PRODUCT",
+        "WHEAT",
+        3
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "EAST"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "SELL",
+        "WHEAT",
+        2
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "DIG"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "EAST"
+      ],
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ],
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "DIG"
+      ],
+      [
+        "EAST"
+      ],
+      [
+        "NORTH"
+      ],
+      [
+        "DIG"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "DIG"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "DIG"
+      ],
+      [
+        "EAST"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "SOUTH"
+      ],
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "SOUTH"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ],
+      [
+        "DIG"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "NORTH"
+      ],
+      [
+        "DIG"
+      ],
+      [
+        "EAST"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "DIG"
+      ],
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "NORTH"
+      ],
+      [
+        "NORTH"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "NORTH"
+      ],
+      [
+        "EAST"
+      ],
+      [
+        "DIG"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "DIG"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ],
+      [
+        "DIG"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ],
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "WEST"
+    ],
+    "hands": [
+      [
+        "DIG"
+      ],
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "NORTH"
+    ],
+    "hands": [
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ],
+      [
+        "DIG"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "WEST"
+      ],
+      [
+        "WEST"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "WEST"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "SOUTH"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "DIG"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "DIG"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "BUILD_PASTURE"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "WEST"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "BUILD_PASTURE"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "DIG"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "BUILD_PASTURE"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "BUY_LAND"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "BUY_LAND"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [
+      [
+        "PASS"
+      ],
+      [
+        "PASS"
+      ]
+    ],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": [
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ],
+      [
+        "HIRE"
+      ]
+    ]
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  },
+  {
+    "farmer": [
+      "PASS"
+    ],
+    "hands": [],
+    "market": []
+  }
+]

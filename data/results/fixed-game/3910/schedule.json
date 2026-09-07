@@ -1,0 +1,8258 @@
+{
+  "schema_version": 1,
+  "seed": 3910,
+  "seat": 0,
+  "opponent": "pass",
+  "pinned": true,
+  "warning": "Fractional LP relaxation witness, not directly executable: fractional_tile records fractional occupancy and optimistic yields/travel/market are documented in bound.md",
+  "valid_upper_bound": 2631002.17,
+  "realistic_bound": 2493148.03,
+  "days": [
+    {
+      "day": 0,
+      "hires": 1.2839,
+      "purchases": [
+        {
+          "item": "GOOSE",
+          "qty": 6.25
+        },
+        {
+          "item": "COW",
+          "qty": 0.243227
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 35.333921
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "NE"
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "fractional_tile": 0.576914,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "fractional_tile": 0.096172,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 0.147055,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 0.526031,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "fractional_tile": 0.673084,
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 0.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 1,
+      "hires": 0.0,
+      "purchases": [
+        {
+          "item": "WHEAT_SEED",
+          "qty": 10.758337
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "NE"
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SW"
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 6.4932
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "fractional_tile": 0.326914,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "fractional_tile": 0.326916,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 6.493227
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 6.493227,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 2,
+      "hires": 2.225629,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 0.013432
+        },
+        {
+          "item": "SHEEP",
+          "qty": 6.573281
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 15.827802
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SW"
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "fractional_tile": 0.013432,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "fractional_tile": 0.883149,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "fractional_tile": 0.310646,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "fractional_tile": 0.585935,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "fractional_tile": 0.896581,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "fractional_tile": 0.896571,
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 212.003528
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 6.493227
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 6.493227,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 3,
+      "hires": 2.435505,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 6.204445
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 26.920567
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 13.0799
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 0.526031,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "fractional_tile": 0.332242,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "fractional_tile": 0.667758,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "fractional_tile": 0.673086,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "fractional_tile": 0.483433,
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 64.550022
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 13.07994
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 13.07994,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 4,
+      "hires": 2.602849,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 12.238937
+        },
+        {
+          "item": "SHEEP",
+          "qty": 0.728309
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 6.2044
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "fractional_tile": 0.326914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "fractional_tile": 0.516567,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.099053,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.004366,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "fractional_tile": 0.103419,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "fractional_tile": 0.103429,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 94.966809
+        },
+        {
+          "product": "EGG",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 19.284385
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 19.284385,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 5,
+      "hires": 4.7897,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 15.827802
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 26.0472
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "fractional_tile": 0.585935,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "fractional_tile": 0.896581,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "fractional_tile": 0.896571,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 161.523404
+        },
+        {
+          "product": "EGG",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 32.251631
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 32.251631,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 6,
+      "hires": 4.009383,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 14.621167
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 22.0322
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "fractional_tile": 0.667758,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "fractional_tile": 0.222549,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "EGG",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 48.079433
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 48.079433,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 7,
+      "hires": 5.601714,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 16.274064
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SE"
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 40.6684
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "fractional_tile": 0.777451,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "fractional_tile": 0.483433,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            5
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            6
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            6
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            7
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            7
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            7
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            7
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            8
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            8
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            8
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            8
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            9
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            9
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            9
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "fractional_tile": 0.158987,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "fractional_tile": 0.158976,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "EGG",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 62.7006
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 62.7006,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 8,
+      "hires": 6.538479,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 27.275336
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SE"
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 13.3063
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "fractional_tile": 0.673086,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "fractional_tile": 0.576914,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            5
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            6
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            6
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            7
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            7
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            7
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            7
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            8
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            8
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            8
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            8
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            9
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            9
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            9
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "fractional_tile": 0.841013,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "fractional_tile": 0.841024,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 1.459364
+        },
+        {
+          "product": "WOOL",
+          "qty": 39.439685
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 78.974664
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 78.974664,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 9,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 92.0
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 9215.0,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 10,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 91.015
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 1.539956
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 18720.96,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 11,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 63.3945
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 5.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 28910.56,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 12,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 79.5044
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 42879.06,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 13,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 85.0672
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 57041.99,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 14,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 15.2068
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 71439.78,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 15,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 69.5215
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 50.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 90773.26,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 16,
+      "hires": 6.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 40.1549
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 50.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 110449.11,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 17,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 19.8451
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 50.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 130402.26,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 18,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 64.8832
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 159985.38,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 19,
+      "hires": 6.849233,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 65.1748
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 190195.16,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 20,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 15.2068
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 227226.96,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 21,
+      "hires": 6.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 45.5215
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 50.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 271437.44,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 22,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 64.1549
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 100.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 328935.28,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 23,
+      "hires": 7.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 19.8451
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 100.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 406528.44,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 24,
+      "hires": 6.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 40.8832
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 200.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 511787.55,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 25,
+      "hires": 6.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 44.7932
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 200.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 619332.76,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 26,
+      "hires": 6.366383,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 200.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 728674.0,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 27,
+      "hires": 6.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 45.5215
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 278.346537
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 859276.11,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 28,
+      "hires": 5.922974,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 38.3063
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 400.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 400.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 1059309.42,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 29,
+      "hires": 6.173122,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 400.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 400.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 2631002.17,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": [
+        {
+          "kind": "speculative_wheat_trade_profit_upper_allowance",
+          "dollars": 1366100.0
+        }
+      ]
+    }
+  ],
+  "binding_constraints": [
+    {
+      "day": 0,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 41.827147999999994,
+      "tiles_available": 41.82715,
+      "tile_binding": true,
+      "labour_used": 54.814,
+      "labour_available": 54.8136,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.7413,
+      "tile_shadow_value_per_extra_tile": 58.3729,
+      "cash_floor_shadow_cost": 1.4593
+    },
+    {
+      "day": 1,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 52.58548499999999,
+      "tiles_available": 52.585474999999995,
+      "tile_binding": true,
+      "labour_used": 23.745,
+      "labour_available": 24.0,
+      "labour_binding": false,
+      "labour_shadow_value_per_extra_turn": 0.0,
+      "tile_shadow_value_per_extra_tile": 531.4097,
+      "cash_floor_shadow_cost": 6.6426
+    },
+    {
+      "day": 2,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 75.0,
+      "tiles_available": 75.0,
+      "tile_binding": true,
+      "labour_used": 77.415,
+      "labour_available": 77.415096,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.8073,
+      "tile_shadow_value_per_extra_tile": 451.477,
+      "cash_floor_shadow_cost": 0.9994
+    },
+    {
+      "day": 3,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 72.791091,
+      "tiles_available": 75.0,
+      "tile_binding": false,
+      "labour_used": 82.452,
+      "labour_available": 82.45212000000001,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.7241,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 3.9387
+    },
+    {
+      "day": 4,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 75.0,
+      "tiles_available": 75.0,
+      "tile_binding": true,
+      "labour_used": 86.468,
+      "labour_available": 86.468376,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.3958,
+      "tile_shadow_value_per_extra_tile": 77.4523,
+      "cash_floor_shadow_cost": 0.6241
+    },
+    {
+      "day": 5,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 75.0,
+      "tiles_available": 75.0,
+      "tile_binding": true,
+      "labour_used": 138.953,
+      "labour_available": 138.9528,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.8596,
+      "tile_shadow_value_per_extra_tile": 353.957,
+      "cash_floor_shadow_cost": 2.4445
+    },
+    {
+      "day": 6,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 62.7006,
+      "tiles_available": 75.0,
+      "tile_binding": false,
+      "labour_used": 120.225,
+      "labour_available": 120.22519199999999,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.3503,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 0.3084
+    },
+    {
+      "day": 7,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 78.974664,
+      "tiles_available": 78.97467499999999,
+      "tile_binding": false,
+      "labour_used": 158.441,
+      "labour_available": 158.441136,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.4577,
+      "tile_shadow_value_per_extra_tile": 36.3036,
+      "cash_floor_shadow_cost": 0.2269
+    },
+    {
+      "day": 8,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 180.923,
+      "labour_available": 180.923496,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.6208,
+      "tile_shadow_value_per_extra_tile": 329.8463,
+      "cash_floor_shadow_cost": 0.1462
+    },
+    {
+      "day": 9,
+      "cash": 9215.0,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 316.9167,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 10,
+      "cash": 18720.96,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 316.9167,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 11,
+      "cash": 28910.56,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 316.9167,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 12,
+      "cash": 42879.06,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 316.9167,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 13,
+      "cash": 57041.99,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 316.9167,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 14,
+      "cash": 71439.78,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 316.9167,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 15,
+      "cash": 90773.26,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 894.8333,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 16,
+      "cash": 110449.11,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 168.0,
+      "labour_available": 168.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 108.6667,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 17,
+      "cash": 130402.26,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 510.918,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 18,
+      "cash": 159985.38,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 1148.2486,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 19,
+      "cash": 190195.16,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 188.382,
+      "labour_available": 188.381592,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 142.5928,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 20,
+      "cash": 227226.96,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 316.9167,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 21,
+      "cash": 271437.44,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 168.0,
+      "labour_available": 168.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 1308.3239,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 22,
+      "cash": 328935.28,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 108.6667,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 23,
+      "cash": 406528.44,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 192.0,
+      "labour_available": 192.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 316.9167,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 24,
+      "cash": 511787.55,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 168.0,
+      "labour_available": 168.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 1342.25,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 25,
+      "cash": 619332.76,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 168.0,
+      "labour_available": 168.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 108.6667,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 26,
+      "cash": 728674.0,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 176.793,
+      "labour_available": 176.793192,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 475.6586,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 27,
+      "cash": 859276.11,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 168.0,
+      "labour_available": 168.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 1182.8831,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 28,
+      "cash": 1059309.42,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 166.151,
+      "labour_available": 166.151376,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.3333,
+      "tile_shadow_value_per_extra_tile": 88.125,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 29,
+      "cash": 2631002.17,
+      "cash_binding": false,
+      "tiles_used": 72.154928,
+      "tiles_available": 100.0,
+      "tile_binding": false,
+      "labour_used": 172.155,
+      "labour_available": 172.154928,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 0.5417,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 0.0
+    }
+  ],
+  "realistic_days": [
+    {
+      "day": 0,
+      "hires": 8.0,
+      "purchases": [
+        {
+          "item": "GOOSE",
+          "qty": 2.5
+        },
+        {
+          "item": "COW",
+          "qty": 0.833333
+        },
+        {
+          "item": "SHEEP",
+          "qty": 0.771862
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 45.894805
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "NE"
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 17.7876
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "fractional_tile": 0.5,
+          "kind": "COOP",
+          "structure": "COOP",
+          "animal": "GOOSE"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "fractional_tile": 0.5,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "fractional_tile": 0.333333,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "fractional_tile": 0.666667,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "fractional_tile": 0.105195,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "fractional_tile": 0.894805,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 0.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 1,
+      "hires": 8.0,
+      "purchases": [
+        {
+          "item": "WHEAT_SEED",
+          "qty": 3.198054
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SW"
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 68.6947
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "fractional_tile": 0.127922,
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 4.105195
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 4.105195,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 2,
+      "hires": 9.013631,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 10.130199
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 4.166667
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SW"
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "fractional_tile": 0.571875,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.408324,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.163551,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "fractional_tile": 0.571875,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "fractional_tile": 0.571875,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "fractional_tile": 0.571875,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "fractional_tile": 0.571875,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "fractional_tile": 0.571875,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "fractional_tile": 0.571875,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "fractional_tile": 0.571866,
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 275.368827
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 4.105195
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 4.105195,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 3,
+      "hires": 10.0,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 3.357342
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 36.120242
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 29.2607
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "fractional_tile": 0.894805,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 0.462537,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 0.537463,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "fractional_tile": 0.582779,
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 19.188324
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 14.235394
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 14.235394,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 4,
+      "hires": 11.0,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 6.423217
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 57.8015
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "fractional_tile": 0.417221,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "fractional_tile": 0.548681,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "fractional_tile": 0.451319,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "fractional_tile": 0.005996,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 25.0
+        },
+        {
+          "product": "EGG",
+          "qty": 10.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 17.592737
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 17.592737,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 5,
+      "hires": 11.69835,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 7.451572
+        },
+        {
+          "item": "SHEEP",
+          "qty": 7.412233
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SW"
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "fractional_tile": 0.422129,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "fractional_tile": 0.428125,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.179443,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "fractional_tile": 0.412233,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 216.721454
+        },
+        {
+          "product": "EGG",
+          "qty": 10.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 24.015953
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 24.015953,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 6,
+      "hires": 12.0,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 8.997645
+        },
+        {
+          "item": "SHEEP",
+          "qty": 2.721495
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 32.4658
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "fractional_tile": 0.537463,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "fractional_tile": 0.184032,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "fractional_tile": 0.815968,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 0.181677,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "EGG",
+          "qty": 10.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 4.631173
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 38.879758
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 38.879758,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 7,
+      "hires": 13.0,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 11.888616
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 29.4543
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "fractional_tile": 0.818323,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "fractional_tile": 0.070293,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "EGG",
+          "qty": 10.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.598898
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 50.598898,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 8,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 29.37973
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SE"
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "fractional_tile": 0.929707,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "fractional_tile": 0.582779,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            5
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            6
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            6
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            7
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            7
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            7
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            7
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            8
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            8
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            8
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            8
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            5,
+            9
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            6,
+            9
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            7,
+            9
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "fractional_tile": 0.67469,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "fractional_tile": 0.674684,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "EGG",
+          "qty": 10.0
+        },
+        {
+          "product": "MILK",
+          "qty": 5.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 60.781192
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 33.504734
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 33.504734,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 9,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 8.132756
+        },
+        {
+          "item": "LAND",
+          "qty": 1,
+          "unlocks": "SE"
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 42.4068
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            5
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            6
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            6
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            7
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            7
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            7
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            7
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            8
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            8
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            8
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            8
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            5,
+            9
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            6,
+            9
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            7,
+            9
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "fractional_tile": 0.32531,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "fractional_tile": 0.325316,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "COW"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 65.030557
+        }
+      ],
+      "relaxation_bank": 0.0,
+      "fertilizer_collected": 65.030557,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 10,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 81.7741
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 1.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 3351.23,
+      "fertilizer_collected": 50.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 11,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 2.5
+        },
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 56.7077
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "fractional_tile": 1.0,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "fractional_tile": 0.5,
+          "kind": "PASTURE",
+          "structure": "PASTURE",
+          "animal": "SHEEP"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 5.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 6234.52,
+      "fertilizer_collected": 50.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 12,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 74.3575
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 10.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 11355.16,
+      "fertilizer_collected": 50.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 13,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 24.2985
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 19515.86,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 14,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 71.9311
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 27793.93,
+      "fertilizer_collected": 0.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 15,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 58.9166
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 50.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 41075.01,
+      "fertilizer_collected": 50.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 16,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 68.8533
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 50.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 54646.16,
+      "fertilizer_collected": 50.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 17,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 4.855
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 50.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 68551.31,
+      "fertilizer_collected": 50.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 18,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 65.3599
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 92070.95,
+      "fertilizer_collected": 50.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 19,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 4.2772
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 116276.67,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 20,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 69.4311
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 25.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 147191.24,
+      "fertilizer_collected": 0.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 21,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 0.7838
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 50.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 185370.45,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 22,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 118.8533
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 100.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 100.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 236750.6,
+      "fertilizer_collected": 0.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 23,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 4.855
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 100.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 308295.75,
+      "fertilizer_collected": 50.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 24,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 23.1627
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 200.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 92.197193
+        }
+      ],
+      "relaxation_bank": 411294.33,
+      "fertilizer_collected": 92.197193,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 25,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "WHEAT_FEED_AT_PRICE_FLOOR_RELAXATION",
+          "qty": 4.2772
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 200.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 50.0
+        }
+      ],
+      "relaxation_bank": 512804.05,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 26,
+      "hires": 15.0,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 200.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 65.471448
+        }
+      ],
+      "relaxation_bank": 617466.48,
+      "fertilizer_collected": 69.431099,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 27,
+      "hires": 15.0,
+      "purchases": [
+        {
+          "item": "CARROT_SEED",
+          "qty": 4.799235
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "fractional_tile": 0.5,
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "fractional_tile": 0.333333,
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "fractional_tile": 0.417221,
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "fractional_tile": 1.0,
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "fractional_tile": 0.548681,
+          "crop": "CARROT"
+        }
+      ],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 324.844434
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 758066.61,
+      "fertilizer_collected": 95.984576,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 28,
+      "hires": 12.198971,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "EGG",
+          "qty": 10.0
+        },
+        {
+          "product": "MILK",
+          "qty": 200.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 400.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 921105.25,
+      "fertilizer_collected": 100.0,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": []
+    },
+    {
+      "day": 29,
+      "hires": 15.0,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "CARROT",
+          "qty": 19.196938
+        },
+        {
+          "product": "EGG",
+          "qty": 10.0
+        },
+        {
+          "product": "MILK",
+          "qty": 400.0
+        },
+        {
+          "product": "WOOL",
+          "qty": 400.0
+        },
+        {
+          "product": "FERTILIZER",
+          "qty": 100.0
+        }
+      ],
+      "relaxation_bank": 2493148.03,
+      "fertilizer_collected": 50.055773,
+      "grown_wheat_fed": 0.0,
+      "relaxation_credits": [
+        {
+          "kind": "speculative_wheat_trade_profit_upper_allowance",
+          "dollars": 1366100.0
+        }
+      ]
+    }
+  ],
+  "realistic_binding_constraints": [
+    {
+      "day": 0,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 50.0,
+      "tiles_available": 50.0,
+      "tile_binding": true,
+      "labour_used": 216.0,
+      "labour_available": 216.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 24.1898,
+      "tile_shadow_value_per_extra_tile": 189.4324,
+      "cash_floor_shadow_cost": 3.5394
+    },
+    {
+      "day": 1,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 53.198054,
+      "tiles_available": 53.198049999999995,
+      "tile_binding": true,
+      "labour_used": 216.0,
+      "labour_available": 216.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 25.4351,
+      "tile_shadow_value_per_extra_tile": 458.286,
+      "cash_floor_shadow_cost": 5.7286
+    },
+    {
+      "day": 2,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 67.49492000000001,
+      "tiles_available": 67.49492500000001,
+      "tile_binding": true,
+      "labour_used": 240.327,
+      "labour_available": 240.327144,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 29.7464,
+      "tile_shadow_value_per_extra_tile": 612.0148,
+      "cash_floor_shadow_cost": 2.7595
+    },
+    {
+      "day": 3,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 61.077698999999996,
+      "tiles_available": 67.49492500000001,
+      "tile_binding": false,
+      "labour_used": 264.0,
+      "labour_available": 264.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 28.4216,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 3.766
+    },
+    {
+      "day": 4,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 64.30286199999999,
+      "tiles_available": 67.49492500000001,
+      "tile_binding": false,
+      "labour_used": 288.0,
+      "labour_available": 288.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 29.7466,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 1.1247
+    },
+    {
+      "day": 5,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 75.0,
+      "tiles_available": 75.0,
+      "tile_binding": true,
+      "labour_used": 304.76,
+      "labour_available": 304.7604,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.9804,
+      "tile_shadow_value_per_extra_tile": 397.7084,
+      "cash_floor_shadow_cost": 1.9359
+    },
+    {
+      "day": 6,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 50.598898,
+      "tiles_available": 75.0,
+      "tile_binding": false,
+      "labour_used": 312.0,
+      "labour_available": 312.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 30.8234,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 0.4452
+    },
+    {
+      "day": 7,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 62.487514,
+      "tiles_available": 75.0,
+      "tile_binding": false,
+      "labour_used": 336.0,
+      "labour_available": 336.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 30.9801,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 0.8698
+    },
+    {
+      "day": 8,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 91.867244,
+      "tiles_available": 91.86725,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 69.4975,
+      "tile_shadow_value_per_extra_tile": 172.6731,
+      "cash_floor_shadow_cost": 1.0792
+    },
+    {
+      "day": 9,
+      "cash": 0.0,
+      "cash_binding": true,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 114.3075,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 10,
+      "cash": 3351.23,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 106.7979,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 11,
+      "cash": 6234.52,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 138.0,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 12,
+      "cash": 11355.16,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 298.4981,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 13,
+      "cash": 19515.86,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 14,
+      "cash": 27793.93,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 297.5134,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 15,
+      "cash": 41075.01,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 501.4904,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 16,
+      "cash": 54646.16,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 138.0,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 17,
+      "cash": 68551.31,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 340.8951,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 18,
+      "cash": 92070.95,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 546.4414,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 19,
+      "cash": 116276.67,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 78.2058,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 20,
+      "cash": 147191.24,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 138.0,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 21,
+      "cash": 185370.45,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 1193.7942,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 22,
+      "cash": 236750.6,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 78.2058,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 23,
+      "cash": 308295.75,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 138.0,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 24,
+      "cash": 411294.33,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 1193.7942,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 25,
+      "cash": 512804.05,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 62.7987,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 26,
+      "cash": 617466.48,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 306.4196,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 27,
+      "cash": 758066.61,
+      "cash_binding": false,
+      "tiles_used": 100.0,
+      "tiles_available": 100.0,
+      "tile_binding": true,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 80.0,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 28,
+      "cash": 921105.25,
+      "cash_binding": false,
+      "tiles_used": 96.506643,
+      "tiles_available": 100.0,
+      "tile_binding": false,
+      "labour_used": 316.775,
+      "labour_available": 316.775304,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 9.7083,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 0.0
+    },
+    {
+      "day": 29,
+      "cash": 2493148.03,
+      "cash_binding": false,
+      "tiles_used": 85.051683,
+      "tiles_available": 100.0,
+      "tile_binding": false,
+      "labour_used": 384.0,
+      "labour_available": 384.0,
+      "labour_binding": true,
+      "labour_shadow_value_per_extra_turn": 31.6658,
+      "tile_shadow_value_per_extra_tile": 0.0,
+      "cash_floor_shadow_cost": 0.0
+    }
+  ]
+}

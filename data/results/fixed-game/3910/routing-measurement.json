@@ -1,0 +1,1196 @@
+{
+  "engine_final_bank": 97255.0,
+  "final_shops": [
+    "YARN_STORE",
+    "PET_CAFE",
+    "YARN_STORE",
+    "PIZZA_SHOP",
+    "BAKERY",
+    "PET_CAFE",
+    "PIZZA_SHOP",
+    "SMOOTHIE_SHOP"
+  ],
+  "season_moves": 3782,
+  "season_nonmove_actions": 2053,
+  "season_moves_per_nonmove_action": 1.8421821724305893,
+  "day_20": {
+    "day": 20,
+    "moves": 142,
+    "nonmove_actions": 85,
+    "passes": 0,
+    "moves_per_nonmove_action": 1.6705882352941177,
+    "by_action_class": {
+      "PICKUP": {
+        "actions": 13,
+        "moves": 8
+      },
+      "FEED": {
+        "actions": 21,
+        "moves": 62
+      },
+      "CARE": {
+        "actions": 21,
+        "moves": 23
+      },
+      "HARVEST": {
+        "actions": 14,
+        "moves": 3
+      },
+      "COLLECT_FERTILIZER": {
+        "actions": 16,
+        "moves": 16
+      }
+    }
+  },
+  "by_action_class": {
+    "BUILD_PASTURE": {
+      "actions": 26,
+      "moves": 72,
+      "moves_per_action": 2.769230769230769
+    },
+    "PICKUP": {
+      "actions": 322,
+      "moves": 131,
+      "moves_per_action": 0.40683229813664595
+    },
+    "PLACE": {
+      "actions": 30,
+      "moves": 72,
+      "moves_per_action": 2.4
+    },
+    "CARE": {
+      "actions": 447,
+      "moves": 674,
+      "moves_per_action": 1.5078299776286352
+    },
+    "BUILD_COOP": {
+      "actions": 4,
+      "moves": 11,
+      "moves_per_action": 2.75
+    },
+    "FEED": {
+      "actions": 497,
+      "moves": 1448,
+      "moves_per_action": 2.913480885311871
+    },
+    "PLANT": {
+      "actions": 18,
+      "moves": 44,
+      "moves_per_action": 2.4444444444444446
+    },
+    "WATER": {
+      "actions": 110,
+      "moves": 236,
+      "moves_per_action": 2.1454545454545455
+    },
+    "COLLECT_FERTILIZER": {
+      "actions": 333,
+      "moves": 346,
+      "moves_per_action": 1.039039039039039
+    },
+    "DROP": {
+      "actions": 67,
+      "moves": 216,
+      "moves_per_action": 3.2238805970149254
+    },
+    "HARVEST": {
+      "actions": 189,
+      "moves": 78,
+      "moves_per_action": 0.4126984126984127
+    },
+    "FERTILIZE": {
+      "actions": 9,
+      "moves": 26,
+      "moves_per_action": 2.888888888888889
+    },
+    "DIG": {
+      "actions": 1,
+      "moves": 5,
+      "moves_per_action": 5.0
+    }
+  },
+  "per_day": [
+    {
+      "day": 0,
+      "moves": 56,
+      "nonmove_actions": 45,
+      "passes": 37,
+      "moves_per_nonmove_action": 1.2444444444444445,
+      "by_action_class": {
+        "BUILD_PASTURE": {
+          "actions": 2,
+          "moves": 2
+        },
+        "PICKUP": {
+          "actions": 8,
+          "moves": 9
+        },
+        "PLACE": {
+          "actions": 3,
+          "moves": 4
+        },
+        "CARE": {
+          "actions": 3,
+          "moves": 2
+        },
+        "BUILD_COOP": {
+          "actions": 2,
+          "moves": 4
+        },
+        "FEED": {
+          "actions": 3,
+          "moves": 3
+        },
+        "PLANT": {
+          "actions": 12,
+          "moves": 25
+        },
+        "WATER": {
+          "actions": 12,
+          "moves": 4
+        }
+      }
+    },
+    {
+      "day": 1,
+      "moves": 23,
+      "nonmove_actions": 16,
+      "passes": 8,
+      "moves_per_nonmove_action": 1.4375,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 3,
+          "moves": 0
+        },
+        "FEED": {
+          "actions": 3,
+          "moves": 4
+        },
+        "BUILD_COOP": {
+          "actions": 2,
+          "moves": 7
+        },
+        "CARE": {
+          "actions": 3,
+          "moves": 8
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 3,
+          "moves": 1
+        },
+        "DROP": {
+          "actions": 2,
+          "moves": 3
+        }
+      }
+    },
+    {
+      "day": 2,
+      "moves": 96,
+      "nonmove_actions": 35,
+      "passes": 31,
+      "moves_per_nonmove_action": 2.742857142857143,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 3,
+          "moves": 0
+        },
+        "FEED": {
+          "actions": 3,
+          "moves": 4
+        },
+        "WATER": {
+          "actions": 17,
+          "moves": 52
+        },
+        "CARE": {
+          "actions": 3,
+          "moves": 11
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 3,
+          "moves": 1
+        },
+        "PLANT": {
+          "actions": 5,
+          "moves": 18
+        },
+        "DROP": {
+          "actions": 1,
+          "moves": 3
+        }
+      }
+    },
+    {
+      "day": 3,
+      "moves": 55,
+      "nonmove_actions": 27,
+      "passes": 80,
+      "moves_per_nonmove_action": 2.037037037037037,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 6,
+          "moves": 3
+        },
+        "FEED": {
+          "actions": 4,
+          "moves": 8
+        },
+        "CARE": {
+          "actions": 4,
+          "moves": 1
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 3,
+          "moves": 4
+        },
+        "PLACE": {
+          "actions": 1,
+          "moves": 4
+        },
+        "WATER": {
+          "actions": 4,
+          "moves": 6
+        },
+        "BUILD_PASTURE": {
+          "actions": 2,
+          "moves": 9
+        },
+        "DROP": {
+          "actions": 3,
+          "moves": 11
+        }
+      }
+    },
+    {
+      "day": 4,
+      "moves": 112,
+      "nonmove_actions": 44,
+      "passes": 6,
+      "moves_per_nonmove_action": 2.5454545454545454,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 4,
+          "moves": 0
+        },
+        "FEED": {
+          "actions": 4,
+          "moves": 11
+        },
+        "WATER": {
+          "actions": 15,
+          "moves": 40
+        },
+        "CARE": {
+          "actions": 4,
+          "moves": 21
+        },
+        "HARVEST": {
+          "actions": 6,
+          "moves": 18
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 4,
+          "moves": 5
+        },
+        "BUILD_PASTURE": {
+          "actions": 2,
+          "moves": 0
+        },
+        "DROP": {
+          "actions": 5,
+          "moves": 11
+        }
+      }
+    },
+    {
+      "day": 5,
+      "moves": 78,
+      "nonmove_actions": 40,
+      "passes": 44,
+      "moves_per_nonmove_action": 1.95,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 11,
+          "moves": 9
+        },
+        "FEED": {
+          "actions": 6,
+          "moves": 16
+        },
+        "PLACE": {
+          "actions": 2,
+          "moves": 6
+        },
+        "CARE": {
+          "actions": 6,
+          "moves": 13
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 4,
+          "moves": 7
+        },
+        "BUILD_PASTURE": {
+          "actions": 1,
+          "moves": 1
+        },
+        "HARVEST": {
+          "actions": 2,
+          "moves": 1
+        },
+        "PLANT": {
+          "actions": 1,
+          "moves": 1
+        },
+        "WATER": {
+          "actions": 3,
+          "moves": 9
+        },
+        "DROP": {
+          "actions": 4,
+          "moves": 15
+        }
+      }
+    },
+    {
+      "day": 6,
+      "moves": 104,
+      "nonmove_actions": 52,
+      "passes": 29,
+      "moves_per_nonmove_action": 2.0,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 9,
+          "moves": 3
+        },
+        "FEED": {
+          "actions": 7,
+          "moves": 18
+        },
+        "WATER": {
+          "actions": 11,
+          "moves": 27
+        },
+        "PLACE": {
+          "actions": 1,
+          "moves": 4
+        },
+        "CARE": {
+          "actions": 7,
+          "moves": 19
+        },
+        "HARVEST": {
+          "actions": 4,
+          "moves": 2
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 6,
+          "moves": 7
+        },
+        "BUILD_PASTURE": {
+          "actions": 1,
+          "moves": 0
+        },
+        "DROP": {
+          "actions": 6,
+          "moves": 14
+        }
+      }
+    },
+    {
+      "day": 7,
+      "moves": 106,
+      "nonmove_actions": 55,
+      "passes": 24,
+      "moves_per_nonmove_action": 1.9272727272727272,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 10,
+          "moves": 4
+        },
+        "FEED": {
+          "actions": 8,
+          "moves": 23
+        },
+        "WATER": {
+          "actions": 9,
+          "moves": 16
+        },
+        "PLACE": {
+          "actions": 1,
+          "moves": 5
+        },
+        "CARE": {
+          "actions": 8,
+          "moves": 26
+        },
+        "HARVEST": {
+          "actions": 3,
+          "moves": 0
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 7,
+          "moves": 0
+        },
+        "FERTILIZE": {
+          "actions": 6,
+          "moves": 15
+        },
+        "DROP": {
+          "actions": 3,
+          "moves": 11
+        }
+      }
+    },
+    {
+      "day": 8,
+      "moves": 103,
+      "nonmove_actions": 56,
+      "passes": 26,
+      "moves_per_nonmove_action": 1.8392857142857142,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 9,
+          "moves": 0
+        },
+        "FEED": {
+          "actions": 8,
+          "moves": 25
+        },
+        "WATER": {
+          "actions": 11,
+          "moves": 23
+        },
+        "CARE": {
+          "actions": 8,
+          "moves": 23
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 8,
+          "moves": 7
+        },
+        "HARVEST": {
+          "actions": 4,
+          "moves": 5
+        },
+        "DROP": {
+          "actions": 7,
+          "moves": 16
+        },
+        "PLACE": {
+          "actions": 1,
+          "moves": 3
+        }
+      }
+    },
+    {
+      "day": 9,
+      "moves": 130,
+      "nonmove_actions": 55,
+      "passes": 0,
+      "moves_per_nonmove_action": 2.3636363636363638,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 11,
+          "moves": 6
+        },
+        "FEED": {
+          "actions": 9,
+          "moves": 28
+        },
+        "WATER": {
+          "actions": 11,
+          "moves": 28
+        },
+        "CARE": {
+          "actions": 8,
+          "moves": 24
+        },
+        "BUILD_PASTURE": {
+          "actions": 1,
+          "moves": 1
+        },
+        "PLACE": {
+          "actions": 3,
+          "moves": 5
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 6,
+          "moves": 3
+        },
+        "HARVEST": {
+          "actions": 3,
+          "moves": 2
+        },
+        "FERTILIZE": {
+          "actions": 3,
+          "moves": 11
+        }
+      }
+    },
+    {
+      "day": 10,
+      "moves": 129,
+      "nonmove_actions": 71,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.8169014084507042,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 9,
+          "moves": 0
+        },
+        "FEED": {
+          "actions": 12,
+          "moves": 41
+        },
+        "WATER": {
+          "actions": 11,
+          "moves": 17
+        },
+        "HARVEST": {
+          "actions": 13,
+          "moves": 10
+        },
+        "BUILD_PASTURE": {
+          "actions": 3,
+          "moves": 5
+        },
+        "CARE": {
+          "actions": 11,
+          "moves": 34
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 11,
+          "moves": 3
+        },
+        "DROP": {
+          "actions": 1,
+          "moves": 0
+        }
+      }
+    },
+    {
+      "day": 11,
+      "moves": 144,
+      "nonmove_actions": 59,
+      "passes": 0,
+      "moves_per_nonmove_action": 2.440677966101695,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 13,
+          "moves": 16
+        },
+        "FEED": {
+          "actions": 15,
+          "moves": 50
+        },
+        "PLACE": {
+          "actions": 5,
+          "moves": 11
+        },
+        "CARE": {
+          "actions": 13,
+          "moves": 22
+        },
+        "WATER": {
+          "actions": 3,
+          "moves": 8
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 6,
+          "moves": 8
+        },
+        "BUILD_PASTURE": {
+          "actions": 1,
+          "moves": 8
+        },
+        "HARVEST": {
+          "actions": 3,
+          "moves": 1
+        }
+      }
+    },
+    {
+      "day": 12,
+      "moves": 165,
+      "nonmove_actions": 62,
+      "passes": 0,
+      "moves_per_nonmove_action": 2.661290322580645,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 12,
+          "moves": 0
+        },
+        "FEED": {
+          "actions": 18,
+          "moves": 69
+        },
+        "WATER": {
+          "actions": 3,
+          "moves": 6
+        },
+        "HARVEST": {
+          "actions": 4,
+          "moves": 3
+        },
+        "CARE": {
+          "actions": 12,
+          "moves": 34
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 5,
+          "moves": 4
+        },
+        "BUILD_PASTURE": {
+          "actions": 5,
+          "moves": 28
+        },
+        "PLACE": {
+          "actions": 3,
+          "moves": 3
+        }
+      }
+    },
+    {
+      "day": 13,
+      "moves": 127,
+      "nonmove_actions": 79,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.6075949367088607,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 13,
+          "moves": 4
+        },
+        "FEED": {
+          "actions": 22,
+          "moves": 61
+        },
+        "CARE": {
+          "actions": 22,
+          "moves": 31
+        },
+        "HARVEST": {
+          "actions": 7,
+          "moves": 3
+        },
+        "PLACE": {
+          "actions": 2,
+          "moves": 3
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 13,
+          "moves": 12
+        }
+      }
+    },
+    {
+      "day": 14,
+      "moves": 138,
+      "nonmove_actions": 87,
+      "passes": 3,
+      "moves_per_nonmove_action": 1.5862068965517242,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 11,
+          "moves": 1
+        },
+        "FEED": {
+          "actions": 22,
+          "moves": 63
+        },
+        "CARE": {
+          "actions": 22,
+          "moves": 25
+        },
+        "HARVEST": {
+          "actions": 7,
+          "moves": 0
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 21,
+          "moves": 21
+        },
+        "DROP": {
+          "actions": 4,
+          "moves": 12
+        }
+      }
+    },
+    {
+      "day": 15,
+      "moves": 137,
+      "nonmove_actions": 90,
+      "passes": 1,
+      "moves_per_nonmove_action": 1.5222222222222221,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 11,
+          "moves": 1
+        },
+        "FEED": {
+          "actions": 22,
+          "moves": 63
+        },
+        "CARE": {
+          "actions": 22,
+          "moves": 23
+        },
+        "HARVEST": {
+          "actions": 8,
+          "moves": 2
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 21,
+          "moves": 20
+        },
+        "DROP": {
+          "actions": 5,
+          "moves": 16
+        },
+        "DIG": {
+          "actions": 1,
+          "moves": 5
+        }
+      }
+    },
+    {
+      "day": 16,
+      "moves": 138,
+      "nonmove_actions": 85,
+      "passes": 5,
+      "moves_per_nonmove_action": 1.6235294117647059,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 11,
+          "moves": 1
+        },
+        "FEED": {
+          "actions": 22,
+          "moves": 63
+        },
+        "CARE": {
+          "actions": 22,
+          "moves": 27
+        },
+        "HARVEST": {
+          "actions": 6,
+          "moves": 0
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 21,
+          "moves": 19
+        },
+        "DROP": {
+          "actions": 3,
+          "moves": 9
+        }
+      }
+    },
+    {
+      "day": 17,
+      "moves": 136,
+      "nonmove_actions": 89,
+      "passes": 3,
+      "moves_per_nonmove_action": 1.5280898876404494,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 11,
+          "moves": 1
+        },
+        "FEED": {
+          "actions": 22,
+          "moves": 63
+        },
+        "CARE": {
+          "actions": 22,
+          "moves": 23
+        },
+        "HARVEST": {
+          "actions": 11,
+          "moves": 2
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 21,
+          "moves": 19
+        },
+        "DROP": {
+          "actions": 2,
+          "moves": 6
+        }
+      }
+    },
+    {
+      "day": 18,
+      "moves": 135,
+      "nonmove_actions": 90,
+      "passes": 3,
+      "moves_per_nonmove_action": 1.5,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 11,
+          "moves": 1
+        },
+        "FEED": {
+          "actions": 22,
+          "moves": 63
+        },
+        "CARE": {
+          "actions": 22,
+          "moves": 23
+        },
+        "HARVEST": {
+          "actions": 9,
+          "moves": 2
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 21,
+          "moves": 20
+        },
+        "DROP": {
+          "actions": 5,
+          "moves": 13
+        }
+      }
+    },
+    {
+      "day": 19,
+      "moves": 137,
+      "nonmove_actions": 88,
+      "passes": 3,
+      "moves_per_nonmove_action": 1.5568181818181819,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 11,
+          "moves": 1
+        },
+        "FEED": {
+          "actions": 22,
+          "moves": 63
+        },
+        "CARE": {
+          "actions": 22,
+          "moves": 20
+        },
+        "HARVEST": {
+          "actions": 6,
+          "moves": 5
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 22,
+          "moves": 23
+        },
+        "DROP": {
+          "actions": 5,
+          "moves": 16
+        }
+      }
+    },
+    {
+      "day": 20,
+      "moves": 142,
+      "nonmove_actions": 85,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.6705882352941177,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 13,
+          "moves": 8
+        },
+        "FEED": {
+          "actions": 21,
+          "moves": 62
+        },
+        "CARE": {
+          "actions": 21,
+          "moves": 23
+        },
+        "HARVEST": {
+          "actions": 14,
+          "moves": 3
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 16,
+          "moves": 16
+        }
+      }
+    },
+    {
+      "day": 21,
+      "moves": 145,
+      "nonmove_actions": 81,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.7901234567901234,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 15,
+          "moves": 12
+        },
+        "FEED": {
+          "actions": 24,
+          "moves": 74
+        },
+        "BUILD_PASTURE": {
+          "actions": 4,
+          "moves": 7
+        },
+        "CARE": {
+          "actions": 18,
+          "moves": 22
+        },
+        "HARVEST": {
+          "actions": 8,
+          "moves": 0
+        },
+        "PLACE": {
+          "actions": 3,
+          "moves": 9
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 9,
+          "moves": 7
+        }
+      }
+    },
+    {
+      "day": 22,
+      "moves": 142,
+      "nonmove_actions": 85,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.6705882352941177,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 14,
+          "moves": 8
+        },
+        "FEED": {
+          "actions": 25,
+          "moves": 70
+        },
+        "CARE": {
+          "actions": 23,
+          "moves": 28
+        },
+        "HARVEST": {
+          "actions": 11,
+          "moves": 4
+        },
+        "PLACE": {
+          "actions": 1,
+          "moves": 3
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 11,
+          "moves": 8
+        }
+      }
+    },
+    {
+      "day": 23,
+      "moves": 155,
+      "nonmove_actions": 94,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.648936170212766,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 15,
+          "moves": 1
+        },
+        "FEED": {
+          "actions": 26,
+          "moves": 77
+        },
+        "CARE": {
+          "actions": 25,
+          "moves": 40
+        },
+        "HARVEST": {
+          "actions": 11,
+          "moves": 4
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 17,
+          "moves": 14
+        }
+      }
+    },
+    {
+      "day": 24,
+      "moves": 173,
+      "nonmove_actions": 75,
+      "passes": 0,
+      "moves_per_nonmove_action": 2.3066666666666666,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 14,
+          "moves": 1
+        },
+        "FEED": {
+          "actions": 28,
+          "moves": 82
+        },
+        "BUILD_PASTURE": {
+          "actions": 4,
+          "moves": 11
+        },
+        "PLACE": {
+          "actions": 2,
+          "moves": 7
+        },
+        "CARE": {
+          "actions": 17,
+          "moves": 29
+        },
+        "HARVEST": {
+          "actions": 7,
+          "moves": 0
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 3,
+          "moves": 2
+        }
+      }
+    },
+    {
+      "day": 25,
+      "moves": 167,
+      "nonmove_actions": 82,
+      "passes": 0,
+      "moves_per_nonmove_action": 2.0365853658536586,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 16,
+          "moves": 14
+        },
+        "FEED": {
+          "actions": 29,
+          "moves": 87
+        },
+        "CARE": {
+          "actions": 23,
+          "moves": 37
+        },
+        "HARVEST": {
+          "actions": 7,
+          "moves": 0
+        },
+        "PLACE": {
+          "actions": 2,
+          "moves": 5
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 5,
+          "moves": 4
+        }
+      }
+    },
+    {
+      "day": 26,
+      "moves": 152,
+      "nonmove_actions": 97,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.5670103092783505,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 16,
+          "moves": 9
+        },
+        "FEED": {
+          "actions": 30,
+          "moves": 86
+        },
+        "CARE": {
+          "actions": 25,
+          "moves": 27
+        },
+        "HARVEST": {
+          "actions": 15,
+          "moves": 4
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 11,
+          "moves": 8
+        }
+      }
+    },
+    {
+      "day": 27,
+      "moves": 159,
+      "nonmove_actions": 90,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.7666666666666666,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 16,
+          "moves": 9
+        },
+        "FEED": {
+          "actions": 30,
+          "moves": 85
+        },
+        "CARE": {
+          "actions": 25,
+          "moves": 28
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 14,
+          "moves": 15
+        },
+        "HARVEST": {
+          "actions": 5,
+          "moves": 3
+        }
+      }
+    },
+    {
+      "day": 28,
+      "moves": 157,
+      "nonmove_actions": 92,
+      "passes": 0,
+      "moves_per_nonmove_action": 1.7065217391304348,
+      "by_action_class": {
+        "PICKUP": {
+          "actions": 16,
+          "moves": 9
+        },
+        "FEED": {
+          "actions": 30,
+          "moves": 86
+        },
+        "CARE": {
+          "actions": 26,
+          "moves": 30
+        },
+        "HARVEST": {
+          "actions": 7,
+          "moves": 0
+        },
+        "COLLECT_FERTILIZER": {
+          "actions": 13,
+          "moves": 11
+        }
+      }
+    },
+    {
+      "day": 29,
+      "moves": 141,
+      "nonmove_actions": 47,
+      "passes": 50,
+      "moves_per_nonmove_action": 3.0,
+      "by_action_class": {
+        "COLLECT_FERTILIZER": {
+          "actions": 28,
+          "moves": 77
+        },
+        "HARVEST": {
+          "actions": 8,
+          "moves": 4
+        },
+        "DROP": {
+          "actions": 11,
+          "moves": 60
+        }
+      }
+    }
+  ]
+}

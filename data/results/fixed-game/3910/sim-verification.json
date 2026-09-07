@@ -1,0 +1,12 @@
+{
+  "transitions_compared": 719,
+  "branch_points": 50,
+  "identical_observations_every_transition": true,
+  "straight_bank": 2990.0,
+  "branched_bank": 2990.0,
+  "arbiter_bank": 2990.0,
+  "mean_ms_per_step": 1.351509735744089,
+  "median_ms_per_step": 1.2396,
+  "mean_ms_per_snapshot": 0.43413,
+  "median_ms_per_snapshot": 0.4574
+}
