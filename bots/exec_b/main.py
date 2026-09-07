@@ -1,30 +1,32 @@
-"""Kaggriculture Design B: per-turn geometric min-cost executor.
+"""Kaggriculture Design B: drain-sized portfolio plus geometric executor.
 
-The economic plan is fixed.  Every observation is converted to deadline-bearing
-jobs and the whole workforce is reassigned from exact current coordinates.  No
-opponent action, replay, or persistent route tape is used.
+Every observation is converted to deadline-bearing jobs and the whole workforce
+is reassigned from exact current coordinates.  The portfolio uses only the
+visible town draw; no opponent action, replay, or persistent route tape is used.
 """
 
 import math
 import time
 
 
-# The sole strategy input is the seed-3910 hindsight plan, embedded verbatim.
+# Supply ratios are intentionally explicit tuning knobs.  Drain is units/day.
+MILK_DRAIN_RATIO = 4.0
+WOOL_DRAIN_RATIO = 3.0
+STRAWBERRY_DRAIN_RATIO = 1.0
+MELON_POOL_RATIO = 0.70
+EGG_GOOSE_TARGET = 4
+
+# The executor calendars and labour profile retain the fast round-1 geometry.
 PLAN = {
     "crop_mix": {
-        "opening": {"WHEAT": 25, "CARROT": 0, "MELON": 0, "STRAWBERRY": 0},
-        "days_10_16": {"WHEAT": 55, "CARROT": 0, "MELON": 20, "STRAWBERRY": 25},
-        "days_17_22": {"WHEAT": 50, "CARROT": 0, "MELON": 25, "STRAWBERRY": 25},
-        "days_23_26": {"WHEAT": 74, "CARROT": 19, "MELON": 6, "STRAWBERRY": 1},
+        "opening": {"WHEAT": 1},
+        "days_10_16": {"WHEAT": 1},
+        "days_17_22": {"WHEAT": 1},
+        "days_23_26": {"WHEAT": 1},
     },
-    "land_days": {"NE": 30, "SE": 30, "SW": 30},
-    "animals": {
-        "COW": {"batch": 1, "interval": 1, "start_day": 0, "total": 14},
-        "GOOSE": {"batch": 0, "interval": 7, "start_day": 30, "total": 0},
-        "SHEEP": {"batch": 1, "interval": 1, "start_day": 0, "total": 11},
-    },
+    "land_days": (10,),
     "cash_reserve": 190,
-    "hands_by_5day": [5, 6, 9, 10, 10, 8],
+    "hands_by_5day": [6, 8, 10, 11, 12, 12],
     "fertilize": {"CARROT": True, "MELON": True, "STRAWBERRY": True, "TOMATO": True, "WHEAT": False},
     "last_plant_day": {"CARROT": 14, "MELON": 19, "STRAWBERRY": 15, "TOMATO": 14, "WHEAT": 29},
     "sell_policy": {"CARROT": "metered", "EGG": "metered", "FERTILIZER": "immediate", "MELON": "immediate", "MILK": "metered", "STRAWBERRY": "metered", "TOMATO": "immediate", "WHEAT": "immediate", "WOOL": "immediate"},
@@ -87,6 +89,24 @@ def town_drain(step, shops):
     return out
 
 
+def drain_forecast(obs):
+    """Exact per-day capacity of the currently visible town.
+
+    At day zero this knows the centre (one unit/day of every product except
+    fertilizer) plus only the shops already unlocked.  Each later observation
+    is recomputed, so a newly unlocked duplicate immediately adds another six
+    units/day (twelve for a single-product shop).
+    """
+    shops = tuple((obs.get("town", {}) or {}).get("unlocked_shops", []) or [])
+    out = {p: (0.0 if p == "FERTILIZER" else 1.0) for p in PRODUCTS}
+    for shop in shops:
+        members = SHOPS.get(shop, ())
+        multiplier = 2 if len(members) == 1 else 1
+        for product in members:
+            out[product] += 6.0 * multiplier
+    return out
+
+
 def _dist(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
@@ -112,11 +132,29 @@ def _move(pos, target):
     return SAFE
 
 
-def _animal_target(kind, day):
-    cfg = PLAN["animals"][kind]
-    if cfg["batch"] <= 0 or day < cfg["start_day"]:
-        return 0
-    return min(cfg["total"], (1 + (day - cfg["start_day"]) // cfg["interval"]) * cfg["batch"])
+def _animal_targets(obs, day):
+    drain = drain_forecast(obs)
+    final = {
+        "COW": max(1, math.ceil(drain["MILK"] * MILK_DRAIN_RATIO / 6.0)),
+        "SHEEP": max(1, math.ceil(drain["WOOL"] * WOOL_DRAIN_RATIO / 6.0)),
+        "GOOSE": EGG_GOOSE_TARGET,
+    }
+    return {
+        "COW": min(final["COW"], day + 1),
+        "SHEEP": min(final["SHEEP"], day + 1),
+        "GOOSE": min(final["GOOSE"], 2 + 2 * day),
+    }
+
+
+def _crop_mix(obs, day):
+    """Tile weights derived from current drain; wheat fills unused space."""
+    drain = drain_forecast(obs)
+    strawberry = min(36, math.ceil(drain["STRAWBERRY"] * 17.0 / 8.0
+                                    * STRAWBERRY_DRAIN_RATIO))
+    melon = math.ceil((158.0 / 6.0) * MELON_POOL_RATIO) if day <= 19 else 0
+    wheat = 10 if day <= 9 else (28 if day <= 22 else 50)
+    return {"WHEAT": wheat, "CARROT": 0, "TOMATO": 0,
+            "STRAWBERRY": strawberry, "MELON": melon}
 
 
 def _phase(day):
@@ -189,7 +227,10 @@ def _assign(positions, inventories, jobs, hour):
         late = max(0, -slack)
         urgent = max(0, 2 - slack)
         # Travel is the base cost; value and deadline make hard work dominate.
-        affinity = 0 if job["owner"] is None or job["owner"] == ui else 420
+        # Region ownership is stronger than the value spread between husbandry
+        # actions.  A hand therefore finishes feed/care/harvest/fertilizer on its
+        # local tiles instead of traversing the whole farm once per action type.
+        affinity = 0 if job["owner"] is None or job["owner"] == ui else 3000
         return 18 * travel + 110 * late + 24 * urgent + affinity - job["value"]
 
     pairs = []
@@ -294,7 +335,7 @@ def _policy(obs):
     jobs = []
 
     # Final-day carriers are recalled early enough for the farthest exact geometry.
-    if last_day and hour >= 18:
+    if last_day and hour >= 14:
         for ui, inv in enumerate(invs):
             if inv:
                 jobs.append(_job(_nearest_shed(positions[ui]), ["DROP"], 21, 20000,
@@ -308,21 +349,23 @@ def _policy(obs):
         # zig-zag forever, while the outer matcher still prices all other work.
         def fixed_route_rank(pos):
             x, y = pos
-            if 0 <= x < 5 and 0 <= y < 5:
-                row = 4 - y
-                return row * 5 + ((4 - x) if row % 2 == 0 else x)
-            return 25 + min(_dist(pos, s) for s in SHED_TILES) * 10 + y * 10 + x
+            # Rings around the central shed remain contiguous after expansion.
+            return (min(_dist(pos, s) for s in SHED_TILES), y // 5, x // 5,
+                    y if (x // 5 + y // 5) % 2 == 0 else -y,
+                    x if y % 2 == 0 else -x)
 
+        routed_animals = sorted(((x, y) for x, y, _tile in animals),
+                                key=fixed_route_rank)
         owner_by_pos = {
-            (x, y): min(len(positions) - 1, fixed_route_rank((x, y)) * len(positions) // 25)
-            for x, y, _tile in animals
+            pos: min(len(positions) - 1, i * len(positions) // max(1, len(routed_animals)))
+            for i, pos in enumerate(routed_animals)
         }
 
         for x, y, tile in animals:
             pos = (x, y)
             owner = owner_by_pos[pos]
             if not last_day and not tile.get("fed_today", False): jobs.append(_job(pos, ["FEED"], 22, 12000, "WHEAT", "feed", owner))
-            if not last_day and not tile.get("cared_today", False): jobs.append(_job(pos, ["CARE"], 21, 6000, tag="care", owner=owner))
+            if not last_day and not tile.get("cared_today", False): jobs.append(_job(pos, ["CARE"], 21, 9000, tag="care", owner=owner))
             if tile.get("fertilizer_available", False): jobs.append(_job(pos, ["COLLECT_FERTILIZER"], 22, 20000 if last_day else 7000, tag="fert", owner=owner))
             held = int(tile.get("yield_units", 0) or 0)
             if held > 0:
@@ -335,13 +378,16 @@ def _policy(obs):
             crop = tile["crop"]; crop_counts[crop] += 1
             age = day - int(tile.get("planted_day", day))
             if age in WATER_AGES[crop] and not tile.get("watered_today", False):
-                jobs.append(_job((x, y), ["WATER"], 21, 900 if age == 0 else 620, tag="water"))
+                water_value = 10500 if crop == "MELON" else (2200 if crop == "STRAWBERRY" else 900)
+                jobs.append(_job((x, y), ["WATER"], 21, water_value, tag="water"))
             if PLAN["fertilize"].get(crop, False) and age in FERT_AGES.get(crop, ()) and int(tile.get("fertilized_until_day", -1)) < day:
-                jobs.append(_job((x, y), ["FERTILIZE"], 19, 720, "FERTILIZER", "cropfert"))
+                fert_value = 9000 if crop == "MELON" else 720
+                jobs.append(_job((x, y), ["FERTILIZE"], 19, fert_value, "FERTILIZER", "cropfert"))
             held = int(tile.get("yield_units", 0) or 0)
             if held > 0:
                 if not CROPS[crop]["ongoing"] and age >= CROPS[crop]["last"]:
-                    jobs.append(_job((x, y), ["HARVEST"], 20, 850 + 40 * held, tag="harvest"))
+                    harvest_value = 10000 if crop == "MELON" else 850
+                    jobs.append(_job((x, y), ["HARVEST"], 20, harvest_value + 40 * held, tag="harvest"))
                 elif CROPS[crop]["ongoing"] and age in ONGOING_HARVEST_AGES.get(crop, ()):
                     jobs.append(_job((x, y), ["HARVEST"], 18, 800 + 50 * held, tag="harvest"))
             if CROPS[crop]["ongoing"] and age > CROPS[crop]["last"] and held == 0:
@@ -352,7 +398,7 @@ def _policy(obs):
                 if isinstance(tile, dict) and tile.get("kind") == "WEED":
                     jobs.append(_job((x, y), ["DIG"], 22, 240, tag="dig"))
 
-        desired = {a: _animal_target(a, day) for a in ANIMAL_NAMES}
+        desired = _animal_targets(obs, day)
         # Build only the exact structures required by purchased/near-term animals.
         structures = {"COOP": 0, "PASTURE": 0}
         for _x, _y, tile in animals + empty_structures: structures[tile["kind"]] += 1
@@ -400,7 +446,7 @@ def _policy(obs):
 
         # Plant exact tiles in crop blocks. The mix is interpreted as target counts
         # over currently crop-usable space after livestock reservations.
-        phase_mix = PLAN["crop_mix"][_phase(day)]
+        phase_mix = _crop_mix(obs, day)
         active = [c for c in phase_mix if phase_mix[c] > 0 and day <= PLAN["last_plant_day"].get(c, -1)]
         plantable = [p for p in empty if p not in used_sites]
         if active and hour <= 16:
@@ -428,7 +474,8 @@ def _policy(obs):
     # animals. Sales include same-turn DROP because unit actions precede the market.
     orders = []
     money = float(farm.get("money", 0))
-    target_hands = PLAN["hands_by_5day"][min(5, day // 5)]
+    work_hands = 4 + math.ceil(len(animals) / 5.0) + math.ceil(len(plants) / 20.0)
+    target_hands = min(PLAN["hands_by_5day"][min(5, day // 5)], max(5, work_hands))
     hires_today = int(farm.get("hires_today", 0))
 
     # Sell everything immediate; metered goods match the exact preceding town tick.
@@ -461,7 +508,7 @@ def _policy(obs):
         # Fixed-plan capital purchases are placed at hour zero, in plan order,
         # before labor.  Feed can still be replenished intraday for survival.
         if hour >= 0:  # hour-zero priority; retry later only if liquidity delayed an order
-            phase_mix = PLAN["crop_mix"][_phase(day)]
+            phase_mix = _crop_mix(obs, day)
             open_count = len(empty)
             for crop in sorted(CROP_NAMES, key=lambda c: (-phase_mix.get(c, 0), c)):
                 if len(orders) >= MAX_ORDERS: break
@@ -474,13 +521,21 @@ def _policy(obs):
                 if qty > 0:
                     orders.append(["BUY_SEED", crop, qty]); money -= CROPS[crop]["seed"] * qty
 
-            for animal in PLAN["animals"]:
+            for animal in ("GOOSE", "COW", "SHEEP"):
                 if len(orders) >= MAX_ORDERS: break
-                want = max(0, _animal_target(animal, day) - live[animal] - pending[animal])
+                want = max(0, desired[animal] - live[animal] - pending[animal])
                 room = max(0, 96 - shed_used)
                 qty = min(want, room, max(0, int((money - PLAN["cash_reserve"]) // ANIMALS[animal]["cost"])))
                 if qty > 0:
                     orders.append(["BUY_ANIMAL", animal, qty]); money -= ANIMALS[animal]["cost"] * qty; shed_used += qty
+
+        # Reinvest the day-10 crop/egg cash into working acreage.
+        unlocked = len(farm.get("unlocked_quadrants", []) or [])
+        land_due = 1 + sum(day >= d for d in PLAN["land_days"])
+        land_cost = 1000 * (2 ** max(0, unlocked - 1))
+        if (len(orders) < MAX_ORDERS and unlocked < land_due and
+                money - land_cost >= PLAN["cash_reserve"]):
+            orders.append(["BUY_LAND"]); money -= land_cost
 
         # Fertilizer is bought only when the exact calendar exposes uncovered jobs.
         fert_jobs = sum(j["tag"] == "cropfert" for j in jobs)
