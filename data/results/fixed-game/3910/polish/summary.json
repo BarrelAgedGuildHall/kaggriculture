@@ -1,0 +1,25 @@
+{
+  "reference_bank": 76009.0,
+  "polished_bank": 76870.0,
+  "gain": 861.0,
+  "chains": 6,
+  "evaluations": 3600,
+  "wall_seconds": 384.89743089675903,
+  "winner_chain": 4,
+  "accepted_mutations": 3,
+  "gains_by_mutation_type": {
+    "sale_shift": 861.0
+  },
+  "same_plan": true,
+  "faults": 0,
+  "reference_policy_timing_ms": {
+    "p99": 1.2211,
+    "max": 29.5416,
+    "mean": 0.7068895688456189
+  },
+  "evaluation_timing_ms": {
+    "p99": 1414.1899,
+    "max": 3095.6468,
+    "mean": 545.9920785277778
+  }
+}

@@ -1,0 +1,5532 @@
+{
+  "bank": 76009.0,
+  "days": [
+    {
+      "day": 0,
+      "bank": 1621.0,
+      "hand_turns": {
+        "acting": 51,
+        "moving": 47,
+        "idle": 41
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 11,
+          "moving": 6,
+          "idle": 7
+        },
+        "hand_1": {
+          "acting": 6,
+          "moving": 10,
+          "idle": 7
+        },
+        "hand_2": {
+          "acting": 9,
+          "moving": 8,
+          "idle": 6
+        },
+        "hand_3": {
+          "acting": 9,
+          "moving": 7,
+          "idle": 7
+        },
+        "hand_4": {
+          "acting": 8,
+          "moving": 8,
+          "idle": 7
+        },
+        "hand_5": {
+          "acting": 8,
+          "moving": 8,
+          "idle": 7
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            1,
+            1
+          ],
+          "turns": 7
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            3,
+            0
+          ],
+          "turns": 7
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            1,
+            2
+          ],
+          "turns": 7
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            2,
+            0
+          ],
+          "turns": 7
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            1,
+            0
+          ],
+          "turns": 7
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            1,
+            2
+          ],
+          "turns": 6
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            3
+          ],
+          "direction": "SOUTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "SOUTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        }
+      ],
+      "produced": {},
+      "sold": {
+        "WHEAT": 13
+      },
+      "revenue": {
+        "WHEAT": 361.0
+      },
+      "undelivered": {
+        "WHEAT": 6,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 0,
+        "FERTILIZER": 0,
+        "GOOSE": 0,
+        "COW": 0,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 1,
+      "bank": 666.0,
+      "hand_turns": {
+        "acting": 33,
+        "moving": 58,
+        "idle": 48
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 8,
+          "moving": 16
+        },
+        "hand_1": {
+          "acting": 5,
+          "moving": 7,
+          "idle": 11
+        },
+        "hand_2": {
+          "acting": 5,
+          "moving": 8,
+          "idle": 10
+        },
+        "hand_3": {
+          "acting": 5,
+          "moving": 10,
+          "idle": 8
+        },
+        "hand_4": {
+          "acting": 5,
+          "moving": 6,
+          "idle": 12
+        },
+        "hand_5": {
+          "acting": 5,
+          "moving": 11,
+          "idle": 7
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_4",
+          "position": [
+            0,
+            2
+          ],
+          "turns": 12
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            1
+          ],
+          "turns": 11
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            0,
+            1
+          ],
+          "turns": 10
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            0,
+            0
+          ],
+          "turns": 8
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            0,
+            4
+          ],
+          "turns": 6
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 1
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 1
+        }
+      ],
+      "produced": {},
+      "sold": {
+        "WHEAT": 13,
+        "FERTILIZER": 1
+      },
+      "revenue": {
+        "WHEAT": 371.0,
+        "FERTILIZER": 100.0
+      },
+      "undelivered": {
+        "WHEAT": 7,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 0,
+        "FERTILIZER": 1,
+        "GOOSE": 0,
+        "COW": 0,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 2,
+      "bank": 575.0,
+      "hand_turns": {
+        "acting": 37,
+        "moving": 64,
+        "idle": 38
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 7,
+          "moving": 9,
+          "idle": 8
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 13,
+          "idle": 2
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 7,
+          "idle": 8
+        },
+        "hand_3": {
+          "acting": 4,
+          "moving": 14,
+          "idle": 5
+        },
+        "hand_4": {
+          "acting": 6,
+          "moving": 12,
+          "idle": 5
+        },
+        "hand_5": {
+          "moving": 9,
+          "acting": 4,
+          "idle": 10
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_5",
+          "position": [
+            2,
+            2
+          ],
+          "turns": 10
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            1,
+            0
+          ],
+          "turns": 8
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            2,
+            0
+          ],
+          "turns": 8
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            2,
+            2
+          ],
+          "turns": 4
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            2,
+            2
+          ],
+          "turns": 4
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            2,
+            1
+          ],
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 1
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 1
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "SOUTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        }
+      ],
+      "produced": {},
+      "sold": {
+        "FERTILIZER": 5,
+        "WHEAT": 8
+      },
+      "revenue": {
+        "FERTILIZER": 497.0,
+        "WHEAT": 240.0
+      },
+      "undelivered": {
+        "WHEAT": 9,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 0,
+        "FERTILIZER": 0,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 3,
+      "bank": 542.0,
+      "hand_turns": {
+        "acting": 40,
+        "moving": 68,
+        "idle": 31
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 9,
+          "moving": 8,
+          "idle": 7
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 13,
+          "idle": 2
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 7,
+          "idle": 8
+        },
+        "hand_3": {
+          "acting": 4,
+          "moving": 16,
+          "idle": 3
+        },
+        "hand_4": {
+          "acting": 6,
+          "moving": 14,
+          "idle": 3
+        },
+        "hand_5": {
+          "moving": 10,
+          "acting": 5,
+          "idle": 8
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_2",
+          "position": [
+            2,
+            0
+          ],
+          "turns": 8
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            1,
+            0
+          ],
+          "turns": 8
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            2
+          ],
+          "turns": 7
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            1,
+            1
+          ],
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            0,
+            0
+          ],
+          "turns": 3
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            2,
+            1
+          ],
+          "turns": 2
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "SOUTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        }
+      ],
+      "produced": {},
+      "sold": {
+        "WHEAT": 17,
+        "FERTILIZER": 1
+      },
+      "revenue": {
+        "WHEAT": 510.0,
+        "FERTILIZER": 99.0
+      },
+      "undelivered": {
+        "WHEAT": 9,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 0,
+        "FERTILIZER": 3,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 4,
+      "bank": 315.0,
+      "hand_turns": {
+        "acting": 48,
+        "moving": 91
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 10,
+          "moving": 14
+        },
+        "hand_1": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_2": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_3": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_4": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_5": {
+          "moving": 16,
+          "acting": 7
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "SOUTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        }
+      ],
+      "produced": {
+        "WHEAT": 48
+      },
+      "sold": {
+        "FERTILIZER": 3,
+        "WHEAT": 5
+      },
+      "revenue": {
+        "FERTILIZER": 295.0,
+        "WHEAT": 153.0
+      },
+      "undelivered": {
+        "WHEAT": 53,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 0,
+        "FERTILIZER": 4,
+        "GOOSE": 0,
+        "COW": 0,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 5,
+      "bank": 617.0,
+      "hand_turns": {
+        "acting": 47,
+        "moving": 113,
+        "idle": 2
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 10,
+          "moving": 14
+        },
+        "hand_1": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_3": {
+          "moving": 13,
+          "acting": 8,
+          "idle": 2
+        },
+        "hand_4": {
+          "moving": 18,
+          "acting": 5
+        },
+        "hand_5": {
+          "moving": 19,
+          "acting": 4
+        },
+        "hand_6": {
+          "moving": 17,
+          "acting": 6
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            1
+          ],
+          "turns": 2
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_6",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_6",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "WHEAT": 10
+      },
+      "sold": {
+        "FERTILIZER": 7,
+        "WHEAT": 53
+      },
+      "revenue": {
+        "FERTILIZER": 682.0,
+        "WHEAT": 1404.0
+      },
+      "undelivered": {
+        "WHEAT": 20,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 0,
+        "FERTILIZER": 3,
+        "GOOSE": 0,
+        "COW": 0,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 6,
+      "bank": 1052.0,
+      "hand_turns": {
+        "acting": 54,
+        "moving": 95,
+        "idle": 13
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 11,
+          "moving": 11,
+          "idle": 2
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 8,
+          "idle": 7
+        },
+        "hand_3": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_4": {
+          "acting": 7,
+          "moving": 13,
+          "idle": 3
+        },
+        "hand_5": {
+          "acting": 5,
+          "moving": 17,
+          "idle": 1
+        },
+        "hand_6": {
+          "acting": 7,
+          "moving": 16
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            3
+          ],
+          "turns": 7
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            3,
+            3
+          ],
+          "turns": 1
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            3,
+            0
+          ],
+          "turns": 1
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 1
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            5,
+            4
+          ],
+          "turns": 1
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            1
+          ],
+          "direction": "SOUTH",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "WOOL": 6
+      },
+      "sold": {
+        "FERTILIZER": 11,
+        "WHEAT": 17,
+        "WOOL": 6
+      },
+      "revenue": {
+        "FERTILIZER": 1052.0,
+        "WHEAT": 421.0,
+        "WOOL": 1403.0
+      },
+      "undelivered": {
+        "WHEAT": 14,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 0,
+        "FERTILIZER": 1,
+        "GOOSE": 0,
+        "COW": 0,
+        "SHEEP": 3
+      },
+      "rotted": {}
+    },
+    {
+      "day": 7,
+      "bank": 342.0,
+      "hand_turns": {
+        "acting": 56,
+        "moving": 102,
+        "idle": 4
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_2": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_3": {
+          "acting": 5,
+          "moving": 18
+        },
+        "hand_4": {
+          "acting": 9,
+          "moving": 11,
+          "idle": 3
+        },
+        "hand_5": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_6": {
+          "acting": 7,
+          "moving": 15,
+          "idle": 1
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            1
+          ],
+          "turns": 3
+        },
+        {
+          "unit": "hand_6",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 1
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 3
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "SOUTH",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "WOOL": 6
+      },
+      "sold": {
+        "FERTILIZER": 2,
+        "WHEAT": 6
+      },
+      "revenue": {
+        "FERTILIZER": 188.0,
+        "WHEAT": 169.0
+      },
+      "undelivered": {
+        "WHEAT": 17,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 6,
+        "FERTILIZER": 9,
+        "GOOSE": 0,
+        "COW": 0,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 8,
+      "bank": 187.0,
+      "hand_turns": {
+        "acting": 54,
+        "moving": 108
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_2": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_3": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_4": {
+          "moving": 18,
+          "acting": 5
+        },
+        "hand_5": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_6": {
+          "moving": 19,
+          "acting": 4
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_6",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 6
+      },
+      "sold": {
+        "FERTILIZER": 9,
+        "WOOL": 6,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 839.0,
+        "WOOL": 1411.0,
+        "WHEAT": 62.0
+      },
+      "undelivered": {
+        "WHEAT": 18,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 6,
+        "WOOL": 0,
+        "FERTILIZER": 14,
+        "GOOSE": 0,
+        "COW": 0,
+        "SHEEP": 1
+      },
+      "rotted": {
+        "WHEAT": 3
+      }
+    },
+    {
+      "day": 9,
+      "bank": 962.0,
+      "hand_turns": {
+        "acting": 48,
+        "moving": 108
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 11,
+          "moving": 13
+        },
+        "hand_1": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_3": {
+          "acting": 4,
+          "moving": 18
+        },
+        "hand_4": {
+          "acting": 4,
+          "moving": 18
+        },
+        "hand_5": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_6": {
+          "acting": 5,
+          "moving": 17
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            3,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 6,
+        "WOOL": 4
+      },
+      "sold": {
+        "FERTILIZER": 14,
+        "MILK": 6,
+        "WHEAT": 18
+      },
+      "revenue": {
+        "FERTILIZER": 1273.0,
+        "MILK": 1091.0,
+        "WHEAT": 594.0
+      },
+      "undelivered": {
+        "WHEAT": 22,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 6,
+        "WOOL": 4,
+        "FERTILIZER": 13,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 10,
+      "bank": 2642.0,
+      "hand_turns": {
+        "acting": 78,
+        "moving": 147
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 13,
+          "moving": 11
+        },
+        "hand_1": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_2": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_3": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_4": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 16
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_7": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_8": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_9": {
+          "acting": 3,
+          "moving": 19
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            2,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_7",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_8",
+          "position": [
+            4,
+            0
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 1,
+        "WOOL": 2
+      },
+      "sold": {
+        "FERTILIZER": 17,
+        "WOOL": 4,
+        "MILK": 7,
+        "WHEAT": 1
+      },
+      "revenue": {
+        "FERTILIZER": 1492.0,
+        "WOOL": 956.0,
+        "MILK": 1169.0,
+        "WHEAT": 34.0
+      },
+      "undelivered": {
+        "WHEAT": 25,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 2,
+        "FERTILIZER": 15,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 1
+      },
+      "rotted": {}
+    },
+    {
+      "day": 11,
+      "bank": 3107.0,
+      "hand_turns": {
+        "acting": 74,
+        "moving": 153
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 7,
+          "moving": 17
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_3": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_4": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_5": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_6": {
+          "acting": 5,
+          "moving": 17
+        },
+        "hand_7": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_8": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_9": {
+          "acting": 5,
+          "moving": 17
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_7",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 2,
+        "WOOL": 3
+      },
+      "sold": {
+        "FERTILIZER": 15,
+        "WOOL": 2,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1269.0,
+        "WOOL": 482.0,
+        "WHEAT": 68.0
+      },
+      "undelivered": {
+        "WHEAT": 27,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 2,
+        "WOOL": 3,
+        "FERTILIZER": 19,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 12,
+      "bank": 4338.0,
+      "hand_turns": {
+        "acting": 82,
+        "moving": 145
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 8,
+          "moving": 16
+        },
+        "hand_1": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_2": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_3": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_4": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_7": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_8": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_9": {
+          "acting": 5,
+          "moving": 17
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 14,
+        "WOOL": 3
+      },
+      "sold": {
+        "FERTILIZER": 19,
+        "WOOL": 3,
+        "MILK": 2,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1543.0,
+        "WOOL": 726.0,
+        "MILK": 314.0,
+        "WHEAT": 70.0
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 14,
+        "WOOL": 3,
+        "FERTILIZER": 22,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 13,
+      "bank": 8620.0,
+      "hand_turns": {
+        "acting": 90,
+        "moving": 136,
+        "idle": 1
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 10,
+          "moving": 14
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 11,
+          "moving": 12
+        },
+        "hand_3": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_4": {
+          "acting": 10,
+          "moving": 12,
+          "idle": 1
+        },
+        "hand_5": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_6": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_7": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_8": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_9": {
+          "acting": 8,
+          "moving": 14
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 1
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            1,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "WOOL": 14,
+        "MILK": 14
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 3,
+        "MILK": 20,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1846.0,
+        "WOOL": 731.0,
+        "MILK": 3090.0,
+        "WHEAT": 74.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 8,
+        "WOOL": 14,
+        "FERTILIZER": 21,
+        "GOOSE": 0,
+        "COW": 2,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 14,
+      "bank": 13617.0,
+      "hand_turns": {
+        "acting": 86,
+        "moving": 142
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 9,
+          "moving": 15
+        },
+        "hand_1": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_2": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_3": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_4": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_7": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_8": {
+          "acting": 11,
+          "moving": 11
+        },
+        "hand_9": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "hand_2",
+          "position": [
+            1,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 13,
+        "WOOL": 9
+      },
+      "sold": {
+        "FERTILIZER": 21,
+        "WOOL": 14,
+        "MILK": 8,
+        "WHEAT": 3
+      },
+      "revenue": {
+        "FERTILIZER": 1520.0,
+        "WOOL": 3420.0,
+        "MILK": 1071.0,
+        "WHEAT": 114.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 13,
+        "WOOL": 9,
+        "FERTILIZER": 23,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 15,
+      "bank": 17933.0,
+      "hand_turns": {
+        "acting": 92,
+        "moving": 158
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_2": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_3": {
+          "acting": 12,
+          "moving": 11
+        },
+        "hand_4": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_5": {
+          "acting": 5,
+          "moving": 18
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_7": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_8": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_9": {
+          "acting": 6,
+          "moving": 16
+        },
+        "hand_10": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_9",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "WOOL": 12,
+        "MILK": 15
+      },
+      "sold": {
+        "FERTILIZER": 23,
+        "WOOL": 9,
+        "MILK": 13,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1564.0,
+        "WOOL": 2205.0,
+        "MILK": 1644.0,
+        "WHEAT": 78.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 15,
+        "WOOL": 12,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 16,
+      "bank": 23395.0,
+      "hand_turns": {
+        "acting": 95,
+        "moving": 154,
+        "idle": 1
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 13,
+          "moving": 11
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_3": {
+          "acting": 11,
+          "moving": 12
+        },
+        "hand_4": {
+          "acting": 10,
+          "moving": 12,
+          "idle": 1
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_7": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_8": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_9": {
+          "acting": 6,
+          "moving": 16
+        },
+        "hand_10": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 1
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_9",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 16,
+        "WOOL": 15
+      },
+      "sold": {
+        "FERTILIZER": 26,
+        "WOOL": 12,
+        "MILK": 18,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1641.0,
+        "WOOL": 2949.0,
+        "MILK": 1998.0,
+        "WHEAT": 80.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 13,
+        "WOOL": 15,
+        "FERTILIZER": 22,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 17,
+      "bank": 28394.0,
+      "hand_turns": {
+        "acting": 92,
+        "moving": 158
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 10,
+          "moving": 14
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_3": {
+          "acting": 12,
+          "moving": 11
+        },
+        "hand_4": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_7": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_8": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_9": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_10": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "hand_3",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            2,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 11,
+        "WOOL": 16
+      },
+      "sold": {
+        "FERTILIZER": 22,
+        "WOOL": 15,
+        "MILK": 13,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1282.0,
+        "WOOL": 3690.0,
+        "MILK": 1179.0,
+        "WHEAT": 83.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 11,
+        "WOOL": 16,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 18,
+      "bank": 33333.0,
+      "hand_turns": {
+        "acting": 94,
+        "moving": 156
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 14,
+          "moving": 10
+        },
+        "hand_1": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_2": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_3": {
+          "acting": 11,
+          "moving": 12
+        },
+        "hand_4": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_7": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_8": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_9": {
+          "acting": 6,
+          "moving": 16
+        },
+        "hand_10": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_9",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            3,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 21,
+        "WOOL": 11
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 16,
+        "MILK": 11,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1289.0,
+        "WOOL": 3943.0,
+        "MILK": 883.0,
+        "WHEAT": 86.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 21,
+        "WOOL": 11,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 19,
+      "bank": 39383.0,
+      "hand_turns": {
+        "acting": 94,
+        "moving": 156
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 10,
+          "moving": 14
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_3": {
+          "acting": 12,
+          "moving": 11
+        },
+        "hand_4": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_7": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_8": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_9": {
+          "acting": 6,
+          "moving": 16
+        },
+        "hand_10": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_9",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 18,
+        "WOOL": 16
+      },
+      "sold": {
+        "FERTILIZER": 26,
+        "WOOL": 19,
+        "MILK": 21,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1266.0,
+        "WOOL": 4695.0,
+        "MILK": 1288.0,
+        "WHEAT": 88.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 18,
+        "WOOL": 8,
+        "FERTILIZER": 22,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 20,
+      "bank": 41735.0,
+      "hand_turns": {
+        "acting": 94,
+        "moving": 156
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_3": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_4": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_5": {
+          "acting": 5,
+          "moving": 18
+        },
+        "hand_6": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_7": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_8": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_9": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_10": {
+          "acting": 8,
+          "moving": 14
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_8",
+          "position": [
+            4,
+            1
+          ],
+          "direction": "NORTH",
+          "turns": 3
+        },
+        {
+          "unit": "hand_8",
+          "position": [
+            4,
+            0
+          ],
+          "direction": "SOUTH",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 23,
+        "WOOL": 16
+      },
+      "sold": {
+        "FERTILIZER": 22,
+        "WOOL": 8,
+        "MILK": 18,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 966.0,
+        "WOOL": 1976.0,
+        "MILK": 633.0,
+        "WHEAT": 90.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 23,
+        "WOOL": 16,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 21,
+      "bank": 45705.0,
+      "hand_turns": {
+        "acting": 94,
+        "moving": 156
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_2": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_3": {
+          "acting": 12,
+          "moving": 11
+        },
+        "hand_4": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_5": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_7": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_8": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_9": {
+          "acting": 6,
+          "moving": 16
+        },
+        "hand_10": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_9",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "WOOL": 12,
+        "MILK": 15
+      },
+      "sold": {
+        "FERTILIZER": 26,
+        "WOOL": 16,
+        "MILK": 23,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 1017.0,
+        "WOOL": 3963.0,
+        "MILK": 238.0,
+        "WHEAT": 91.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 15,
+        "WOOL": 12,
+        "FERTILIZER": 22,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 22,
+      "bank": 48365.0,
+      "hand_turns": {
+        "acting": 95,
+        "moving": 155
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_3": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_4": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_7": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_8": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_9": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_10": {
+          "acting": 8,
+          "moving": 14
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            1,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            1,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 3
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            1,
+            1
+          ],
+          "direction": "SOUTH",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 25,
+        "WOOL": 16
+      },
+      "sold": {
+        "FERTILIZER": 22,
+        "WOOL": 12,
+        "MILK": 15,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 754.0,
+        "WOOL": 2976.0,
+        "MILK": 201.0,
+        "WHEAT": 94.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 25,
+        "WOOL": 16,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 23,
+      "bank": 51963.0,
+      "hand_turns": {
+        "acting": 93,
+        "moving": 157
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 10,
+          "moving": 14
+        },
+        "hand_1": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_2": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_3": {
+          "acting": 12,
+          "moving": 11
+        },
+        "hand_4": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_7": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_8": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_9": {
+          "acting": 7,
+          "moving": 15
+        },
+        "hand_10": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "hand_3",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_8",
+          "position": [
+            4,
+            1
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 14,
+        "WOOL": 16
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 16,
+        "MILK": 25,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 713.0,
+        "WOOL": 3970.0,
+        "MILK": 211.0,
+        "WHEAT": 95.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 14,
+        "WOOL": 16,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 24,
+      "bank": 55419.0,
+      "hand_turns": {
+        "acting": 94,
+        "moving": 156
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 14,
+          "moving": 10
+        },
+        "hand_1": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_3": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_4": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_5": {
+          "acting": 6,
+          "moving": 17
+        },
+        "hand_6": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_7": {
+          "acting": 8,
+          "moving": 14
+        },
+        "hand_8": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_9": {
+          "acting": 5,
+          "moving": 17
+        },
+        "hand_10": {
+          "acting": 8,
+          "moving": 14
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            3,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 23,
+        "WOOL": 11
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 16,
+        "MILK": 14,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 598.0,
+        "WOOL": 3979.0,
+        "MILK": 200.0,
+        "WHEAT": 96.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 23,
+        "WOOL": 11,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 25,
+      "bank": 57801.0,
+      "hand_turns": {
+        "acting": 89,
+        "moving": 117
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 11,
+          "moving": 12
+        },
+        "hand_2": {
+          "acting": 12,
+          "moving": 11
+        },
+        "hand_3": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_4": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_5": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_6": {
+          "acting": 11,
+          "moving": 12
+        },
+        "hand_7": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_8": {
+          "acting": 8,
+          "moving": 14
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "hand_2",
+          "position": [
+            2,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_6",
+          "position": [
+            3,
+            1
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            3,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "WOOL": 16,
+        "MILK": 15
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 11,
+        "MILK": 23,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 482.0,
+        "WOOL": 2739.0,
+        "MILK": 413.0,
+        "WHEAT": 98.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 15,
+        "WOOL": 16,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 26,
+      "bank": 61266.0,
+      "hand_turns": {
+        "acting": 85,
+        "moving": 121
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_2": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_3": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_4": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_5": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_6": {
+          "acting": 11,
+          "moving": 12
+        },
+        "hand_7": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_8": {
+          "acting": 8,
+          "moving": 14
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            2,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            2,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 22,
+        "WOOL": 16
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 16,
+        "MILK": 15,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 367.0,
+        "WOOL": 3984.0,
+        "MILK": 385.0,
+        "WHEAT": 100.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 22,
+        "WOOL": 16,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 27,
+      "bank": 64810.0,
+      "hand_turns": {
+        "acting": 88,
+        "moving": 118
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 12,
+          "moving": 12
+        },
+        "hand_1": {
+          "acting": 11,
+          "moving": 12
+        },
+        "hand_2": {
+          "acting": 12,
+          "moving": 11
+        },
+        "hand_3": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_4": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_5": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_6": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_7": {
+          "acting": 10,
+          "moving": 12
+        },
+        "hand_8": {
+          "acting": 7,
+          "moving": 15
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_6",
+          "position": [
+            4,
+            2
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            1,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "WOOL": 9,
+        "MILK": 15
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 16,
+        "MILK": 22,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 252.0,
+        "WOOL": 3992.0,
+        "MILK": 589.0,
+        "WHEAT": 102.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 15,
+        "WOOL": 9,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 28,
+      "bank": 66309.0,
+      "hand_turns": {
+        "acting": 87,
+        "moving": 119
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 13,
+          "moving": 11
+        },
+        "hand_1": {
+          "acting": 11,
+          "moving": 12
+        },
+        "hand_2": {
+          "acting": 9,
+          "moving": 14
+        },
+        "hand_3": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_4": {
+          "acting": 8,
+          "moving": 15
+        },
+        "hand_5": {
+          "acting": 7,
+          "moving": 16
+        },
+        "hand_6": {
+          "acting": 10,
+          "moving": 13
+        },
+        "hand_7": {
+          "acting": 9,
+          "moving": 13
+        },
+        "hand_8": {
+          "acting": 10,
+          "moving": 12
+        }
+      },
+      "idle_hotspots": [],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 3
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            0,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 3
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            2,
+            3
+          ],
+          "direction": "NORTH",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            2,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            3,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            2,
+            2
+          ],
+          "direction": "WEST",
+          "turns": 2
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            3,
+            4
+          ],
+          "direction": "EAST",
+          "turns": 2
+        }
+      ],
+      "produced": {
+        "MILK": 21,
+        "WOOL": 15
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 9,
+        "MILK": 15,
+        "WHEAT": 2
+      },
+      "revenue": {
+        "FERTILIZER": 137.0,
+        "WOOL": 2250.0,
+        "MILK": 416.0,
+        "WHEAT": 104.0
+      },
+      "undelivered": {
+        "WHEAT": 29,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 21,
+        "WOOL": 15,
+        "FERTILIZER": 24,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    },
+    {
+      "day": 29,
+      "bank": 76009.0,
+      "hand_turns": {
+        "acting": 46,
+        "moving": 124,
+        "idle": 27
+      },
+      "by_unit": {
+        "farmer": {
+          "acting": 5,
+          "moving": 15,
+          "idle": 3
+        },
+        "hand_1": {
+          "moving": 11,
+          "acting": 7,
+          "idle": 4
+        },
+        "hand_2": {
+          "moving": 13,
+          "acting": 6,
+          "idle": 3
+        },
+        "hand_3": {
+          "moving": 13,
+          "acting": 5,
+          "idle": 4
+        },
+        "hand_4": {
+          "moving": 16,
+          "acting": 5,
+          "idle": 1
+        },
+        "hand_5": {
+          "moving": 15,
+          "acting": 5,
+          "idle": 2
+        },
+        "hand_6": {
+          "moving": 12,
+          "acting": 6,
+          "idle": 4
+        },
+        "hand_7": {
+          "moving": 13,
+          "acting": 5,
+          "idle": 3
+        },
+        "hand_8": {
+          "moving": 16,
+          "acting": 2,
+          "idle": 3
+        }
+      },
+      "idle_hotspots": [
+        {
+          "unit": "hand_1",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 4
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            4,
+            5
+          ],
+          "turns": 4
+        },
+        {
+          "unit": "hand_6",
+          "position": [
+            5,
+            4
+          ],
+          "turns": 4
+        },
+        {
+          "unit": "farmer",
+          "position": [
+            5,
+            4
+          ],
+          "turns": 3
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 3
+        },
+        {
+          "unit": "hand_7",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 3
+        },
+        {
+          "unit": "hand_8",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 3
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            4,
+            4
+          ],
+          "turns": 2
+        }
+      ],
+      "moving_hotspots": [
+        {
+          "unit": "farmer",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_2",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_3",
+          "position": [
+            5,
+            5
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_4",
+          "position": [
+            4,
+            4
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_5",
+          "position": [
+            5,
+            4
+          ],
+          "direction": "NORTH",
+          "turns": 1
+        },
+        {
+          "unit": "hand_6",
+          "position": [
+            4,
+            5
+          ],
+          "direction": "WEST",
+          "turns": 1
+        },
+        {
+          "unit": "hand_1",
+          "position": [
+            5,
+            3
+          ],
+          "direction": "WEST",
+          "turns": 1
+        }
+      ],
+      "produced": {
+        "MILK": 10,
+        "WOOL": 14
+      },
+      "sold": {
+        "FERTILIZER": 48,
+        "WOOL": 29,
+        "MILK": 31,
+        "WHEAT": 29
+      },
+      "revenue": {
+        "FERTILIZER": 61.0,
+        "WOOL": 7250.0,
+        "MILK": 926.0,
+        "WHEAT": 1517.0
+      },
+      "undelivered": {
+        "WHEAT": 0,
+        "CARROT": 0,
+        "TOMATO": 0,
+        "STRAWBERRY": 0,
+        "MELON": 0,
+        "EGG": 0,
+        "MILK": 0,
+        "WOOL": 0,
+        "FERTILIZER": 0,
+        "GOOSE": 0,
+        "COW": 1,
+        "SHEEP": 0
+      },
+      "rotted": {}
+    }
+  ],
+  "signature": {
+    "purchases": [
+      [
+        0,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        0,
+        "BUY_ANIMAL",
+        "SHEEP",
+        1
+      ],
+      [
+        0,
+        "BUY_PRODUCT",
+        "WHEAT",
+        21
+      ],
+      [
+        0,
+        "BUY_SEED",
+        "WHEAT",
+        25
+      ],
+      [
+        1,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        1,
+        "BUY_ANIMAL",
+        "SHEEP",
+        1
+      ],
+      [
+        1,
+        "BUY_PRODUCT",
+        "WHEAT",
+        18
+      ],
+      [
+        2,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        2,
+        "BUY_PRODUCT",
+        "WHEAT",
+        14
+      ],
+      [
+        3,
+        "BUY_PRODUCT",
+        "WHEAT",
+        21
+      ],
+      [
+        4,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        4,
+        "BUY_PRODUCT",
+        "WHEAT",
+        7
+      ],
+      [
+        4,
+        "BUY_SEED",
+        "WHEAT",
+        5
+      ],
+      [
+        5,
+        "BUY_ANIMAL",
+        "COW",
+        2
+      ],
+      [
+        5,
+        "BUY_ANIMAL",
+        "SHEEP",
+        1
+      ],
+      [
+        5,
+        "BUY_PRODUCT",
+        "WHEAT",
+        18
+      ],
+      [
+        5,
+        "BUY_SEED",
+        "WHEAT",
+        4
+      ],
+      [
+        6,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        6,
+        "BUY_ANIMAL",
+        "SHEEP",
+        3
+      ],
+      [
+        6,
+        "BUY_PRODUCT",
+        "WHEAT",
+        21
+      ],
+      [
+        7,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        7,
+        "BUY_PRODUCT",
+        "WHEAT",
+        23
+      ],
+      [
+        8,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        8,
+        "BUY_ANIMAL",
+        "SHEEP",
+        3
+      ],
+      [
+        8,
+        "BUY_PRODUCT",
+        "WHEAT",
+        18
+      ],
+      [
+        9,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        9,
+        "BUY_ANIMAL",
+        "SHEEP",
+        1
+      ],
+      [
+        9,
+        "BUY_PRODUCT",
+        "WHEAT",
+        39
+      ],
+      [
+        10,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        10,
+        "BUY_ANIMAL",
+        "SHEEP",
+        1
+      ],
+      [
+        10,
+        "BUY_PRODUCT",
+        "WHEAT",
+        24
+      ],
+      [
+        10,
+        "BUY_SEED",
+        "MELON",
+        1
+      ],
+      [
+        10,
+        "BUY_SEED",
+        "STRAWBERRY",
+        1
+      ],
+      [
+        11,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        11,
+        "BUY_PRODUCT",
+        "WHEAT",
+        25
+      ],
+      [
+        12,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        12,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        13,
+        "BUY_ANIMAL",
+        "COW",
+        1
+      ],
+      [
+        13,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        14,
+        "BUY_PRODUCT",
+        "WHEAT",
+        27
+      ],
+      [
+        15,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        16,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        17,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        18,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        19,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        20,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        21,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        22,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        23,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        24,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        25,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        26,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        27,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ],
+      [
+        28,
+        "BUY_PRODUCT",
+        "WHEAT",
+        26
+      ]
+    ],
+    "hires": [
+      [
+        0,
+        5
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        6
+      ],
+      [
+        7,
+        6
+      ],
+      [
+        8,
+        6
+      ],
+      [
+        9,
+        6
+      ],
+      [
+        10,
+        9
+      ],
+      [
+        11,
+        9
+      ],
+      [
+        12,
+        9
+      ],
+      [
+        13,
+        9
+      ],
+      [
+        14,
+        9
+      ],
+      [
+        15,
+        10
+      ],
+      [
+        16,
+        10
+      ],
+      [
+        17,
+        10
+      ],
+      [
+        18,
+        10
+      ],
+      [
+        19,
+        10
+      ],
+      [
+        20,
+        10
+      ],
+      [
+        21,
+        10
+      ],
+      [
+        22,
+        10
+      ],
+      [
+        23,
+        10
+      ],
+      [
+        24,
+        10
+      ],
+      [
+        25,
+        8
+      ],
+      [
+        26,
+        8
+      ],
+      [
+        27,
+        8
+      ],
+      [
+        28,
+        8
+      ],
+      [
+        29,
+        8
+      ]
+    ],
+    "lands": [],
+    "plantings": [
+      [
+        0,
+        3,
+        4,
+        "WHEAT"
+      ],
+      [
+        0,
+        4,
+        2,
+        "WHEAT"
+      ],
+      [
+        0,
+        2,
+        4,
+        "WHEAT"
+      ],
+      [
+        0,
+        3,
+        3,
+        "WHEAT"
+      ],
+      [
+        0,
+        4,
+        1,
+        "WHEAT"
+      ],
+      [
+        0,
+        3,
+        2,
+        "WHEAT"
+      ],
+      [
+        0,
+        2,
+        3,
+        "WHEAT"
+      ],
+      [
+        0,
+        3,
+        1,
+        "WHEAT"
+      ],
+      [
+        0,
+        4,
+        0,
+        "WHEAT"
+      ],
+      [
+        0,
+        1,
+        3,
+        "WHEAT"
+      ],
+      [
+        0,
+        2,
+        1,
+        "WHEAT"
+      ],
+      [
+        0,
+        2,
+        2,
+        "WHEAT"
+      ],
+      [
+        0,
+        3,
+        0,
+        "WHEAT"
+      ],
+      [
+        0,
+        2,
+        0,
+        "WHEAT"
+      ],
+      [
+        0,
+        1,
+        0,
+        "WHEAT"
+      ],
+      [
+        0,
+        1,
+        2,
+        "WHEAT"
+      ],
+      [
+        1,
+        0,
+        3,
+        "WHEAT"
+      ],
+      [
+        1,
+        0,
+        2,
+        "WHEAT"
+      ],
+      [
+        1,
+        1,
+        1,
+        "WHEAT"
+      ],
+      [
+        1,
+        0,
+        1,
+        "WHEAT"
+      ],
+      [
+        1,
+        0,
+        0,
+        "WHEAT"
+      ],
+      [
+        6,
+        2,
+        2,
+        "WHEAT"
+      ],
+      [
+        6,
+        2,
+        1,
+        "WHEAT"
+      ],
+      [
+        6,
+        1,
+        2,
+        "WHEAT"
+      ]
+    ]
+  },
+  "accepted_market_units": 2082,
+  "successful_unit_actions": 5929
+}
