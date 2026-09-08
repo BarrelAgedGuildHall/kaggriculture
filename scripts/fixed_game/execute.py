@@ -55,6 +55,89 @@ ACTING = {"DROP", "PICKUP", "PLACE", "PLANT", "WATER", "HARVEST", "FERTILIZE",
 MOVING = {"NORTH", "SOUTH", "EAST", "WEST"}
 
 
+def _task_category(job: dict | None, board) -> str:
+    """Collapse a router job into an economically meaningful travel sink."""
+    if not job:
+        return "unattributed"
+    tag = str(job.get("tag", ""))
+    op = (job.get("action") or [""])[0]
+    if tag in ("drop", "liquidate") or op == "DROP":
+        return "haul_to_shed"
+    if tag in ("feed", "pickup_feed") or op == "FEED":
+        return "feed"
+    if tag == "fert" or op == "COLLECT_FERTILIZER":
+        return "fertilizer_collection"
+    if tag in ("cropfert", "pickup_fert") or op == "FERTILIZE":
+        return "fertilize"
+    if tag == "care" or op == "CARE":
+        return "care_milk_shear"
+    if op == "HARVEST":
+        x, y = job["target"]
+        tile = board[y][x] if 0 <= y < len(board) and 0 <= x < len(board[y]) else None
+        return "care_milk_shear" if isinstance(tile, dict) and tile.get("animal") else "harvest"
+    if tag in ("plant", "build", "place", "pickup_animal") or op in (
+            "PLANT", "DIG", "BUILD_COOP", "BUILD_PASTURE", "PLACE"):
+        return "plant_build"
+    if tag == "water" or op == "WATER":
+        return "water"
+    return "unattributed"
+
+
+def _assign_details(router, positions, inventories, jobs, hour, travel_weight=18):
+    """Reference matcher, returning its selected jobs as well as actions."""
+    n = len(positions)
+    assignment = [None] * n
+    free_u, free_j = set(range(n)), set(range(len(jobs)))
+
+    def cost(ui, ji):
+        job = jobs[ji]
+        if job.get("strict_owner") is not None and job["strict_owner"] != ui:
+            return 10**9
+        if job["tag"] == "pickup_feed" and job["owner"] != ui:
+            return 10**9
+        if not router._eligible(inventories[ui], job):
+            return 10**9
+        travel = router._dist(positions[ui], job["target"])
+        slack = job["deadline"] - hour - travel
+        affinity = 0 if job["owner"] is None or job["owner"] == ui else 420
+        continuity = -int(job.get("continuity_bonus", 0)) if job.get("preferred_owner") == ui else 0
+        return (travel_weight * travel + 110 * max(0, -slack) + 24 * max(0, 2 - slack)
+                + affinity + continuity - job["value"])
+
+    pairs = []
+    for ui in range(n):
+        for ji in range(len(jobs)):
+            value = cost(ui, ji)
+            if value < 10**9:
+                pairs.append((value, ui, ji))
+    pairs.sort()
+    for _cost, ui, ji in pairs:
+        if ui in free_u and ji in free_j:
+            assignment[ui] = ji
+            free_u.remove(ui)
+            free_j.remove(ji)
+    changed = True
+    while changed:
+        changed = False
+        for a in range(n):
+            ja = assignment[a]
+            if ja is None:
+                continue
+            for b in range(a + 1, n):
+                jb = assignment[b]
+                if jb is None:
+                    continue
+                if cost(a, jb) + cost(b, ja) < cost(a, ja) + cost(b, jb):
+                    assignment[a], assignment[b] = jb, ja
+                    changed = True
+    selected = [jobs[ji] if ji is not None else None for ji in assignment]
+    actions = [router.SAFE if job is None else
+               (job["action"] if positions[ui] == job["target"]
+                else router._move(positions[ui], job["target"]))
+               for ui, job in enumerate(selected)]
+    return actions, selected
+
+
 def _blank_day(day: int) -> dict:
     return {"day": day, "hires": 0, "purchases": [], "builds": [], "plantings": [], "sales": []}
 
@@ -97,6 +180,8 @@ class Executor:
         self.faults = 0
         self.substitutions = []
         self.turn_counts = defaultdict(Counter)
+        self.move_tasks = defaultdict(Counter)
+        self.move_hands = defaultdict(Counter)
         self.produced = defaultdict(Counter)
         self.sold = defaultdict(Counter)
         self.revenue = defaultdict(Counter)
@@ -391,7 +476,8 @@ class ReferenceExecutor(Executor):
 
     def __init__(self, schedule: dict, *, idle_fix: bool = True,
                  fertilizer_drain: int = 0, fertilizer_threshold: int = 10,
-                 animal_sweep: bool = False, layout_mode: str = "scheduled"):
+                 animal_sweep: bool = False, layout_mode: str = "scheduled",
+                 travel_router: str = "baseline"):
         super().__init__(schedule)
         self.router = _load_reference_router()
         self.idle_fix = idle_fix
@@ -399,6 +485,11 @@ class ReferenceExecutor(Executor):
         self.fertilizer_threshold = int(fertilizer_threshold)
         self.animal_sweep = animal_sweep
         self.layout_mode = layout_mode
+        self.travel_router = travel_router
+        self._assigned_jobs = []
+        self._current_day = 0
+        self._animal_owners = {}
+        self._sticky_targets = []
         self.sale_policies = {str(k): str(v) for k, v in
                               (self.schedule.get("sale_policies", {}) or {}).items()}
         self._current_fertilizer_price = BASE_PRICE["FERTILIZER"]
@@ -459,8 +550,6 @@ class ReferenceExecutor(Executor):
             return animal_targets[kind][max(0, min(29, int(day)))]
 
         self.router._animal_target = exact_animal_target
-        original_assign = self.router._assign
-
         def assigned_with_preposition(positions, inventories, jobs, hour):
             # Fertilizer has no sink on many pinned instances.  Once its quote no
             # longer clears the configured floor, collecting it spends a field
@@ -495,8 +584,52 @@ class ReferenceExecutor(Executor):
                     if job.get("target") in owner_by_target and job.get("tag") in (
                             "feed", "care", "fert", "harvest"):
                         job["owner"] = owner_by_target[job["target"]]
-            actions = original_assign(positions, inventories, jobs, hour)
+            if self.travel_router == "balanced_husbandry":
+                animal_targets_now = {job["target"] for job in jobs
+                                      if job.get("tag") in ("feed", "care", "fert")}
+                for job in jobs:
+                    if job.get("target") in animal_targets_now and job.get("tag") in (
+                            "feed", "care", "fert", "harvest"):
+                        job["value"] = 12000
+            if self.travel_router in ("animal_bundle", "animal_bundle_soft"):
+                while len(self._sticky_targets) < len(positions):
+                    self._sticky_targets.append(None)
+                for ui, target in enumerate(self._sticky_targets[:len(positions)]):
+                    if target is None:
+                        continue
+                    found = False
+                    for job in jobs:
+                        if job.get("target") == target and job.get("tag") in (
+                                "feed", "care", "fert", "harvest"):
+                            job["preferred_owner"] = ui
+                            job["continuity_bonus"] = (20000 if self.travel_router == "animal_bundle" else 7000)
+                            found = True
+                    if not found:
+                        self._sticky_targets[ui] = None
+            if self.travel_router == "full_carry":
+                templates = [job for job in jobs if job.get("tag") == "drop"]
+                jobs[:] = [job for job in jobs if job.get("tag") != "drop"]
+                if templates:
+                    template = templates[0]
+                    for ui, inv in enumerate(inventories):
+                        units = sum(int(inv.get(p, 0) or 0) for p in PRODUCTS)
+                        if units >= 4 or (units and hour >= 18):
+                            target = min(SHED, key=lambda p: (_dist(positions[ui], p), p))
+                            job = dict(template, target=target, owner=ui, strict_owner=ui)
+                            jobs.append(job)
+            travel_weight = {"local_20": 20, "local_40": 40,
+                             "local_100": 100, "local_300": 300}.get(self.travel_router, 18)
+            actions, selected = _assign_details(
+                self.router, positions, inventories, jobs, hour, travel_weight)
+            if self.travel_router in ("animal_bundle", "animal_bundle_soft"):
+                animal_targets_now = {job["target"] for job in jobs
+                                      if job.get("tag") in ("feed", "care", "fert")}
+                for ui, job in enumerate(selected):
+                    if job and job.get("tag") in ("feed", "care", "fert", "harvest"):
+                        if job["target"] in animal_targets_now:
+                            self._sticky_targets[ui] = job["target"]
             if not self.idle_fix or not jobs:
+                self._assigned_jobs = selected
                 return actions
             for ui, action in enumerate(actions):
                 if action != self.router.SAFE:
@@ -514,7 +647,9 @@ class ReferenceExecutor(Executor):
                                if job["target"] != positions[ui]), None)
                 if target is not None:
                     actions[ui] = self.router._move(positions[ui], target)
+                    selected[ui] = next(job for job in candidates if job["target"] == target)
                 self.positive_job_idle[int(hour)] += actions[ui] == self.router.SAFE
+            self._assigned_jobs = selected
             return actions
 
         self.router._assign = assigned_with_preposition
@@ -525,6 +660,8 @@ class ReferenceExecutor(Executor):
         try:
             self._observe_transition(obs)
             day = int(obs.get("day", 0))
+            self._current_day = day
+            self._current_board = obs["farms"][0]["tiles"]
             self._current_fertilizer_price = int(
                 obs.get("market", {}).get("prices", {}).get("FERTILIZER", 0) or 0)
             phase = min(5, day // 5)
@@ -598,6 +735,12 @@ class ReferenceExecutor(Executor):
                         product = tile.get("crop") or self.router.ANIMALS.get(tile.get("animal"), {}).get("product")
                         if product:
                             self.produced[day][product] += int(tile.get("yield_units", 0) or 0)
+            for ui, (act, job) in enumerate(zip(
+                    [action["farmer"]] + action["hands"], self._assigned_jobs)):
+                if act and act[0] in MOVING:
+                    category = _task_category(job, obs["farms"][0]["tiles"])
+                    self.move_tasks[category][ui] += 1
+                    self.move_hands[ui][category] += 1
             self.actions.append(action)
         except Exception:
             self.faults += 1
@@ -660,6 +803,14 @@ def _result(executor: Executor, env, schedule: dict, seed: int) -> dict:
             "final_bank": float(final.reward), "faults": executor.faults,
             "timing_ms": {"p99": p99, "max": max(executor.times, default=0), "mean": statistics.fmean(executor.times)},
             "execution_loss": all_loss, "days": by_day, "substitutions": executor.substitutions,
+            "moving_by_task_and_hand": {
+                task: {str(hand): turns for hand, turns in sorted(by_hand.items())}
+                for task, by_hand in sorted(executor.move_tasks.items())
+            },
+            "moving_by_hand_and_task": {
+                str(hand): dict(sorted(by_task.items()))
+                for hand, by_task in sorted(executor.move_hands.items())
+            },
             "expectation_basis": "schedule.expected_revenue_by_day when supplied; otherwise realised production at engine base prices"}
 
 
@@ -687,7 +838,8 @@ def _write_outputs(result: dict, actions: list, schedule_path: Path | None, tag:
 def execute(schedule: dict, seed: int = 3910, workers: int = 1, *, tag: str = "run",
             schedule_path: Path | None = None, idle_fix: bool = True,
             instance_path: Path | None = None, fertilizer_threshold: int = 10,
-            animal_sweep: bool = False, layout_mode: str = "scheduled") -> dict:
+            animal_sweep: bool = False, layout_mode: str = "scheduled",
+            travel_router: str = "baseline") -> dict:
     del workers
     instance = load_instance(instance_path) if instance_path else load_instance()
     if int(instance["seed"]) != int(seed):
@@ -697,7 +849,8 @@ def execute(schedule: dict, seed: int = 3910, workers: int = 1, *, tag: str = "r
     controller = ReferenceExecutor(schedule, idle_fix=idle_fix,
                                    fertilizer_drain=fertilizer_drain,
                                    fertilizer_threshold=fertilizer_threshold,
-                                   animal_sweep=animal_sweep, layout_mode=layout_mode)
+                                   animal_sweep=animal_sweep, layout_mode=layout_mode,
+                                   travel_router=travel_router)
     env = make_env(instance, debug=True)
     env.run([controller.policy, "pass"])
     result = _result(controller, env, controller.schedule, seed)
@@ -706,6 +859,7 @@ def execute(schedule: dict, seed: int = 3910, workers: int = 1, *, tag: str = "r
     result["fertilizer_threshold"] = fertilizer_threshold
     result["animal_sweep"] = animal_sweep
     result["layout_mode"] = layout_mode
+    result["travel_router"] = travel_router
     result["output_dir"] = str(_write_outputs(result, controller.actions, schedule_path, tag))
     return result
 
@@ -724,13 +878,16 @@ def main():
                         help="normalize herd strips across the active animal footprint")
     parser.add_argument("--layout-mode", choices=("scheduled", "reference", "swap_melon_wheat"),
                         default="scheduled", help="crop block placement policy")
+    parser.add_argument("--travel-router", choices=("baseline", "full_carry", "husbandry_crew", "animal_bundle", "animal_bundle_soft", "local_20", "local_40", "local_100", "local_300", "balanced_husbandry"),
+                        default="baseline", help="travel-reduction routing policy")
     args = parser.parse_args()
     schedule = json.loads(args.schedule.read_text(encoding="utf-8"))
     result = execute(schedule, args.seed, args.workers, tag=args.tag or args.schedule.stem,
                      schedule_path=args.schedule, idle_fix=not args.no_idle_fix,
                      instance_path=args.instance,
                      fertilizer_threshold=args.fertilizer_threshold,
-                     animal_sweep=args.animal_sweep, layout_mode=args.layout_mode)
+                     animal_sweep=args.animal_sweep, layout_mode=args.layout_mode,
+                     travel_router=args.travel_router)
     print(json.dumps({k: result[k] for k in ("final_bank", "faults", "timing_ms", "execution_loss", "output_dir")}, indent=2))
 
 
