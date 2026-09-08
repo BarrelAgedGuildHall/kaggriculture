@@ -1,4 +1,4 @@
-"""Extract and document the fixed seed-3910 instance from engine 1.32.7."""
+"""Extract and document a fixed pass/pass instance from engine 1.32.7."""
 from __future__ import annotations
 
 import hashlib
@@ -14,18 +14,7 @@ if str(ROOT) not in sys.path:
 
 from scripts._engine import engine_dir, engine_version, import_engine
 
-OUT = ROOT / "data" / "results" / "fixed-game" / "3910"
-SEED = 3910
-SHOP_UNLOCKS = [
-    (3, "YARN_STORE"),
-    (6, "PET_CAFE"),
-    (9, "YARN_STORE"),
-    (12, "PIZZA_SHOP"),
-    (15, "BAKERY"),
-    (18, "PET_CAFE"),
-    (21, "PIZZA_SHOP"),
-    (24, "SMOOTHIE_SHOP"),
-]
+OUT_ROOT = ROOT / "data" / "results" / "fixed-game"
 
 
 def _shape(func: str, x: float, T: float) -> float:
@@ -40,9 +29,9 @@ def _shape(func: str, x: float, T: float) -> float:
     raise ValueError(func)
 
 
-def _daily_drain(kg: Any) -> list[dict[str, Any]]:
+def _daily_drain(kg: Any, shop_unlocks: list[tuple[int, str]]) -> list[dict[str, Any]]:
     active: list[str] = []
-    unlock = dict(SHOP_UNLOCKS)
+    unlock = dict(shop_unlocks)
     rows = []
     for day in range(30):
         if day in unlock:
@@ -57,9 +46,21 @@ def _daily_drain(kg: Any) -> list[dict[str, Any]]:
     return rows
 
 
-def build() -> dict[str, Any]:
+def pass_shop_unlocks(seed: int) -> list[tuple[int, str]]:
+    """Return the endogenous shop sequence from an unmodified pass/pass run."""
+    ke = import_engine()
+    env = ke.make("kaggriculture", configuration={"seed": int(seed)}, debug=True)
+    env.run(["pass", "pass"])
+    shops = list(env.steps[-1][0].observation.town.unlocked_shops)
+    days = list(range(3, 3 * (len(shops) + 1), 3))
+    return list(zip(days, shops))
+
+
+def build(seed: int = 3910, shop_unlocks: list[tuple[int, str]] | None = None) -> dict[str, Any]:
     import_engine()
     import kaggle_environments.envs.kaggriculture.kaggriculture as kg
+
+    shop_unlocks = shop_unlocks if shop_unlocks is not None else pass_shop_unlocks(seed)
 
     source = engine_dir() / "kaggriculture.py"
     cfg = {
@@ -144,10 +145,10 @@ def build() -> dict[str, Any]:
         })
         animals[name] = a
 
-    drains = _daily_drain(kg)
+    drains = _daily_drain(kg, shop_unlocks)
     result = {
         "schema_version": 1,
-        "seed": SEED,
+        "seed": int(seed),
         "seat": 0,
         "opponent": "pass",
         "engine": {
@@ -178,7 +179,7 @@ def build() -> dict[str, Any]:
         },
         "town": {
             "shops": copy_shops(kg.SHOPS),
-            "shop_unlocks": [{"day": d, "shop": s, "products": list(kg.SHOPS[s])} for d, s in SHOP_UNLOCKS],
+            "shop_unlocks": [{"day": d, "shop": s, "products": list(kg.SHOPS[s])} for d, s in shop_unlocks],
             "draw_with_replacement": True,
             "shop_ticks_per_day": 6,
             "single_product_shop_multiplier": 2,
@@ -224,7 +225,7 @@ def copy_shops(shops: dict[str, list[str]]) -> dict[str, list[str]]:
 
 def markdown(data: dict[str, Any]) -> str:
     lines = [
-        "# Fixed Kaggriculture instance: seed 3910", "",
+        f"# Fixed Kaggriculture instance: seed {data['seed']}", "",
         f"Engine: kaggle-environments {data['engine']['version']} / Kaggriculture {data['engine']['module_version']}. Source SHA-256: `{data['engine']['source_sha256']}`.", "",
         "Seat 0, opponent `pass`, $3,000 starting bank, 30 days × 24 turns. The framework stores 720 observations (step 0 is initial), hence 719 action transitions.", "",
         "## Pinned town", "",
@@ -270,11 +271,18 @@ def markdown(data: dict[str, Any]) -> str:
 
 
 def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-    data = build()
-    (OUT / "instance.json").write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-    (OUT / "instance.md").write_text(markdown(data), encoding="utf-8")
-    print(OUT / "instance.json")
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--seed", type=int, default=3910)
+    parser.add_argument("--output-dir", type=Path)
+    args = parser.parse_args()
+    output_dir = args.output_dir or OUT_ROOT / str(args.seed)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data = build(args.seed)
+    (output_dir / "instance.json").write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    (output_dir / "instance.md").write_text(markdown(data), encoding="utf-8")
+    print(output_dir / "instance.json")
 
 
 if __name__ == "__main__":
