@@ -878,7 +878,7 @@ def main():
                         help="normalize herd strips across the active animal footprint")
     parser.add_argument("--layout-mode", choices=("scheduled", "reference", "swap_melon_wheat"),
                         default="scheduled", help="crop block placement policy")
-    parser.add_argument("--travel-router", choices=("baseline", "full_carry", "husbandry_crew", "animal_bundle", "animal_bundle_soft", "local_20", "local_40", "local_100", "local_300", "balanced_husbandry"),
+    parser.add_argument("--travel-router", choices=("baseline", "full_carry", "animal_bundle", "animal_bundle_soft", "local_20", "local_40", "local_100", "local_300", "balanced_husbandry"),
                         default="baseline", help="travel-reduction routing policy")
     args = parser.parse_args()
     schedule = json.loads(args.schedule.read_text(encoding="utf-8"))
