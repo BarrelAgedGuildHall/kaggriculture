@@ -12,16 +12,36 @@ import copy
 import json
 import math
 import statistics
+import subprocess
 import sys
 import time
+import types
 from collections import Counter, defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from bots.exec_b import main as routing  # noqa: E402
 from scripts.fixed_game.pin import load_instance, make_env  # noqa: E402
+
+
+REFERENCE_ROUTER_COMMIT = "7baa291"
+
+
+def _load_reference_router():
+    """Load the round-1 router verbatim, independent of the mutable bot path."""
+    source = subprocess.check_output(
+        ["git", "show", f"{REFERENCE_ROUTER_COMMIT}:bots/exec_b/main.py"],
+        cwd=ROOT,
+        text=True,
+        encoding="utf-8",
+    )
+    module = types.ModuleType("fixed_game_exec_b_7baa291")
+    exec(compile(source, f"git:{REFERENCE_ROUTER_COMMIT}:bots/exec_b/main.py", "exec"), module.__dict__)
+    return module
+
+
+routing = _load_reference_router()
 
 PRODUCTS = routing.PRODUCTS
 CROPS = routing.CROP_NAMES
@@ -366,6 +386,163 @@ class Executor:
         return action
 
 
+class ReferenceExecutor(Executor):
+    """Schedule adapter around the exact 7baa291 work router."""
+
+    def __init__(self, schedule: dict, *, idle_fix: bool = True):
+        super().__init__(schedule)
+        self.router = _load_reference_router()
+        self.idle_fix = idle_fix
+        self.positive_job_idle = defaultdict(int)
+        self._sales_issued = defaultdict(Counter)
+        self._scheduled_buys_issued = set()
+        self._configure_plan()
+
+    def _configure_plan(self):
+        planned_crop_tiles = defaultdict(list)
+        planned_build_tiles = []
+        for spec in self.days:
+            for planting in spec["plantings"]:
+                planned_crop_tiles[planting["crop"]].append(tuple(planting["tile"]))
+            planned_build_tiles.extend(tuple(build["tile"]) for build in spec["builds"])
+        original_layout_rank = self.router._layout_rank
+
+        def scheduled_layout_rank(pos, crop=None):
+            targets = planned_crop_tiles.get(crop, ()) if crop else planned_build_tiles
+            if targets:
+                return (min(self.router._dist(pos, target) for target in targets),
+                        original_layout_rank(pos, crop))
+            return (99, original_layout_rank(pos, crop))
+
+        self.router._layout_rank = scheduled_layout_rank
+        phase_days = {
+            "opening": range(0, 10),
+            "days_10_16": range(10, 17),
+            "days_17_22": range(17, 23),
+            "days_23_26": range(23, 30),
+        }
+        for phase, days in phase_days.items():
+            counts = Counter(
+                planting["crop"]
+                for day in days
+                for planting in self.days[day]["plantings"]
+            )
+            if counts:
+                self.router.PLAN["crop_mix"][phase] = {
+                    crop: int(counts[crop]) for crop in self.router.CROP_NAMES
+                }
+
+        animal_targets = {animal: [] for animal in self.router.ANIMAL_NAMES}
+        cumulative = Counter()
+        for day in range(30):
+            for purchase in self.days[day]["purchases"]:
+                if purchase.get("item") in self.router.ANIMAL_NAMES:
+                    cumulative[purchase["item"]] += max(0, int(purchase.get("qty", 0)))
+            for animal in self.router.ANIMAL_NAMES:
+                animal_targets[animal].append(cumulative[animal])
+
+        def exact_animal_target(kind, day):
+            return animal_targets[kind][max(0, min(29, int(day)))]
+
+        self.router._animal_target = exact_animal_target
+        original_assign = self.router._assign
+
+        def assigned_with_preposition(positions, inventories, jobs, hour):
+            actions = original_assign(positions, inventories, jobs, hour)
+            if not self.idle_fix or not jobs:
+                return actions
+            for ui, action in enumerate(actions):
+                if action != self.router.SAFE:
+                    continue
+                local_jobs = [job for job in jobs if job.get("owner") == ui]
+                candidates = sorted(
+                    local_jobs,
+                    key=lambda job: (
+                        self.router._dist(positions[ui], job["target"]),
+                        -job["value"],
+                        job["target"],
+                    ),
+                )
+                target = next((job["target"] for job in candidates
+                               if job["target"] != positions[ui]), None)
+                if target is not None:
+                    actions[ui] = self.router._move(positions[ui], target)
+                self.positive_job_idle[int(hour)] += actions[ui] == self.router.SAFE
+            return actions
+
+        self.router._assign = assigned_with_preposition
+
+    def policy(self, obs, config=None):
+        del config
+        started = time.perf_counter()
+        try:
+            self._observe_transition(obs)
+            day = int(obs.get("day", 0))
+            phase = min(5, day // 5)
+            self.router.PLAN["hands_by_5day"][phase] = self.days[day]["hires"]
+            action = self.router.agent(obs)
+
+            if int(obs.get("hour", 0)) == 0 and day not in self._scheduled_buys_issued:
+                for purchase in self.days[day]["purchases"]:
+                    if purchase.get("item") in ("WHEAT", "FERTILIZER") and len(action["market"]) < 10:
+                        action["market"].append(["BUY_PRODUCT", purchase["item"],
+                                                 max(0, int(purchase.get("qty", 0)))])
+                self._scheduled_buys_issued.add(day)
+
+            # Optional daily sale targets replace the router's sell-all default.
+            targets = {row["product"]: max(0, int(row["qty"]))
+                       for row in self.days[day]["sales"]}
+            if targets:
+                market = [order for order in action["market"] if order[0] != "SELL"]
+                shed = Counter((obs.get("private", {}) or {}).get("shed", {}) or {})
+                for product, target in targets.items():
+                    remaining = target - self._sales_issued[day][product]
+                    qty = min(remaining, shed[product])
+                    if qty > 0 and len(market) < 10:
+                        market.append(["SELL", product, qty])
+                        self._sales_issued[day][product] += qty
+                action["market"] = market
+
+            # The reference router had no land order path; honour scheduled land.
+            land_target = sum(
+                int(purchase.get("qty", 0))
+                for spec in self.days[:day + 1]
+                for purchase in spec["purchases"]
+                if purchase.get("item") == "LAND"
+            )
+            unlocked = len(obs["farms"][0].get("unlocked_quadrants", []) or []) - 1
+            if land_target > unlocked and len(action["market"]) < 10:
+                action["market"].append(["BUY_LAND"])
+
+            positions = [tuple(obs["farms"][0]["farmer"])] + [
+                tuple(pos) for pos in obs["farms"][0].get("hands", [])
+            ]
+            invs = list((obs.get("private", {}) or {}).get("inventories", []) or [])
+            shed = Counter((obs.get("private", {}) or {}).get("shed", {}) or {})
+            for order in action["market"]:
+                if order[0] == "SELL":
+                    product, qty = order[1], min(int(order[2]), shed[order[1]])
+                    self.sold[day][product] += qty
+                    self.revenue[day][product] += qty * int(obs["market"]["prices"][product])
+            for pos, act in zip(positions, [action["farmer"]] + action["hands"]):
+                op = act[0] if act else "PASS"
+                self.turn_counts[day]["moving" if op in MOVING else "acting" if op in ACTING else "idle"] += 1
+                if op == "HARVEST":
+                    tile = obs["farms"][0]["tiles"][pos[1]][pos[0]]
+                    if isinstance(tile, dict):
+                        product = tile.get("crop") or self.router.ANIMALS.get(tile.get("animal"), {}).get("product")
+                        if product:
+                            self.produced[day][product] += int(tile.get("yield_units", 0) or 0)
+            self.actions.append(action)
+        except Exception:
+            self.faults += 1
+            n = len(obs.get("farms", [{}])[0].get("hands", []))
+            action = {"farmer": ["PASS"], "hands": [["PASS"] for _ in range(n)], "market": []}
+            self.actions.append(action)
+        self.times.append((time.perf_counter() - started) * 1000)
+        return action
+
+
 def _result(executor: Executor, env, schedule: dict, seed: int) -> dict:
     final = env.steps[-1][0]
     observations = [step[0].observation for step in env.steps if step and step[0].observation]
@@ -442,15 +619,18 @@ def _write_outputs(result: dict, actions: list, schedule_path: Path | None, tag:
     return out
 
 
-def execute(schedule: dict, seed: int = 3910, workers: int = 1, *, tag: str = "run", schedule_path: Path | None = None) -> dict:
+def execute(schedule: dict, seed: int = 3910, workers: int = 1, *, tag: str = "run",
+            schedule_path: Path | None = None, idle_fix: bool = True) -> dict:
     del workers
-    controller = Executor(schedule)
+    controller = ReferenceExecutor(schedule, idle_fix=idle_fix)
     instance = load_instance()
     if int(instance["seed"]) != int(seed):
         raise ValueError(f"pinned instance seed is {instance['seed']}, requested {seed}")
     env = make_env(instance, debug=True)
     env.run([controller.policy, "pass"])
     result = _result(controller, env, controller.schedule, seed)
+    result["router"] = f"bots/exec_b/main.py@{REFERENCE_ROUTER_COMMIT}"
+    result["idle_fix"] = idle_fix
     result["output_dir"] = str(_write_outputs(result, controller.actions, schedule_path, tag))
     return result
 
@@ -461,9 +641,11 @@ def main():
     parser.add_argument("--seed", type=int, default=3910)
     parser.add_argument("--workers", type=int, default=1, help="compatibility option; one fixed game is run")
     parser.add_argument("--tag", help="output directory tag (default: schedule stem)")
+    parser.add_argument("--no-idle-fix", action="store_true", help="measure the verbatim router before pre-positioning")
     args = parser.parse_args()
     schedule = json.loads(args.schedule.read_text(encoding="utf-8"))
-    result = execute(schedule, args.seed, args.workers, tag=args.tag or args.schedule.stem, schedule_path=args.schedule)
+    result = execute(schedule, args.seed, args.workers, tag=args.tag or args.schedule.stem,
+                     schedule_path=args.schedule, idle_fix=not args.no_idle_fix)
     print(json.dumps({k: result[k] for k in ("final_bank", "faults", "timing_ms", "execution_loss", "output_dir")}, indent=2))
 
 

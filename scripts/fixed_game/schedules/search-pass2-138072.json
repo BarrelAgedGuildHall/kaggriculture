@@ -1,0 +1,751 @@
+{
+  "seed": 3910,
+  "days": [
+    {
+      "day": 0,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "MELON_SEED",
+          "qty": 12
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 13
+        },
+        {
+          "item": "SHEEP",
+          "qty": 3
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "MELON"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 1,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 2
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 2,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "COW",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 3,
+      "hires": 8,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 30
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 5,
+      "hires": 8,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 6,
+      "hires": 9,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 7,
+      "hires": 10,
+      "purchases": [],
+      "builds": [
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 28
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 33
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 10,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 36
+        },
+        {
+          "product": "MELON",
+          "qty": 27
+        }
+      ]
+    },
+    {
+      "day": 11,
+      "hires": 9,
+      "purchases": [],
+      "builds": [
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "WHEAT",
+          "qty": 22
+        }
+      ]
+    },
+    {
+      "day": 12,
+      "hires": 11,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 13,
+      "hires": 11,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 4
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 14,
+      "hires": 11,
+      "purchases": [],
+      "builds": [
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 15,
+      "hires": 10,
+      "purchases": [],
+      "builds": [
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 36
+        }
+      ]
+    },
+    {
+      "day": 16,
+      "hires": 9,
+      "purchases": [],
+      "builds": [
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 17,
+      "hires": 8,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 47
+        }
+      ]
+    },
+    {
+      "day": 18,
+      "hires": 10,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 19,
+      "hires": 9,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 20,
+      "hires": 9,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 21,
+      "hires": 9,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 22
+        }
+      ]
+    },
+    {
+      "day": 22,
+      "hires": 11,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 23,
+      "hires": 9,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "MILK",
+          "qty": 40
+        }
+      ]
+    },
+    {
+      "day": 24,
+      "hires": 11,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 25,
+      "hires": 8,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 26,
+      "hires": 11,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": [
+        {
+          "product": "FERTILIZER",
+          "qty": 18
+        }
+      ]
+    },
+    {
+      "day": 27,
+      "hires": 9,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 28,
+      "hires": 6,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 29,
+      "hires": 7,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    }
+  ]
+}
