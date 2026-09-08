@@ -7,6 +7,7 @@ liquidation, and crop-specific maturity-day routing without changing the v1 keys
 from __future__ import annotations
 
 import copy
+import math
 from typing import Any
 
 from scripts.hindsight import solve
@@ -16,11 +17,21 @@ PURCHASE_KINDS = ("animal", "land", "feed", "seed", "hire", "sell", "other")
 SHED_TILES = ((4, 4), (5, 4), (4, 5), (5, 5))
 TARGET_AGE = {"WHEAT": 4, "CARROT": 3, "TOMATO": 8,
               "STRAWBERRY": 10, "MELON": 10}
+RATIO_PRODUCTS = ("MILK", "WOOL", "EGG", "STRAWBERRY", "MELON", "CARROT", "TOMATO")
+ANIMAL_PRODUCT = {"GOOSE": "EGG", "COW": "MILK", "SHEEP": "WOOL"}
+# Cared output available at a steady-state collection.  These are deliberately the
+# plan-space conversion rates requested by the experiment, rather than fitted sales.
+ANIMAL_YIELD_PER_DAY = {"GOOSE": 4.0, "COW": 6.0, "SHEEP": 6.0}
+# (occupied tile-days, units) for one fully serviced crop block.
+CROP_CYCLE = {"STRAWBERRY": (17.0, 8.0), "MELON": (11.0, 6.0),
+              "CARROT": (4.0, 4.0), "TOMATO": (12.0, 4.0)}
+FINAL_STEP = 30 * 24 - 1
 
 
 def _has_extensions(plan: dict[str, Any]) -> bool:
     return any(k in plan for k in ("hands_by_day", "purchase_order", "tile_blocks",
-                                   "harvest_days", "fertilizer_mode", "routing_mode"))
+                                   "harvest_days", "fertilizer_mode", "routing_mode",
+                                   "supply_ratio", "wheat_tiles"))
 
 
 def _normalise_extensions(plan: dict[str, Any]) -> dict[str, Any]:
@@ -51,7 +62,104 @@ def _normalise_extensions(plan: dict[str, Any]) -> dict[str, Any]:
         p["fertilizer_mode"] = mode if mode in ("legacy", "sell_all", "no_buy") else "legacy"
     if "routing_mode" in p:
         p["routing_mode"] = "nearest" if p["routing_mode"] == "nearest" else "legacy"
+    if "supply_ratio" in p:
+        supplied = p.get("supply_ratio", {}) or {}
+        p["supply_ratio"] = {product: max(0.0, min(12.0, float(supplied.get(product, 0.0))))
+                             for product in RATIO_PRODUCTS}
+        p["wheat_tiles"] = max(0, min(100, int(p.get("wheat_tiles", 0))))
     return p
+
+
+def _ticks(start: int, end: int, interval: int) -> int:
+    """Number of inclusive interval boundaries in [start, end]."""
+    if start > end:
+        return 0
+    return end // interval - (start - 1) // interval
+
+
+def drain_forecast(obs: Any) -> dict[str, float]:
+    """Forecast average town absorption per remaining day from ``obs.town``.
+
+    At day 0 the unlock identities are unknowable: the observation contains an
+    empty list and the seed is intentionally hidden.  Each unrevealed slot is
+    therefore integrated over the engine's uniform eight-shop census.  Revealed
+    instances (including duplicates) replace that expectation exactly.  Calling
+    this every turn makes the forecast, and consequently capacity targets, react
+    as soon as a shop appears.
+    """
+    products = tuple(x for x in solve.PRODUCTS if x != "FERTILIZER")
+    step = int(obs.get("step", int(obs.get("day", 0)) * 24 + int(obs.get("hour", 0))))
+    step = max(0, min(FINAL_STEP, step))
+    shops = list((obs.get("town", {}) or {}).get("unlocked_shops", []) or [])
+    remaining_days = max(1.0 / 24.0, (FINAL_STEP - step + 1) / 24.0)
+    shop_ticks = _ticks(step, FINAL_STEP, 4)
+    total = {product: float(_ticks(step, FINAL_STEP, 24)) for product in products}
+
+    for shop in shops:
+        items = _SHOP_PRODUCTS.get(str(shop), ())
+        multiplier = 2 if len(items) == 1 else 1
+        for product in items:
+            total[product] += multiplier * shop_ticks
+
+    # One shop unlocks at the end of days 2,5,...,23.  Its identity is not in the
+    # observation until then, so use the exact uniform-with-replacement prior.
+    expected_per_draw = {product: 0.0 for product in products}
+    for items in _SHOP_PRODUCTS.values():
+        multiplier = 2 if len(items) == 1 else 1
+        for product in items:
+            expected_per_draw[product] += multiplier / len(_SHOP_PRODUCTS)
+    for index in range(len(shops), 8):
+        unlock_step = 3 * (index + 1) * 24
+        ticks = _ticks(max(step, unlock_step), FINAL_STEP, 4)
+        for product in products:
+            total[product] += ticks * expected_per_draw[product]
+    return {product: total[product] / remaining_days for product in products}
+
+
+def _revealed_drain_per_day(obs: Any) -> dict[str, float]:
+    """Exact current run-rate: centre plus only shop identities already visible."""
+    drain = {product: 1.0 for product in solve.PRODUCTS if product != "FERTILIZER"}
+    for shop in list((obs.get("town", {}) or {}).get("unlocked_shops", []) or []):
+        items = _SHOP_PRODUCTS.get(str(shop), ())
+        multiplier = 2 if len(items) == 1 else 1
+        for product in items:
+            drain[product] += 6.0 * multiplier
+    return drain
+
+
+_SHOP_PRODUCTS = {
+    "BAKERY": ("EGG", "WHEAT"),
+    "PIZZA_SHOP": ("MILK", "TOMATO", "WHEAT"),
+    "BRUNCH_SPOT": ("EGG", "WHEAT", "STRAWBERRY"),
+    "YARN_STORE": ("WOOL",),
+    "ICE_CREAM_SHOP": ("STRAWBERRY", "MILK", "WHEAT"),
+    "PET_CAFE": ("CARROT",),
+    "SMOOTHIE_SHOP": ("STRAWBERRY", "MILK"),
+    "FARMERS_MARKET": ("WHEAT", "CARROT", "TOMATO", "STRAWBERRY"),
+}
+
+
+def _ratio_capacity(plan: dict[str, Any], obs: Any) -> tuple[dict[str, int], dict[str, int], dict[str, float]]:
+    forecast = drain_forecast(obs)
+    revealed = _revealed_drain_per_day(obs)
+    ratios = plan["supply_ratio"]
+    day = int(obs.get("day", 0))
+    animal_targets = {}
+    for animal, product in ANIMAL_PRODUCT.items():
+        # Livestock cannot be sold, so unknown future shops are not capitalised.
+        # A newly revealed shop raises this exact run-rate on the next call.
+        required = int(math.ceil(revealed[product] * ratios[product] / ANIMAL_YIELD_PER_DAY[animal] - 1e-12))
+        timing = plan["animals"][animal]
+        if day < timing["start_day"] or timing["batch"] <= 0:
+            ramp = 0
+        else:
+            ramp = (1 + (day - timing["start_day"]) // timing["interval"]) * timing["batch"]
+        animal_targets[animal] = max(0, min(20, required, ramp))
+    crop_targets = {"WHEAT": int(plan.get("wheat_tiles", 0))}
+    for crop, (days, units) in CROP_CYCLE.items():
+        crop_targets[crop] = max(0, min(100, int(math.ceil(
+            forecast[crop] * ratios[crop] * days / units - 1e-12))))
+    return animal_targets, crop_targets, forecast
 
 
 def _xy_units(obs: Any) -> tuple[list[tuple[int, int]], list[dict[str, int]]]:
@@ -91,7 +199,8 @@ def _order_kind(order: list[Any]) -> str:
     return "other"
 
 
-def _prioritise_purchases(obs: Any, plan: dict[str, Any], orders: list[list[Any]]) -> list[list[Any]]:
+def _prioritise_purchases(obs: Any, plan: dict[str, Any], orders: list[list[Any]],
+                          ratio_targets: dict[str, int] | None = None) -> list[list[Any]]:
     if "purchase_order" not in plan or plan["purchase_order"] == ["legacy"]:
         return orders
     day, hour = int(obs.get("day", 0)), int(obs.get("hour", 0))
@@ -114,11 +223,11 @@ def _prioritise_purchases(obs: Any, plan: dict[str, Any], orders: list[list[Any]
         if day == 0:
             existing = {o[1] for o in augmented if len(o) >= 2 and o[0] == "BUY_ANIMAL"}
             for animal in solve.ANIMALS:
-                target = solve._animal_target(plan, animal, day)
+                target = (ratio_targets or {}).get(animal, solve._animal_target(plan, animal, day))
                 due = max(0, target - live[animal] - pending[animal])
                 if due and animal not in existing:
                     augmented.append(["BUY_ANIMAL", animal, min(4, due)])
-        if day == 0:
+        if day == 0 and "supply_ratio" not in plan:
             # Opening weights are exact counts, but the inherited buyer requests up
             # to its global seed cap and skips an unaffordable crop batch wholesale.
             # Replace that request with the plan's 25 explicit opening assignments.
@@ -221,6 +330,56 @@ def _rush_harvest(obs: Any, plan: dict[str, Any], action: dict[str, Any]) -> Non
     action["market"] = orders[:10]
 
 
+def _cap_ratio_planting(obs: Any, targets: dict[str, int], action: dict[str, Any]) -> None:
+    """Turn excess PLANT emissions into safe passes once a ratio block is full."""
+    player = int(obs["player"])
+    live = {crop: 0 for crop in targets}
+    for row in obs["farms"][player]["tiles"]:
+        for tile in row:
+            if isinstance(tile, dict) and tile.get("kind") == "PLANT" and tile.get("crop") in live:
+                live[tile["crop"]] += 1
+    acts = [action.get("farmer", ["PASS"])] + list(action.get("hands", []))
+    for index, act in enumerate(acts):
+        if act and act[0] == "PLANT":
+            crop = act[1] if len(act) > 1 else ""
+            if crop not in targets or live.get(crop, 0) >= targets.get(crop, 0):
+                acts[index] = ["PASS"]
+            else:
+                live[crop] += 1
+    action["farmer"], action["hands"] = acts[0], acts[1:]
+
+
+def _ratio_structure_actions(obs: Any, animal_targets: dict[str, int], action: dict[str, Any]) -> None:
+    """Ensure goose capacity is built as coops, not generic pastures."""
+    farm = obs["farms"][int(obs["player"])]
+    coops = 0
+    for row in farm["tiles"]:
+        for tile in row:
+            if isinstance(tile, dict) and tile.get("kind") == "COOP":
+                coops += 1
+    need = max(0, animal_targets.get("GOOSE", 0) - coops)
+    acts = [action.get("farmer", ["PASS"])] + list(action.get("hands", []))
+    for i, act in enumerate(acts):
+        if need and act and act[0] == "BUILD_PASTURE":
+            acts[i] = ["BUILD_COOP"]
+            need -= 1
+    action["farmer"], action["hands"] = acts[0], acts[1:]
+
+
+def _ratio_wheat_reserve(obs: Any, animal_targets: dict[str, int], action: dict[str, Any]) -> None:
+    reserve = sum(animal_targets.values()) + 5
+    shed = int(((obs.get("private", {}) or {}).get("shed", {}) or {}).get("WHEAT", 0))
+    orders = []
+    for order in action.get("market", []):
+        if len(order) >= 3 and order[0] == "SELL" and order[1] == "WHEAT":
+            qty = min(int(order[2]), max(0, shed - reserve))
+            if qty:
+                orders.append(["SELL", "WHEAT", qty])
+        else:
+            orders.append(order)
+    action["market"] = orders
+
+
 def load_agent(plan: dict[str, Any]):
     """Return a safe callable; v1-only plans use the original loader exactly."""
     if not _has_extensions(plan):
@@ -228,12 +387,39 @@ def load_agent(plan: dict[str, Any]):
     extended = _normalise_extensions(plan)
     legacy = {k: copy.deepcopy(v) for k, v in extended.items()
               if k not in ("hands_by_day", "purchase_order", "tile_blocks",
-                           "harvest_days", "fertilizer_mode", "routing_mode")}
+                           "harvest_days", "fertilizer_mode", "routing_mode",
+                           "supply_ratio", "wheat_tiles")}
     if "hands_by_day" in extended:
         legacy["hands_by_5day"] = [max(extended["hands_by_day"][i:i+5]) for i in range(0, 30, 5)]
     base = solve._load_parameterised_agent(legacy)
+    brain = next((cell.cell_contents for cell in (base.__closure__ or ())
+                  if hasattr(cell.cell_contents, "DayPlan")), None)
+    if brain is None:
+        raise RuntimeError("could not locate inherited brain module")
+    ratio_state: dict[str, Any] = {}
+    if "supply_ratio" in extended:
+        class RatioSeason:
+            @staticmethod
+            def plan_day(view):
+                targets = ratio_state["animals"]
+                crop_targets = ratio_state["crops"]
+                desired = {crop: float(target) for crop, target in crop_targets.items()
+                           if target > 0 and view.day <= extended["last_plant_day"].get(crop, -1)}
+                total = sum(desired.values()) or 1.0
+                weights = {crop: target / total for crop, target in desired.items()}
+                return brain.DayPlan(
+                    "opening" if view.day <= 9 else "days_10_16" if view.day <= 16 else
+                    "days_17_22" if view.day <= 22 else "days_23_26",
+                    extended["hands_by_day"][min(29, view.day)] if "hands_by_day" in extended
+                    else extended["hands_by_5day"][min(5, view.day // 5)],
+                    4, tuple(sorted(weights.items())), tuple(sorted(targets.items())),
+                    tuple(sorted(brain.RESERVATION.items())), view.day >= brain.LIQUIDATE_DAY,
+                    extended["cash_reserve"])
+
+        brain.register_module("season", "ratio", RatioSeason)
+        brain.config["modules"]["season"] = "ratio"
+
     if extended.get("routing_mode") == "nearest":
-        brain = base.__closure__[0].cell_contents
 
         def nearest_assign(positions, inventories, tasks):
             actions, available, pending = {}, set(range(len(positions))), list(range(len(tasks)))
@@ -257,7 +443,15 @@ def load_agent(plan: dict[str, Any]):
 
     def candidate(obs: Any, config: Any = None):
         try:
+            ratio_targets = None
+            crop_targets = None
+            if "supply_ratio" in extended:
+                ratio_targets, crop_targets, forecast = _ratio_capacity(extended, obs)
+                ratio_state.update(animals=ratio_targets, crops=crop_targets, forecast=forecast)
             action = base(obs, config)
+            if ratio_targets is not None:
+                _ratio_structure_actions(obs, ratio_targets, action)
+                _ratio_wheat_reserve(obs, ratio_targets, action)
             if "hands_by_day" in extended:
                 target = extended["hands_by_day"][min(29, int(obs.get("day", 0)))]
                 have = len(obs["farms"][int(obs["player"])].get("hands", []))
@@ -271,6 +465,8 @@ def load_agent(plan: dict[str, Any]):
                     kept.append(order)
                 action["market"] = kept
             _opening_blocks(obs, extended, action)
+            if crop_targets is not None:
+                _cap_ratio_planting(obs, crop_targets, action)
             _rush_harvest(obs, extended, action)
             if extended.get("fertilizer_mode") in ("sell_all", "no_buy"):
                 action["market"] = [o for o in action.get("market", [])
@@ -281,7 +477,7 @@ def load_agent(plan: dict[str, Any]):
                                     if not (len(o) >= 2 and o[0] == "SELL" and o[1] == "FERTILIZER")]
                 if qty:
                     action["market"].insert(0, ["SELL", "FERTILIZER", qty])
-            action["market"] = _prioritise_purchases(obs, extended, action.get("market", []))
+            action["market"] = _prioritise_purchases(obs, extended, action.get("market", []), ratio_targets)
             return action
         except Exception:
             try:
