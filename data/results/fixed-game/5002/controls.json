@@ -1,0 +1,13 @@
+{
+  "engine": "kaggle-environments 1.32.7",
+  "seed": 5002,
+  "seat": 0,
+  "opponent": "pass",
+  "recorded_at": "2026-09-08T13:17:42.932529+00:00",
+  "controls": {
+    "brain_strawberry": 110115.0,
+    "exec_b": 75349.0,
+    "V46": 154098.0,
+    "tapeselect": 146247.0
+  }
+}
