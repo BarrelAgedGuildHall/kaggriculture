@@ -284,17 +284,51 @@ def mutate(schedule, rng):
     return validate_schedule(out), earliest, kind
 
 
-def evaluate(schedule, instance_path, fertilizer_drain, incumbent=None, earliest=0):
-    controller = ReferenceExecutor(schedule, idle_fix=True, fertilizer_drain=fertilizer_drain,
-                                   fertilizer_threshold=10, animal_sweep=False)
-    if incumbent is None or earliest <= 0:
+def _controller(schedule, fertilizer_drain):
+    return ReferenceExecutor(schedule, idle_fix=True, fertilizer_drain=fertilizer_drain,
+                             fertilizer_threshold=10, animal_sweep=False)
+
+
+def _first_changed_day(controller, incumbent, earliest):
+    """Find the first day whose routed action differs, without stepping the engine."""
+    observations = incumbent["observations"]
+    start = min(29, max(0, int(earliest)))
+    first_turn = start * 24
+    if first_turn >= len(observations):
+        return None
+    controller._last_obs = copy.deepcopy(observations[first_turn])
+    for turn in range(first_turn, len(observations)):
+        action = controller.policy(observations[turn])
+        if action != incumbent["actions"][turn]:
+            return turn // 24
+    return None
+
+
+def evaluate(schedule, instance_path, fertilizer_drain, incumbent=None, earliest=0,
+             *, prefix_eval=True):
+    controller = _controller(schedule, fertilizer_drain)
+    changed_day = None
+    if prefix_eval and incumbent is not None:
+        # Positive mutation boundaries are already exact and avoid a redundant
+        # router pass.  Day-zero is conservative for several global-looking
+        # mutations, so discover their actual first changed action cheaply.
+        changed_day = int(earliest) if earliest > 0 else _first_changed_day(
+            controller, incumbent, earliest)
+        if changed_day is None:
+            return {"bank": incumbent["bank"], "curve": incumbent["curve"],
+                    "actions": incumbent["actions"], "observations": incumbent["observations"],
+                    "snapshots": incumbent["snapshots"], "sim": incumbent["sim"],
+                    "faults": controller.faults}
+        controller = _controller(schedule, fertilizer_drain)
+    if not prefix_eval or incumbent is None:
         sim = Sim(instance_path)
-        actions, snapshots, curve = [], {}, {}
+        actions, observations, snapshots, curve = [], [], {}, {}
     else:
         sim = incumbent["sim"]
-        start = min(29, max(0, int(earliest)))
+        start = changed_day
         sim.restore(incumbent["snapshots"][start])
         actions = list(incumbent["actions"][:start * 24])
+        observations = list(incumbent["observations"][:start * 24])
         snapshots = {day: snap for day, snap in incumbent["snapshots"].items() if day <= start}
         curve = {day: value for day, value in incumbent["curve"].items() if day < start}
         controller._last_obs = copy.deepcopy(sim.observation())
@@ -304,6 +338,7 @@ def evaluate(schedule, instance_path, fertilizer_drain, incumbent=None, earliest
         day, hour = int(obs["day"]), int(obs["hour"])
         if hour == 0 and day not in snapshots:
             snapshots[day] = sim.snapshot()
+        observations.append(obs)
         action = controller.policy(obs)
         actions.append(action)
         sim.step(action)
@@ -312,11 +347,12 @@ def evaluate(schedule, instance_path, fertilizer_drain, incumbent=None, earliest
             last_day = sim.day()
     padded = actions + [copy.deepcopy(PASS)] * (720 - len(actions))
     return {"bank": sim.bank(), "curve": curve, "actions": padded[:720],
+            "observations": observations,
             "snapshots": snapshots, "sim": sim, "faults": controller.faults}
 
 
 def worker_main(worker, start_schedule, eval_limit, deadline, started, seed, instance_path,
-                fertilizer_drain, temperature, top_k, result_queue):
+                fertilizer_drain, temperature, top_k, prefix_eval, result_queue):
     rng = random.Random(seed)
     family = start_schedule.get("family", f"worker_{worker}")
     incumbent_schedule = validate_schedule(start_schedule)
@@ -330,7 +366,8 @@ def worker_main(worker, start_schedule, eval_limit, deadline, started, seed, ins
         if time.time() >= deadline:
             break
         candidate_schedule, earliest, mutation = mutate(incumbent_schedule, rng)
-        candidate = evaluate(candidate_schedule, instance_path, fertilizer_drain, incumbent, earliest)
+        candidate = evaluate(candidate_schedule, instance_path, fertilizer_drain, incumbent, earliest,
+                             prefix_eval=prefix_eval)
         delta = candidate["bank"] - incumbent["bank"]
         fraction = max(0.0, min(1.0, (time.time() - started) / max(1.0, deadline - started)))
         temp = max(40.0, temperature * (1.0 - .85 * fraction))
@@ -371,6 +408,8 @@ def main():
     parser.add_argument("--tag", help="write to search-<tag> instead of search")
     parser.add_argument("--temperature", type=float, default=900.0)
     parser.add_argument("--top-k", type=int, default=6)
+    parser.add_argument("--prefix-eval", action=argparse.BooleanOptionalAction, default=True,
+                        help="restore the incumbent's exact day-start snapshot (default: enabled)")
     parser.add_argument("--start-schedule", type=Path,
                         help="optional incumbent schedule used as the primary start")
     args = parser.parse_args()
@@ -407,7 +446,7 @@ def main():
                                  args=(worker, starts[worker % len(starts)], per_worker,
                                        deadline, started, args.seed + 1009 * worker,
                                        str(instance_path), fertilizer_drain,
-                                       args.temperature, args.top_k, result_queue))
+                                       args.temperature, args.top_k, args.prefix_eval, result_queue))
                  for worker in range(args.workers)]
     for process in processes:
         process.start()
@@ -462,6 +501,7 @@ def main():
     summary = {"engine": "kaggle-environments 1.32.7", "seed": args.seed,
                "instance": str(instance_path), "evaluations": evaluations,
                "accepted_moves": accepted, "wall_seconds": wall, "workers": args.workers,
+               "prefix_evaluation": args.prefix_eval,
                "evaluations_per_minute": evaluations / max(wall / 60, 1e-9),
                "best_bank": best["bank"], "replay_bank": verified,
                "winning_family": best["family"], "family_best": family_summary,

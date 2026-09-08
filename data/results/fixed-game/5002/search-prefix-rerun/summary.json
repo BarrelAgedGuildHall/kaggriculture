@@ -1,0 +1,163 @@
+{
+  "engine": "kaggle-environments 1.32.7",
+  "seed": 5002,
+  "instance": "C:\\Guildhall\\guilds\\kaggler\\workshop\\repo\\data\\results\\fixed-game\\5002\\instance.json",
+  "evaluations": 4081,
+  "accepted_moves": 1592,
+  "wall_seconds": 1503.5571131706238,
+  "workers": 4,
+  "prefix_evaluation": true,
+  "evaluations_per_minute": 162.85380705203266,
+  "best_bank": 100016.0,
+  "replay_bank": 100016.0,
+  "winning_family": "round2_incumbent",
+  "family_best": {
+    "goose_carrot_sheep": {
+      "bank": 69687.0,
+      "worker": 1
+    },
+    "mixed": {
+      "bank": 90046.0,
+      "worker": 3
+    },
+    "round2_incumbent": {
+      "bank": 100016.0,
+      "worker": 0
+    },
+    "tomato_carrot_crop": {
+      "bank": 90026.0,
+      "worker": 2
+    }
+  },
+  "best_so_far_minutes": {
+    "5": 97844.0,
+    "10": 97844.0,
+    "20": 99803.0,
+    "30": 100016.0
+  },
+  "best_events": [
+    {
+      "elapsed_seconds": 2.193474292755127,
+      "bank": 95681.0,
+      "family": "round2_incumbent",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 39.960126638412476,
+      "bank": 95984.0,
+      "family": "round2_incumbent",
+      "evaluations": 101
+    },
+    {
+      "elapsed_seconds": 69.42132234573364,
+      "bank": 96203.0,
+      "family": "round2_incumbent",
+      "evaluations": 190
+    },
+    {
+      "elapsed_seconds": 78.06224942207336,
+      "bank": 96233.0,
+      "family": "round2_incumbent",
+      "evaluations": 212
+    },
+    {
+      "elapsed_seconds": 117.8989486694336,
+      "bank": 96666.0,
+      "family": "round2_incumbent",
+      "evaluations": 316
+    },
+    {
+      "elapsed_seconds": 147.98489999771118,
+      "bank": 97427.0,
+      "family": "round2_incumbent",
+      "evaluations": 393
+    },
+    {
+      "elapsed_seconds": 233.36488509178162,
+      "bank": 97813.0,
+      "family": "round2_incumbent",
+      "evaluations": 626
+    },
+    {
+      "elapsed_seconds": 255.70473670959473,
+      "bank": 97844.0,
+      "family": "round2_incumbent",
+      "evaluations": 688
+    },
+    {
+      "elapsed_seconds": 718.306782245636,
+      "bank": 97855.0,
+      "family": "round2_incumbent",
+      "evaluations": 1946
+    },
+    {
+      "elapsed_seconds": 776.2520976066589,
+      "bank": 98026.0,
+      "family": "round2_incumbent",
+      "evaluations": 2108
+    },
+    {
+      "elapsed_seconds": 1033.5599043369293,
+      "bank": 98195.0,
+      "family": "round2_incumbent",
+      "evaluations": 2811
+    },
+    {
+      "elapsed_seconds": 1041.5608024597168,
+      "bank": 98692.0,
+      "family": "round2_incumbent",
+      "evaluations": 2834
+    },
+    {
+      "elapsed_seconds": 1132.3724746704102,
+      "bank": 99803.0,
+      "family": "round2_incumbent",
+      "evaluations": 3085
+    },
+    {
+      "elapsed_seconds": 1369.8670089244843,
+      "bank": 99860.0,
+      "family": "round2_incumbent",
+      "evaluations": 3731
+    },
+    {
+      "elapsed_seconds": 1438.6492240428925,
+      "bank": 100016.0,
+      "family": "round2_incumbent",
+      "evaluations": 3914
+    }
+  ],
+  "best_curve": {
+    "0": 606.0,
+    "1": 673.0,
+    "2": 633.0,
+    "3": 288.0,
+    "4": 265.0,
+    "5": 366.0,
+    "6": 192.0,
+    "7": 202.0,
+    "8": 163.0,
+    "9": 380.0,
+    "10": 3550.0,
+    "11": 2460.0,
+    "12": 13823.0,
+    "13": 13360.0,
+    "14": 21098.0,
+    "15": 20650.0,
+    "16": 27104.0,
+    "17": 27090.0,
+    "18": 38930.0,
+    "19": 43526.0,
+    "20": 48211.0,
+    "21": 48291.0,
+    "22": 62210.0,
+    "23": 62555.0,
+    "24": 72372.0,
+    "25": 76376.0,
+    "26": 76123.0,
+    "27": 88218.0,
+    "28": 94042.0,
+    "29": 100016.0
+  },
+  "faults": 0
+}

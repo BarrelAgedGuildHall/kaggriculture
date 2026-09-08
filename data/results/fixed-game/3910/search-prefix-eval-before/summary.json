@@ -1,0 +1,103 @@
+{
+  "engine": "kaggle-environments 1.32.7",
+  "seed": 3910,
+  "instance": "C:\\Guildhall\\guilds\\kaggler\\workshop\\repo\\data\\results\\fixed-game\\3910\\instance.json",
+  "evaluations": 1182,
+  "accepted_moves": 426,
+  "wall_seconds": 603.9194605350494,
+  "workers": 4,
+  "prefix_evaluation": false,
+  "evaluations_per_minute": 117.43287745218147,
+  "best_bank": 139432.0,
+  "replay_bank": 139432.0,
+  "winning_family": "round2_incumbent",
+  "family_best": {
+    "goose_carrot_sheep": {
+      "bank": 43713.0,
+      "worker": 1
+    },
+    "mixed": {
+      "bank": 100623.0,
+      "worker": 3
+    },
+    "round2_incumbent": {
+      "bank": 139432.0,
+      "worker": 0
+    },
+    "tomato_carrot_crop": {
+      "bank": 99691.0,
+      "worker": 2
+    }
+  },
+  "best_so_far_minutes": {
+    "5": 139432.0,
+    "10": 139432.0,
+    "20": 139432.0,
+    "30": 139432.0
+  },
+  "best_events": [
+    {
+      "elapsed_seconds": 2.502608299255371,
+      "bank": 75572.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 2.52274751663208,
+      "bank": 85936.0,
+      "family": "mixed",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 2.5767555236816406,
+      "bank": 139281.0,
+      "family": "round2_incumbent",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 17.65439486503601,
+      "bank": 139288.0,
+      "family": "round2_incumbent",
+      "evaluations": 31
+    },
+    {
+      "elapsed_seconds": 41.51740336418152,
+      "bank": 139432.0,
+      "family": "round2_incumbent",
+      "evaluations": 78
+    }
+  ],
+  "best_curve": {
+    "0": 312.0,
+    "1": 193.0,
+    "2": 191.0,
+    "3": 202.0,
+    "4": 931.0,
+    "5": 397.0,
+    "6": 1284.0,
+    "7": 181.0,
+    "8": 574.0,
+    "9": 1509.0,
+    "10": 7862.0,
+    "11": 7191.0,
+    "12": 18942.0,
+    "13": 16080.0,
+    "14": 27184.0,
+    "15": 27250.0,
+    "16": 37914.0,
+    "17": 38372.0,
+    "18": 51427.0,
+    "19": 57086.0,
+    "20": 71984.0,
+    "21": 71698.0,
+    "22": 88582.0,
+    "23": 87899.0,
+    "24": 97567.0,
+    "25": 104514.0,
+    "26": 103460.0,
+    "27": 115932.0,
+    "28": 122310.0,
+    "29": 139432.0
+  },
+  "faults": 0
+}

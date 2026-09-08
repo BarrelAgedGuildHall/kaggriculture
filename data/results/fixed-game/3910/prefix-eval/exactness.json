@@ -1,0 +1,22 @@
+{
+  "engine": "kaggle-environments 1.32.7",
+  "seed": 3910,
+  "schedule": "C:\\Guildhall\\guilds\\kaggler\\workshop\\repo\\data\\results\\fixed-game\\3910\\search-round3-yardstick\\best-schedule.json",
+  "schedule_hash": "b43039248d34a497",
+  "random_seed": 943910,
+  "exact": 50,
+  "total": 50,
+  "passed": true,
+  "mutation_kinds": {
+    "purchase": 6,
+    "swap_block_positions": 7,
+    "sale_policy": 1,
+    "animal_count": 8,
+    "hands_profile": 8,
+    "shift_block_day": 7,
+    "recrop_block": 8,
+    "herd_shift": 5
+  },
+  "failures": [],
+  "wall_seconds": 153.8385033607483
+}
