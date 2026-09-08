@@ -70,7 +70,7 @@ Realised revenue: **$147,356**.
 | balanced husbandry | 5000 | $114,126 | -$12,484 | 3,397 | 1,996 | 1,130 | 0 | 1.491 |
 | balanced husbandry | 5001 | $130,730 | -$5,772 | 3,890 | 2,209 | 906 | 0 | 1.551 |
 
-Kept router: **baseline**. Default travel router: **baseline**. Regression gate: **0/7 passed**. Target delta: **+$0 / +$8,000**.
+Kept router: **baseline**. Default travel router: **baseline**. No-regression gate: **1/9 passed**. Travel-improvement + no-regression gate: **0/9 passed**. Target delta: **+$0 / +$8,000**.
 
 ## 3910 search
 
