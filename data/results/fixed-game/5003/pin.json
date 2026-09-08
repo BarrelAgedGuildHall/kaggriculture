@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "seed": 5003,
+  "source": "unmodified engine pass/pass run",
+  "shop_unlocks": [
+    {
+      "day": 3,
+      "shop": "PIZZA_SHOP",
+      "products": [
+        "MILK",
+        "TOMATO",
+        "WHEAT"
+      ]
+    },
+    {
+      "day": 6,
+      "shop": "PET_CAFE",
+      "products": [
+        "CARROT"
+      ]
+    },
+    {
+      "day": 9,
+      "shop": "BAKERY",
+      "products": [
+        "EGG",
+        "WHEAT"
+      ]
+    },
+    {
+      "day": 12,
+      "shop": "ICE_CREAM_SHOP",
+      "products": [
+        "STRAWBERRY",
+        "MILK",
+        "WHEAT"
+      ]
+    },
+    {
+      "day": 15,
+      "shop": "BAKERY",
+      "products": [
+        "EGG",
+        "WHEAT"
+      ]
+    },
+    {
+      "day": 18,
+      "shop": "YARN_STORE",
+      "products": [
+        "WOOL"
+      ]
+    },
+    {
+      "day": 21,
+      "shop": "BAKERY",
+      "products": [
+        "EGG",
+        "WHEAT"
+      ]
+    },
+    {
+      "day": 24,
+      "shop": "BAKERY",
+      "products": [
+        "EGG",
+        "WHEAT"
+      ]
+    }
+  ],
+  "semantics": "run original end-of-day including weed RNG and original choice, then replace only a newly appended shop with this list's shop for that unlock day"
+}

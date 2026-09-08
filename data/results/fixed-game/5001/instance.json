@@ -1,0 +1,2065 @@
+{
+  "schema_version": 1,
+  "seed": 5001,
+  "seat": 0,
+  "opponent": "pass",
+  "engine": {
+    "package": "kaggle-environments",
+    "version": "1.32.7",
+    "environment": "kaggriculture",
+    "module_version": "0.1.0",
+    "source_path": "C:\\Guildhall\\guilds\\kaggler\\workshop\\repo\\.venv\\Lib\\site-packages\\kaggle_environments\\envs\\kaggriculture\\kaggriculture.py",
+    "source_sha256": "bc8a54879ef02c7ea64b8b333d6a976f0ea65c4949149d01f463f23bccee653e",
+    "ground_truth": true
+  },
+  "configuration": {
+    "episodeSteps": 720,
+    "actTimeout": 1,
+    "runTimeout": 1200,
+    "boardSize": 10,
+    "startingMoney": 3000,
+    "maxMarketOrdersPerTurn": 10,
+    "turnsPerDay": 24,
+    "shedCapacity": 100,
+    "weedSpawnChance": 0.005,
+    "townShopUnlockInterval": 3,
+    "townShopSellInterval": 4,
+    "townCenterSellInterval": 24,
+    "farmHandCostMult": 1,
+    "marketParams": {}
+  },
+  "map": {
+    "width": 10,
+    "height": 10,
+    "coordinate_system": "(x,y), origin NW, x east, y south",
+    "quadrants": {
+      "NW": {
+        "owned": true,
+        "price": 0
+      },
+      "NE": {
+        "owned": false,
+        "price": 1000
+      },
+      "SW": {
+        "owned": false,
+        "price": 2000
+      },
+      "SE": {
+        "owned": false,
+        "price": 4000
+      }
+    },
+    "land_unlock_order": [
+      "NE",
+      "SW",
+      "SE"
+    ],
+    "shed": {
+      "type": "non-tile central facility",
+      "access_tiles": [
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          5
+        ]
+      ],
+      "capacity": 100
+    },
+    "market": {
+      "type": "non-spatial; orders require no unit position or unit action"
+    },
+    "water": {
+      "type": "non-spatial; WATER requires only standing on the plant and consumes no inventory"
+    },
+    "tiles": [
+      {
+        "x": 0,
+        "y": 0,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 2,
+        "y": 0,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 3,
+        "y": 0,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 5,
+        "y": 0,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 6,
+        "y": 0,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 7,
+        "y": 0,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 8,
+        "y": 0,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 9,
+        "y": 0,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 6,
+        "y": 1,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 7,
+        "y": 1,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 8,
+        "y": 1,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 9,
+        "y": 1,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 2,
+        "y": 2,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 3,
+        "y": 2,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 4,
+        "y": 2,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 6,
+        "y": 2,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 7,
+        "y": 2,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 8,
+        "y": 2,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 9,
+        "y": 2,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 2,
+        "y": 3,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 3,
+        "y": 3,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 4,
+        "y": 3,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 6,
+        "y": 3,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 7,
+        "y": 3,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 8,
+        "y": 3,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 9,
+        "y": 3,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 2,
+        "y": 4,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 3,
+        "y": 4,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 4,
+        "y": 4,
+        "quadrant": "NW",
+        "initial_type": "EMPTY",
+        "initially_owned": true,
+        "land_unlock_cost": 0
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 6,
+        "y": 4,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 7,
+        "y": 4,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 8,
+        "y": 4,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 9,
+        "y": 4,
+        "quadrant": "NE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 1000
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 6,
+        "y": 5,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 7,
+        "y": 5,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 8,
+        "y": 5,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 9,
+        "y": 5,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 0,
+        "y": 6,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 1,
+        "y": 6,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 2,
+        "y": 6,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 3,
+        "y": 6,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 4,
+        "y": 6,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 5,
+        "y": 6,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 6,
+        "y": 6,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 7,
+        "y": 6,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 8,
+        "y": 6,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 9,
+        "y": 6,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 0,
+        "y": 7,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 1,
+        "y": 7,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 2,
+        "y": 7,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 3,
+        "y": 7,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 4,
+        "y": 7,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 5,
+        "y": 7,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 6,
+        "y": 7,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 7,
+        "y": 7,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 8,
+        "y": 7,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 9,
+        "y": 7,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 0,
+        "y": 8,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 1,
+        "y": 8,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 2,
+        "y": 8,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 3,
+        "y": 8,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 4,
+        "y": 8,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 5,
+        "y": 8,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 6,
+        "y": 8,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 7,
+        "y": 8,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 8,
+        "y": 8,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 9,
+        "y": 8,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 0,
+        "y": 9,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 1,
+        "y": 9,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 2,
+        "y": 9,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 3,
+        "y": 9,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 4,
+        "y": 9,
+        "quadrant": "SW",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 2000
+      },
+      {
+        "x": 5,
+        "y": 9,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 6,
+        "y": 9,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 7,
+        "y": 9,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 8,
+        "y": 9,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      },
+      {
+        "x": 9,
+        "y": 9,
+        "quadrant": "SE",
+        "initial_type": "LOCKED",
+        "initially_owned": false,
+        "land_unlock_cost": 4000
+      }
+    ]
+  },
+  "calendar": {
+    "days": 30,
+    "turns_per_day": 24,
+    "recorded_steps": 720,
+    "action_transitions": 719,
+    "day_boundary_after_hours": 24,
+    "per_turn_order": [
+      "seat unit actions",
+      "market queues",
+      "town consumption if cadence fires",
+      "plant decay",
+      "end-of-day refresh if hour 23",
+      "advance day/hour"
+    ],
+    "end_of_day_order": [
+      "refresh plants",
+      "refresh animals",
+      "roll weeds on each empty unlocked tile",
+      "drop inventories to shed (overflow discarded)",
+      "despawn hands/reset farmer",
+      "unlock shop on days 3,6,...,24"
+    ]
+  },
+  "town": {
+    "shops": {
+      "BAKERY": [
+        "EGG",
+        "WHEAT"
+      ],
+      "PIZZA_SHOP": [
+        "MILK",
+        "TOMATO",
+        "WHEAT"
+      ],
+      "BRUNCH_SPOT": [
+        "EGG",
+        "WHEAT",
+        "STRAWBERRY"
+      ],
+      "YARN_STORE": [
+        "WOOL"
+      ],
+      "ICE_CREAM_SHOP": [
+        "STRAWBERRY",
+        "MILK",
+        "WHEAT"
+      ],
+      "PET_CAFE": [
+        "CARROT"
+      ],
+      "SMOOTHIE_SHOP": [
+        "STRAWBERRY",
+        "MILK"
+      ],
+      "FARMERS_MARKET": [
+        "WHEAT",
+        "CARROT",
+        "TOMATO",
+        "STRAWBERRY"
+      ]
+    },
+    "shop_unlocks": [
+      {
+        "day": 3,
+        "shop": "YARN_STORE",
+        "products": [
+          "WOOL"
+        ]
+      },
+      {
+        "day": 6,
+        "shop": "BRUNCH_SPOT",
+        "products": [
+          "EGG",
+          "WHEAT",
+          "STRAWBERRY"
+        ]
+      },
+      {
+        "day": 9,
+        "shop": "YARN_STORE",
+        "products": [
+          "WOOL"
+        ]
+      },
+      {
+        "day": 12,
+        "shop": "BRUNCH_SPOT",
+        "products": [
+          "EGG",
+          "WHEAT",
+          "STRAWBERRY"
+        ]
+      },
+      {
+        "day": 15,
+        "shop": "PET_CAFE",
+        "products": [
+          "CARROT"
+        ]
+      },
+      {
+        "day": 18,
+        "shop": "BAKERY",
+        "products": [
+          "EGG",
+          "WHEAT"
+        ]
+      },
+      {
+        "day": 21,
+        "shop": "SMOOTHIE_SHOP",
+        "products": [
+          "STRAWBERRY",
+          "MILK"
+        ]
+      },
+      {
+        "day": 24,
+        "shop": "FARMERS_MARKET",
+        "products": [
+          "WHEAT",
+          "CARROT",
+          "TOMATO",
+          "STRAWBERRY"
+        ]
+      }
+    ],
+    "draw_with_replacement": true,
+    "shop_ticks_per_day": 6,
+    "single_product_shop_multiplier": 2,
+    "center_products": [
+      "WHEAT",
+      "CARROT",
+      "TOMATO",
+      "STRAWBERRY",
+      "MELON",
+      "EGG",
+      "MILK",
+      "WOOL"
+    ],
+    "center_units_per_day": 1,
+    "daily_drain": [
+      {
+        "day": 0,
+        "active_shops": [],
+        "drain": {
+          "WHEAT": 1,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 1,
+          "MELON": 1,
+          "EGG": 1,
+          "MILK": 1,
+          "WOOL": 1,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 1,
+        "active_shops": [],
+        "drain": {
+          "WHEAT": 1,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 1,
+          "MELON": 1,
+          "EGG": 1,
+          "MILK": 1,
+          "WOOL": 1,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 2,
+        "active_shops": [],
+        "drain": {
+          "WHEAT": 1,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 1,
+          "MELON": 1,
+          "EGG": 1,
+          "MILK": 1,
+          "WOOL": 1,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 3,
+        "active_shops": [
+          "YARN_STORE"
+        ],
+        "drain": {
+          "WHEAT": 1,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 1,
+          "MELON": 1,
+          "EGG": 1,
+          "MILK": 1,
+          "WOOL": 13,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 4,
+        "active_shops": [
+          "YARN_STORE"
+        ],
+        "drain": {
+          "WHEAT": 1,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 1,
+          "MELON": 1,
+          "EGG": 1,
+          "MILK": 1,
+          "WOOL": 13,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 5,
+        "active_shops": [
+          "YARN_STORE"
+        ],
+        "drain": {
+          "WHEAT": 1,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 1,
+          "MELON": 1,
+          "EGG": 1,
+          "MILK": 1,
+          "WOOL": 13,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 6,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT"
+        ],
+        "drain": {
+          "WHEAT": 7,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 7,
+          "MELON": 1,
+          "EGG": 7,
+          "MILK": 1,
+          "WOOL": 13,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 7,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT"
+        ],
+        "drain": {
+          "WHEAT": 7,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 7,
+          "MELON": 1,
+          "EGG": 7,
+          "MILK": 1,
+          "WOOL": 13,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 8,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT"
+        ],
+        "drain": {
+          "WHEAT": 7,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 7,
+          "MELON": 1,
+          "EGG": 7,
+          "MILK": 1,
+          "WOOL": 13,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 9,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE"
+        ],
+        "drain": {
+          "WHEAT": 7,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 7,
+          "MELON": 1,
+          "EGG": 7,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 10,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE"
+        ],
+        "drain": {
+          "WHEAT": 7,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 7,
+          "MELON": 1,
+          "EGG": 7,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 11,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE"
+        ],
+        "drain": {
+          "WHEAT": 7,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 7,
+          "MELON": 1,
+          "EGG": 7,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 12,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT"
+        ],
+        "drain": {
+          "WHEAT": 13,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 13,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 13,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT"
+        ],
+        "drain": {
+          "WHEAT": 13,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 13,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 14,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT"
+        ],
+        "drain": {
+          "WHEAT": 13,
+          "CARROT": 1,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 13,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 15,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE"
+        ],
+        "drain": {
+          "WHEAT": 13,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 13,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 16,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE"
+        ],
+        "drain": {
+          "WHEAT": 13,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 13,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 17,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE"
+        ],
+        "drain": {
+          "WHEAT": 13,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 13,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 18,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY"
+        ],
+        "drain": {
+          "WHEAT": 19,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 19,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY"
+        ],
+        "drain": {
+          "WHEAT": 19,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 20,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY"
+        ],
+        "drain": {
+          "WHEAT": 19,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 13,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 1,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 21,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP"
+        ],
+        "drain": {
+          "WHEAT": 19,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 19,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 22,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP"
+        ],
+        "drain": {
+          "WHEAT": 19,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 19,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 23,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP"
+        ],
+        "drain": {
+          "WHEAT": 19,
+          "CARROT": 13,
+          "TOMATO": 1,
+          "STRAWBERRY": 19,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 24,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP",
+          "FARMERS_MARKET"
+        ],
+        "drain": {
+          "WHEAT": 25,
+          "CARROT": 19,
+          "TOMATO": 7,
+          "STRAWBERRY": 25,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 25,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP",
+          "FARMERS_MARKET"
+        ],
+        "drain": {
+          "WHEAT": 25,
+          "CARROT": 19,
+          "TOMATO": 7,
+          "STRAWBERRY": 25,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 26,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP",
+          "FARMERS_MARKET"
+        ],
+        "drain": {
+          "WHEAT": 25,
+          "CARROT": 19,
+          "TOMATO": 7,
+          "STRAWBERRY": 25,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 27,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP",
+          "FARMERS_MARKET"
+        ],
+        "drain": {
+          "WHEAT": 25,
+          "CARROT": 19,
+          "TOMATO": 7,
+          "STRAWBERRY": 25,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 28,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP",
+          "FARMERS_MARKET"
+        ],
+        "drain": {
+          "WHEAT": 25,
+          "CARROT": 19,
+          "TOMATO": 7,
+          "STRAWBERRY": 25,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      },
+      {
+        "day": 29,
+        "active_shops": [
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "YARN_STORE",
+          "BRUNCH_SPOT",
+          "PET_CAFE",
+          "BAKERY",
+          "SMOOTHIE_SHOP",
+          "FARMERS_MARKET"
+        ],
+        "drain": {
+          "WHEAT": 25,
+          "CARROT": 19,
+          "TOMATO": 7,
+          "STRAWBERRY": 25,
+          "MELON": 1,
+          "EGG": 19,
+          "MILK": 7,
+          "WOOL": 25,
+          "FERTILIZER": 0
+        }
+      }
+    ],
+    "rng_coupling": "_end_of_day seeds random.Random((seed*1_000_003)^day), passes it through _spawn_weeds (one draw per empty unlocked tile), then rng.choice(sorted(SHOPS)); occupancy changes RNG position before choice",
+    "pin_semantics": "run original end-of-day including weed RNG and original choice, then replace only a newly appended shop with this list's shop for that unlock day"
+  },
+  "market": {
+    "initial_inventory_each_product": 10000,
+    "starting_prices_are_base": true,
+    "products": {
+      "WHEAT": {
+        "base": 25,
+        "I0": 10000,
+        "T": 400,
+        "below_func": "sqrt",
+        "below_target": 0.8,
+        "above_func": "log",
+        "above_target": 0.2,
+        "floor": 1,
+        "below_amplitude": 1.0,
+        "above_amplitude": 0.8341728689179748,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      },
+      "CARROT": {
+        "base": 35,
+        "I0": 10000,
+        "T": 450,
+        "below_func": "hinge",
+        "below_target": 1.0,
+        "above_func": "sqrt",
+        "above_target": 0.7,
+        "floor": 1,
+        "below_amplitude": 35.0,
+        "above_amplitude": 1.1549410759380276,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      },
+      "TOMATO": {
+        "base": 60,
+        "I0": 10000,
+        "T": 200,
+        "below_func": "hinge",
+        "below_target": 0.4,
+        "above_func": "sqrt",
+        "above_target": 0.6,
+        "floor": 1,
+        "below_amplitude": 24.0,
+        "above_amplitude": 2.545584412271571,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      },
+      "STRAWBERRY": {
+        "base": 120,
+        "I0": 10000,
+        "T": 100,
+        "below_func": "sqrt",
+        "below_target": 0.7,
+        "above_func": "linear",
+        "above_target": 1.6,
+        "floor": 1,
+        "below_amplitude": 8.4,
+        "above_amplitude": 1.92,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      },
+      "MELON": {
+        "base": 250,
+        "I0": 10000,
+        "T": 300,
+        "below_func": "log",
+        "below_target": 0.2,
+        "above_func": "sq",
+        "above_target": 3.6,
+        "floor": 1,
+        "below_amplitude": 8.761001221377331,
+        "above_amplitude": 0.01,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      },
+      "EGG": {
+        "base": 50,
+        "I0": 10000,
+        "T": 332,
+        "below_func": "hinge",
+        "below_target": 0.4,
+        "above_func": "log",
+        "above_target": 0.2,
+        "floor": 1,
+        "below_amplitude": 20.0,
+        "above_amplitude": 1.721720845735255,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      },
+      "MILK": {
+        "base": 160,
+        "I0": 10000,
+        "T": 122,
+        "below_func": "sqrt",
+        "below_target": 0.6,
+        "above_func": "linear",
+        "above_target": 1.6,
+        "floor": 1,
+        "below_amplitude": 8.69143162008178,
+        "above_amplitude": 2.098360655737705,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      },
+      "WOOL": {
+        "base": 200,
+        "I0": 10000,
+        "T": 105,
+        "below_func": "log",
+        "below_target": 0.2,
+        "above_func": "sq",
+        "above_target": 3.2,
+        "floor": 1,
+        "below_amplitude": 8.577360868828098,
+        "above_amplitude": 0.058049886621315196,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      },
+      "FERTILIZER": {
+        "base": 100,
+        "I0": 10000,
+        "T": 200,
+        "below_func": "linear",
+        "below_target": 0.4,
+        "above_func": "linear",
+        "above_target": 0.4,
+        "floor": 1,
+        "below_amplitude": 0.2,
+        "above_amplitude": 0.2,
+        "exact_formula": "max(1, round(base + below_amplitude*f(I0-inventory))) if inventory<I0; max(1, round(base - above_amplitude*f(inventory-I0))) otherwise",
+        "shape_definitions": {
+          "linear": "x",
+          "sq": "x^2",
+          "sqrt": "sqrt(x)",
+          "log": "ln(1+x)",
+          "log10": "log10(1+x)",
+          "hinge": "u + 8*max(0,u-1)^2, u=x/T"
+        }
+      }
+    },
+    "sales_at_floor_do_not_add_supply": true,
+    "buyable_products": [
+      "WHEAT",
+      "FERTILIZER"
+    ],
+    "order_slots_per_turn": 10,
+    "quantity_per_order": "unbounded integer, processed one unit at a time until unaffordable/unavailable",
+    "seat_resolution": "unit lockstep; both seats quote against same pre-commit inventory"
+  },
+  "crops": {
+    "WHEAT": {
+      "seed": 10,
+      "first_yield_day": 2,
+      "max_yield_day": 4,
+      "interval": 0,
+      "max_yield": 6,
+      "ongoing": false,
+      "structure_cost": 0,
+      "plant_action_cost_turns": 1,
+      "water_action_cost_turns": 1,
+      "harvest_action_cost_turns": 1,
+      "fertilize_action_cost_turns": 1,
+      "water_survival": "planting day starts unwatered; two consecutive unwatered end-of-days turns it into WEED",
+      "fertilizer_effect": "one unit covers current day through day+2; on a watered bonus/production day adds one extra yield unit",
+      "rot": "one-time: decay begins (planted_day+max_yield_day+1)*24; ongoing: one day after fourth scheduled production; then -1 held unit every 2 turns until WEED"
+    },
+    "CARROT": {
+      "seed": 20,
+      "first_yield_day": 2,
+      "max_yield_day": 3,
+      "interval": 0,
+      "max_yield": 4,
+      "ongoing": false,
+      "structure_cost": 0,
+      "plant_action_cost_turns": 1,
+      "water_action_cost_turns": 1,
+      "harvest_action_cost_turns": 1,
+      "fertilize_action_cost_turns": 1,
+      "water_survival": "planting day starts unwatered; two consecutive unwatered end-of-days turns it into WEED",
+      "fertilizer_effect": "one unit covers current day through day+2; on a watered bonus/production day adds one extra yield unit",
+      "rot": "one-time: decay begins (planted_day+max_yield_day+1)*24; ongoing: one day after fourth scheduled production; then -1 held unit every 2 turns until WEED"
+    },
+    "TOMATO": {
+      "seed": 50,
+      "first_yield_day": 8,
+      "max_yield_day": 8,
+      "interval": 1,
+      "max_yield": 4,
+      "ongoing": true,
+      "structure_cost": 0,
+      "plant_action_cost_turns": 1,
+      "water_action_cost_turns": 1,
+      "harvest_action_cost_turns": 1,
+      "fertilize_action_cost_turns": 1,
+      "water_survival": "planting day starts unwatered; two consecutive unwatered end-of-days turns it into WEED",
+      "fertilizer_effect": "one unit covers current day through day+2; on a watered bonus/production day adds one extra yield unit",
+      "rot": "one-time: decay begins (planted_day+max_yield_day+1)*24; ongoing: one day after fourth scheduled production; then -1 held unit every 2 turns until WEED"
+    },
+    "STRAWBERRY": {
+      "seed": 100,
+      "first_yield_day": 10,
+      "max_yield_day": 10,
+      "interval": 2,
+      "max_yield": 4,
+      "ongoing": true,
+      "structure_cost": 0,
+      "plant_action_cost_turns": 1,
+      "water_action_cost_turns": 1,
+      "harvest_action_cost_turns": 1,
+      "fertilize_action_cost_turns": 1,
+      "water_survival": "planting day starts unwatered; two consecutive unwatered end-of-days turns it into WEED",
+      "fertilizer_effect": "one unit covers current day through day+2; on a watered bonus/production day adds one extra yield unit",
+      "rot": "one-time: decay begins (planted_day+max_yield_day+1)*24; ongoing: one day after fourth scheduled production; then -1 held unit every 2 turns until WEED"
+    },
+    "MELON": {
+      "seed": 80,
+      "first_yield_day": 10,
+      "max_yield_day": 12,
+      "interval": 0,
+      "max_yield": 6,
+      "ongoing": false,
+      "structure_cost": 0,
+      "plant_action_cost_turns": 1,
+      "water_action_cost_turns": 1,
+      "harvest_action_cost_turns": 1,
+      "fertilize_action_cost_turns": 1,
+      "water_survival": "planting day starts unwatered; two consecutive unwatered end-of-days turns it into WEED",
+      "fertilizer_effect": "one unit covers current day through day+2; on a watered bonus/production day adds one extra yield unit",
+      "rot": "one-time: decay begins (planted_day+max_yield_day+1)*24; ongoing: one day after fourth scheduled production; then -1 held unit every 2 turns until WEED"
+    }
+  },
+  "animals": {
+    "GOOSE": {
+      "cost": 300,
+      "structure": "COOP",
+      "first_yield_day": 4,
+      "interval": 1,
+      "max_held": 4,
+      "product": "EGG",
+      "structure_cost": 0,
+      "build_action_cost_turns": 1,
+      "pickup_action_cost_turns": 1,
+      "place_action_cost_turns": 1,
+      "feed_per_day": {
+        "WHEAT": 1
+      },
+      "feed_action_cost_turns": 1,
+      "care_action_cost_turns": 1,
+      "harvest_action_cost_turns": 1,
+      "fertilizer_per_surviving_animal_per_day": 1,
+      "fertilizer_storage_on_tile": 1,
+      "care_bonus": "fed+cared end-of-day banks +1; all banked bonus is added to next fed scheduled yield then reset, subject to max_held",
+      "fed_and_cared_yield_ramp_if_harvested_each_tick": {
+        "first_production_units": 4,
+        "later_production_units": 2,
+        "explanation": "production consumes care bank before the current day's care is banked"
+      },
+      "escape": "two consecutive unfed end-of-days removes animal and leaves its structure"
+    },
+    "COW": {
+      "cost": 400,
+      "structure": "PASTURE",
+      "first_yield_day": 8,
+      "interval": 2,
+      "max_held": 6,
+      "product": "MILK",
+      "structure_cost": 0,
+      "build_action_cost_turns": 1,
+      "pickup_action_cost_turns": 1,
+      "place_action_cost_turns": 1,
+      "feed_per_day": {
+        "WHEAT": 1
+      },
+      "feed_action_cost_turns": 1,
+      "care_action_cost_turns": 1,
+      "harvest_action_cost_turns": 1,
+      "fertilizer_per_surviving_animal_per_day": 1,
+      "fertilizer_storage_on_tile": 1,
+      "care_bonus": "fed+cared end-of-day banks +1; all banked bonus is added to next fed scheduled yield then reset, subject to max_held",
+      "fed_and_cared_yield_ramp_if_harvested_each_tick": {
+        "first_production_units": 6,
+        "later_production_units": 3,
+        "explanation": "production consumes care bank before the current day's care is banked"
+      },
+      "escape": "two consecutive unfed end-of-days removes animal and leaves its structure"
+    },
+    "SHEEP": {
+      "cost": 500,
+      "structure": "PASTURE",
+      "first_yield_day": 6,
+      "interval": 3,
+      "max_held": 6,
+      "product": "WOOL",
+      "structure_cost": 0,
+      "build_action_cost_turns": 1,
+      "pickup_action_cost_turns": 1,
+      "place_action_cost_turns": 1,
+      "feed_per_day": {
+        "WHEAT": 1
+      },
+      "feed_action_cost_turns": 1,
+      "care_action_cost_turns": 1,
+      "harvest_action_cost_turns": 1,
+      "fertilizer_per_surviving_animal_per_day": 1,
+      "fertilizer_storage_on_tile": 1,
+      "care_bonus": "fed+cared end-of-day banks +1; all banked bonus is added to next fed scheduled yield then reset, subject to max_held",
+      "fed_and_cared_yield_ramp_if_harvested_each_tick": {
+        "first_production_units": 6,
+        "later_production_units": 4,
+        "explanation": "production consumes care bank before the current day's care is banked"
+      },
+      "escape": "two consecutive unfed end-of-days removes animal and leaves its structure"
+    }
+  },
+  "labour": {
+    "permanent_farmer": 1,
+    "hands_ephemeral_daily": true,
+    "hire_order_is_market_order": true,
+    "hire_cost_by_zero_based_index": [
+      1,
+      1,
+      2,
+      3,
+      5,
+      8,
+      13,
+      21,
+      34,
+      55,
+      89,
+      144,
+      233,
+      377,
+      610,
+      987,
+      1597,
+      2584,
+      4181,
+      6765
+    ],
+    "hire_cost_formula": "fib(index), sequence 1,1,2,3,5,...; index resets daily",
+    "turns_per_unit_per_day": 24,
+    "movement_cost_per_orthogonal_tile_turns": 1,
+    "non_movement_unit_action_cost_turns": 1,
+    "market_order_unit_action_cost_turns": 0,
+    "spawn_tiles_nwse": [
+      [
+        4,
+        4
+      ],
+      [
+        5,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        5
+      ]
+    ]
+  },
+  "starting_money": 3000,
+  "shed_capacity": 100
+}

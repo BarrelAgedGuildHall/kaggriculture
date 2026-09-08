@@ -1,0 +1,294 @@
+{
+  "engine": "kaggle-environments 1.32.7",
+  "seed": 5002,
+  "instance": "C:\\Guildhall\\guilds\\kaggler\\workshop\\repo\\data\\results\\fixed-game\\5002\\_runtime\\data\\results\\fixed-game\\5002\\instance.json",
+  "evaluations": 5162,
+  "accepted_moves": 1966,
+  "wall_seconds": 1504.3589477539062,
+  "workers": 8,
+  "evaluations_per_minute": 205.88171490748908,
+  "best_bank": 95681.0,
+  "replay_bank": 95681.0,
+  "winning_family": "round2_incumbent",
+  "family_best": {
+    "goose_carrot_sheep": {
+      "bank": 33476.0,
+      "worker": 5
+    },
+    "mixed": {
+      "bank": 84603.0,
+      "worker": 7
+    },
+    "round2_incumbent": {
+      "bank": 95681.0,
+      "worker": 0
+    },
+    "tomato_carrot_crop": {
+      "bank": 87412.0,
+      "worker": 6
+    }
+  },
+  "best_so_far_minutes": {
+    "5": 76269.0,
+    "10": 83269.0,
+    "20": 95234.0,
+    "30": 95681.0
+  },
+  "best_events": [
+    {
+      "elapsed_seconds": 2.7752432823181152,
+      "bank": 46347.0,
+      "family": "mixed",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 2.8219616413116455,
+      "bank": 50777.0,
+      "family": "round2_incumbent",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 4.8867340087890625,
+      "bank": 53123.0,
+      "family": "mixed",
+      "evaluations": 4
+    },
+    {
+      "elapsed_seconds": 16.33778953552246,
+      "bank": 54342.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 49
+    },
+    {
+      "elapsed_seconds": 32.42819356918335,
+      "bank": 58506.0,
+      "family": "mixed",
+      "evaluations": 106
+    },
+    {
+      "elapsed_seconds": 77.40205597877502,
+      "bank": 59044.0,
+      "family": "mixed",
+      "evaluations": 275
+    },
+    {
+      "elapsed_seconds": 79.37303018569946,
+      "bank": 60675.0,
+      "family": "mixed",
+      "evaluations": 279
+    },
+    {
+      "elapsed_seconds": 110.85108256340027,
+      "bank": 62787.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 393
+    },
+    {
+      "elapsed_seconds": 124.28063893318176,
+      "bank": 63728.0,
+      "family": "mixed",
+      "evaluations": 438
+    },
+    {
+      "elapsed_seconds": 129.04307055473328,
+      "bank": 66820.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 456
+    },
+    {
+      "elapsed_seconds": 153.48391246795654,
+      "bank": 66903.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 540
+    },
+    {
+      "elapsed_seconds": 161.79539799690247,
+      "bank": 67064.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 567
+    },
+    {
+      "elapsed_seconds": 174.00084900856018,
+      "bank": 67598.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 609
+    },
+    {
+      "elapsed_seconds": 176.74747776985168,
+      "bank": 69037.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 619
+    },
+    {
+      "elapsed_seconds": 181.47828650474548,
+      "bank": 71514.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 634
+    },
+    {
+      "elapsed_seconds": 181.66732954978943,
+      "bank": 71642.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 636
+    },
+    {
+      "elapsed_seconds": 183.3634865283966,
+      "bank": 74316.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 641
+    },
+    {
+      "elapsed_seconds": 251.70936489105225,
+      "bank": 76269.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 868
+    },
+    {
+      "elapsed_seconds": 314.60392141342163,
+      "bank": 79053.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 1083
+    },
+    {
+      "elapsed_seconds": 548.288060426712,
+      "bank": 79054.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 1896
+    },
+    {
+      "elapsed_seconds": 563.253936290741,
+      "bank": 83269.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 1946
+    },
+    {
+      "elapsed_seconds": 600.9344003200531,
+      "bank": 83876.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 2075
+    },
+    {
+      "elapsed_seconds": 603.4404067993164,
+      "bank": 84061.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 2084
+    },
+    {
+      "elapsed_seconds": 644.7491478919983,
+      "bank": 87202.0,
+      "family": "round2_incumbent",
+      "evaluations": 2230
+    },
+    {
+      "elapsed_seconds": 645.5075790882111,
+      "bank": 87833.0,
+      "family": "round2_incumbent",
+      "evaluations": 2231
+    },
+    {
+      "elapsed_seconds": 648.264235496521,
+      "bank": 88194.0,
+      "family": "round2_incumbent",
+      "evaluations": 2243
+    },
+    {
+      "elapsed_seconds": 672.8687949180603,
+      "bank": 90123.0,
+      "family": "round2_incumbent",
+      "evaluations": 2328
+    },
+    {
+      "elapsed_seconds": 856.3215413093567,
+      "bank": 92139.0,
+      "family": "round2_incumbent",
+      "evaluations": 2959
+    },
+    {
+      "elapsed_seconds": 904.649498462677,
+      "bank": 92282.0,
+      "family": "round2_incumbent",
+      "evaluations": 3119
+    },
+    {
+      "elapsed_seconds": 929.4743549823761,
+      "bank": 92358.0,
+      "family": "round2_incumbent",
+      "evaluations": 3203
+    },
+    {
+      "elapsed_seconds": 980.3772621154785,
+      "bank": 93448.0,
+      "family": "round2_incumbent",
+      "evaluations": 3375
+    },
+    {
+      "elapsed_seconds": 993.2354793548584,
+      "bank": 93884.0,
+      "family": "round2_incumbent",
+      "evaluations": 3425
+    },
+    {
+      "elapsed_seconds": 1012.2031984329224,
+      "bank": 94035.0,
+      "family": "round2_incumbent",
+      "evaluations": 3492
+    },
+    {
+      "elapsed_seconds": 1098.5725312232971,
+      "bank": 95083.0,
+      "family": "round2_incumbent",
+      "evaluations": 3787
+    },
+    {
+      "elapsed_seconds": 1106.6023797988892,
+      "bank": 95114.0,
+      "family": "round2_incumbent",
+      "evaluations": 3817
+    },
+    {
+      "elapsed_seconds": 1115.1244735717773,
+      "bank": 95234.0,
+      "family": "round2_incumbent",
+      "evaluations": 3844
+    },
+    {
+      "elapsed_seconds": 1230.3340485095978,
+      "bank": 95681.0,
+      "family": "round2_incumbent",
+      "evaluations": 4243
+    }
+  ],
+  "best_curve": {
+    "0": 646.0,
+    "1": 613.0,
+    "2": 573.0,
+    "3": 183.0,
+    "4": 193.0,
+    "5": 413.0,
+    "6": 308.0,
+    "7": 188.0,
+    "8": 187.0,
+    "9": 339.0,
+    "10": 5346.0,
+    "11": 4492.0,
+    "12": 18753.0,
+    "13": 18170.0,
+    "14": 23952.0,
+    "15": 22088.0,
+    "16": 24935.0,
+    "17": 24942.0,
+    "18": 32968.0,
+    "19": 35548.0,
+    "20": 41412.0,
+    "21": 41955.0,
+    "22": 53800.0,
+    "23": 52940.0,
+    "24": 66972.0,
+    "25": 67086.0,
+    "26": 66912.0,
+    "27": 79736.0,
+    "28": 82801.0,
+    "29": 95681.0
+  },
+  "faults": 0
+}

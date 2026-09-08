@@ -1,0 +1,276 @@
+{
+  "engine": "kaggle-environments 1.32.7",
+  "seed": 5001,
+  "instance": "C:\\Guildhall\\guilds\\kaggler\\workshop\\repo\\data\\results\\fixed-game\\5001\\_runtime\\data\\results\\fixed-game\\5001\\instance.json",
+  "evaluations": 4955,
+  "accepted_moves": 1855,
+  "wall_seconds": 1504.272117137909,
+  "workers": 8,
+  "evaluations_per_minute": 197.63711406527656,
+  "best_bank": 136502.0,
+  "replay_bank": 136502.0,
+  "winning_family": "round2_incumbent",
+  "family_best": {
+    "goose_carrot_sheep": {
+      "bank": 107989.0,
+      "worker": 1
+    },
+    "mixed": {
+      "bank": 115233.0,
+      "worker": 7
+    },
+    "round2_incumbent": {
+      "bank": 136502.0,
+      "worker": 4
+    },
+    "tomato_carrot_crop": {
+      "bank": 105628.0,
+      "worker": 2
+    }
+  },
+  "best_so_far_minutes": {
+    "5": 125497.0,
+    "10": 130536.0,
+    "20": 133846.0,
+    "30": 136502.0
+  },
+  "best_events": [
+    {
+      "elapsed_seconds": 2.983292579650879,
+      "bank": 6726.0,
+      "family": "goose_carrot_sheep",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 3.0468311309814453,
+      "bank": 79501.0,
+      "family": "mixed",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 3.06683087348938,
+      "bank": 86223.0,
+      "family": "tomato_carrot_crop",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 3.103005886077881,
+      "bank": 119170.0,
+      "family": "round2_incumbent",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 7.756710529327393,
+      "bank": 119347.0,
+      "family": "round2_incumbent",
+      "evaluations": 13
+    },
+    {
+      "elapsed_seconds": 20.341418981552124,
+      "bank": 121445.0,
+      "family": "round2_incumbent",
+      "evaluations": 58
+    },
+    {
+      "elapsed_seconds": 70.91355109214783,
+      "bank": 124185.0,
+      "family": "round2_incumbent",
+      "evaluations": 223
+    },
+    {
+      "elapsed_seconds": 195.52654933929443,
+      "bank": 124236.0,
+      "family": "round2_incumbent",
+      "evaluations": 628
+    },
+    {
+      "elapsed_seconds": 223.0318775177002,
+      "bank": 124949.0,
+      "family": "round2_incumbent",
+      "evaluations": 717
+    },
+    {
+      "elapsed_seconds": 274.2858774662018,
+      "bank": 125497.0,
+      "family": "round2_incumbent",
+      "evaluations": 880
+    },
+    {
+      "elapsed_seconds": 310.5658404827118,
+      "bank": 125862.0,
+      "family": "round2_incumbent",
+      "evaluations": 1000
+    },
+    {
+      "elapsed_seconds": 325.1562657356262,
+      "bank": 127787.0,
+      "family": "round2_incumbent",
+      "evaluations": 1046
+    },
+    {
+      "elapsed_seconds": 344.0829553604126,
+      "bank": 128572.0,
+      "family": "round2_incumbent",
+      "evaluations": 1110
+    },
+    {
+      "elapsed_seconds": 355.860652923584,
+      "bank": 128983.0,
+      "family": "round2_incumbent",
+      "evaluations": 1149
+    },
+    {
+      "elapsed_seconds": 428.4679317474365,
+      "bank": 129399.0,
+      "family": "round2_incumbent",
+      "evaluations": 1377
+    },
+    {
+      "elapsed_seconds": 436.3680763244629,
+      "bank": 129577.0,
+      "family": "round2_incumbent",
+      "evaluations": 1403
+    },
+    {
+      "elapsed_seconds": 566.9469742774963,
+      "bank": 130315.0,
+      "family": "round2_incumbent",
+      "evaluations": 1819
+    },
+    {
+      "elapsed_seconds": 568.7160737514496,
+      "bank": 130362.0,
+      "family": "round2_incumbent",
+      "evaluations": 1825
+    },
+    {
+      "elapsed_seconds": 579.0328543186188,
+      "bank": 130536.0,
+      "family": "round2_incumbent",
+      "evaluations": 1860
+    },
+    {
+      "elapsed_seconds": 685.9296071529388,
+      "bank": 131699.0,
+      "family": "round2_incumbent",
+      "evaluations": 2204
+    },
+    {
+      "elapsed_seconds": 912.5334832668304,
+      "bank": 132275.0,
+      "family": "round2_incumbent",
+      "evaluations": 2933
+    },
+    {
+      "elapsed_seconds": 1125.6551640033722,
+      "bank": 133235.0,
+      "family": "round2_incumbent",
+      "evaluations": 3673
+    },
+    {
+      "elapsed_seconds": 1177.6244909763336,
+      "bank": 133846.0,
+      "family": "round2_incumbent",
+      "evaluations": 3854
+    },
+    {
+      "elapsed_seconds": 1208.0934703350067,
+      "bank": 134255.0,
+      "family": "round2_incumbent",
+      "evaluations": 3954
+    },
+    {
+      "elapsed_seconds": 1216.4616227149963,
+      "bank": 134383.0,
+      "family": "round2_incumbent",
+      "evaluations": 3982
+    },
+    {
+      "elapsed_seconds": 1240.4540431499481,
+      "bank": 134410.0,
+      "family": "round2_incumbent",
+      "evaluations": 4066
+    },
+    {
+      "elapsed_seconds": 1262.8669011592865,
+      "bank": 134415.0,
+      "family": "round2_incumbent",
+      "evaluations": 4140
+    },
+    {
+      "elapsed_seconds": 1273.774323940277,
+      "bank": 135371.0,
+      "family": "round2_incumbent",
+      "evaluations": 4176
+    },
+    {
+      "elapsed_seconds": 1286.9446063041687,
+      "bank": 135397.0,
+      "family": "round2_incumbent",
+      "evaluations": 4223
+    },
+    {
+      "elapsed_seconds": 1380.6863315105438,
+      "bank": 135466.0,
+      "family": "round2_incumbent",
+      "evaluations": 4548
+    },
+    {
+      "elapsed_seconds": 1418.4534542560577,
+      "bank": 135471.0,
+      "family": "round2_incumbent",
+      "evaluations": 4675
+    },
+    {
+      "elapsed_seconds": 1430.1676139831543,
+      "bank": 135509.0,
+      "family": "round2_incumbent",
+      "evaluations": 4718
+    },
+    {
+      "elapsed_seconds": 1461.26127576828,
+      "bank": 136292.0,
+      "family": "round2_incumbent",
+      "evaluations": 4816
+    },
+    {
+      "elapsed_seconds": 1499.6170587539673,
+      "bank": 136502.0,
+      "family": "round2_incumbent",
+      "evaluations": 4946
+    }
+  ],
+  "best_curve": {
+    "0": 217.0,
+    "1": 210.0,
+    "2": 208.0,
+    "3": 291.0,
+    "4": 255.0,
+    "5": 231.0,
+    "6": 441.0,
+    "7": 161.0,
+    "8": 497.0,
+    "9": 2650.0,
+    "10": 3519.0,
+    "11": 590.0,
+    "12": 16053.0,
+    "13": 16322.0,
+    "14": 29701.0,
+    "15": 29900.0,
+    "16": 44010.0,
+    "17": 44045.0,
+    "18": 62279.0,
+    "19": 69547.0,
+    "20": 75250.0,
+    "21": 74691.0,
+    "22": 89693.0,
+    "23": 88793.0,
+    "24": 99033.0,
+    "25": 102373.0,
+    "26": 101598.0,
+    "27": 115389.0,
+    "28": 120912.0,
+    "29": 136502.0
+  },
+  "faults": 0
+}
