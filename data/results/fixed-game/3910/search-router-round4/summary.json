@@ -1,0 +1,98 @@
+{
+  "engine": "kaggle-environments 1.32.7",
+  "seed": 3910,
+  "instance": "C:\\Guildhall\\guilds\\kaggler\\workshop\\repo\\data\\results\\fixed-game\\3910\\instance.json",
+  "evaluations": 1995,
+  "accepted_moves": 756,
+  "wall_seconds": 907.4748044013977,
+  "workers": 6,
+  "evaluations_per_minute": 131.90448860886923,
+  "best_bank": 139432.0,
+  "replay_bank": 139432.0,
+  "winning_family": "round2_incumbent",
+  "family_best": {
+    "brain_strawberry_line": {
+      "bank": 109591.0,
+      "worker": 5
+    },
+    "goose_carrot_sheep": {
+      "bank": 46531.0,
+      "worker": 1
+    },
+    "mixed": {
+      "bank": 100623.0,
+      "worker": 3
+    },
+    "round2_incumbent": {
+      "bank": 139432.0,
+      "worker": 0
+    },
+    "strawberry_tomato_drain": {
+      "bank": 79498.0,
+      "worker": 4
+    },
+    "tomato_carrot_crop": {
+      "bank": 103789.0,
+      "worker": 2
+    }
+  },
+  "best_so_far_minutes": {
+    "5": 139432.0,
+    "10": 139432.0,
+    "20": 139432.0,
+    "30": 139432.0
+  },
+  "best_events": [
+    {
+      "elapsed_seconds": 3.4790852069854736,
+      "bank": 139281.0,
+      "family": "round2_incumbent",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 23.055580139160156,
+      "bank": 139288.0,
+      "family": "round2_incumbent",
+      "evaluations": 38
+    },
+    {
+      "elapsed_seconds": 51.31443905830383,
+      "bank": 139432.0,
+      "family": "round2_incumbent",
+      "evaluations": 102
+    }
+  ],
+  "best_curve": {
+    "0": 312.0,
+    "1": 193.0,
+    "2": 191.0,
+    "3": 202.0,
+    "4": 931.0,
+    "5": 397.0,
+    "6": 1284.0,
+    "7": 181.0,
+    "8": 574.0,
+    "9": 1509.0,
+    "10": 7862.0,
+    "11": 7191.0,
+    "12": 18942.0,
+    "13": 16080.0,
+    "14": 27184.0,
+    "15": 27250.0,
+    "16": 37914.0,
+    "17": 38372.0,
+    "18": 51427.0,
+    "19": 57086.0,
+    "20": 71984.0,
+    "21": 71698.0,
+    "22": 88582.0,
+    "23": 87899.0,
+    "24": 97567.0,
+    "25": 104514.0,
+    "26": 103460.0,
+    "27": 115932.0,
+    "28": 122310.0,
+    "29": 139432.0
+  },
+  "faults": 0
+}

@@ -278,6 +278,8 @@ def main():
     parser.add_argument("--tag", help="write to search-<tag> instead of search")
     parser.add_argument("--temperature", type=float, default=900.0)
     parser.add_argument("--top-k", type=int, default=6)
+    parser.add_argument("--start-schedule", type=Path,
+                        help="optional incumbent schedule used as the primary start")
     args = parser.parse_args()
     if not 1 <= args.workers <= 8:
         raise ValueError("workers must be between 1 and 8")
@@ -296,7 +298,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     dairy = json.loads((SCHEDULES / "dairy-v0.json").read_text(encoding="utf-8"))
     tempo = json.loads((SCHEDULES / "tempo.json").read_text(encoding="utf-8"))
-    prior_path = ROOT / "data" / "results" / "fixed-game" / "3910" / "search" / "best-schedule.json"
+    prior_path = args.start_schedule or ROOT / "data" / "results" / "fixed-game" / "3910" / "search" / "best-schedule.json"
     prior = json.loads(prior_path.read_text(encoding="utf-8")) if prior_path.exists() else dairy
     starts = family_starts(prior, tempo)
     context = mp.get_context("spawn")

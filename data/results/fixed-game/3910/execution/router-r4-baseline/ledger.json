@@ -1,0 +1,996 @@
+{
+  "seed": 3910,
+  "engine": "kaggle-environments 1.32.7",
+  "status": "DONE",
+  "final_bank": 139281.0,
+  "faults": 0,
+  "timing_ms": {
+    "p99": 2.107500098645687,
+    "max": 30.612600035965443,
+    "mean": 1.016698051982343
+  },
+  "execution_loss": {
+    "travel": 1648.6285714285714,
+    "idle": 796.3714285714286,
+    "undelivered": 34165.63072275964,
+    "rotted": 0.0,
+    "price_slippage": 1081.3692772403565
+  },
+  "days": [
+    {
+      "day": 0,
+      "bank": 284.0,
+      "bank_change": -2716.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 475,
+      "produced": {},
+      "sold": {
+        "WHEAT": 17
+      },
+      "undelivered": {
+        "WHEAT": 7
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 59,
+        "moving": 78,
+        "idle": 46
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 1,
+      "bank": 193.0,
+      "bank_change": -91.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {
+        "WHEAT": 6
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 17,
+        "moving": 41,
+        "idle": 127
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 2,
+      "bank": 191.0,
+      "bank_change": -2.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 0,
+      "produced": {},
+      "sold": {},
+      "undelivered": {
+        "WHEAT": 3,
+        "FERTILIZER": 3
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 32,
+        "moving": 34,
+        "idle": 4
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 3,
+      "bank": 202.0,
+      "bank_change": 11.0,
+      "implied_revenue": 315.0,
+      "realised_revenue": 300,
+      "produced": {
+        "CARROT": 9
+      },
+      "sold": {
+        "FERTILIZER": 3
+      },
+      "undelivered": {
+        "WHEAT": 5,
+        "CARROT": 9,
+        "FERTILIZER": 3
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 28,
+        "moving": 93,
+        "idle": 124
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 15.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 4,
+      "bank": 475.0,
+      "bank_change": 273.0,
+      "implied_revenue": 675.0,
+      "realised_revenue": 1025,
+      "produced": {
+        "WHEAT": 27
+      },
+      "sold": {
+        "FERTILIZER": 3,
+        "CARROT": 9,
+        "WHEAT": 14
+      },
+      "undelivered": {
+        "WHEAT": 25,
+        "FERTILIZER": 2
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 46,
+        "moving": 93,
+        "idle": 22
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 5,
+      "bank": 201.0,
+      "bank_change": -274.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 308,
+      "produced": {},
+      "sold": {
+        "WHEAT": 11,
+        "FERTILIZER": 0
+      },
+      "undelivered": {
+        "WHEAT": 10,
+        "FERTILIZER": 3
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 39,
+        "moving": 82,
+        "idle": 87
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 6,
+      "bank": 1374.0,
+      "bank_change": 1173.0,
+      "implied_revenue": 3600.0,
+      "realised_revenue": 805,
+      "produced": {
+        "WOOL": 18
+      },
+      "sold": {
+        "FERTILIZER": 1,
+        "WHEAT": 24,
+        "WOOL": 0
+      },
+      "undelivered": {
+        "WHEAT": 14
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 55,
+        "moving": 118,
+        "idle": 57
+      },
+      "execution_loss": {
+        "travel": 1648.6285714285714,
+        "idle": 796.3714285714286,
+        "undelivered": 350,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 7,
+      "bank": 181.0,
+      "bank_change": -1193.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 840,
+      "produced": {},
+      "sold": {
+        "WHEAT": 28
+      },
+      "undelivered": {
+        "WHEAT": 12,
+        "FERTILIZER": 11
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 72,
+        "moving": 144,
+        "idle": 35
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 8,
+      "bank": 606.0,
+      "bank_change": 425.0,
+      "implied_revenue": 150.0,
+      "realised_revenue": 1556,
+      "produced": {
+        "WHEAT": 6
+      },
+      "sold": {
+        "FERTILIZER": 16
+      },
+      "undelivered": {
+        "WHEAT": 17,
+        "FERTILIZER": 7
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 76,
+        "moving": 174,
+        "idle": 13
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 9,
+      "bank": 1509.0,
+      "bank_change": 903.0,
+      "implied_revenue": 2625.0,
+      "realised_revenue": 763,
+      "produced": {
+        "WOOL": 12,
+        "WHEAT": 9
+      },
+      "sold": {
+        "FERTILIZER": 7,
+        "WHEAT": 3,
+        "WOOL": 0
+      },
+      "undelivered": {
+        "WHEAT": 27,
+        "WOOL": 8,
+        "FERTILIZER": 5
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 80,
+        "moving": 156,
+        "idle": 16
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 1853.9827771797632,
+        "rotted": 0.0,
+        "price_slippage": 8.017222820236814
+      }
+    },
+    {
+      "day": 10,
+      "bank": 5349.0,
+      "bank_change": 3840.0,
+      "implied_revenue": 11500.0,
+      "realised_revenue": 8545,
+      "produced": {
+        "MELON": 46
+      },
+      "sold": {
+        "FERTILIZER": 17,
+        "MELON": 27
+      },
+      "undelivered": {
+        "WHEAT": 22,
+        "MELON": 28,
+        "WOOL": 8,
+        "FERTILIZER": 7
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 89,
+        "moving": 183,
+        "idle": 20
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 2955.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 11,
+      "bank": 7191.0,
+      "bank_change": 1842.0,
+      "implied_revenue": 0.0,
+      "realised_revenue": 748,
+      "produced": {},
+      "sold": {
+        "WHEAT": 22
+      },
+      "undelivered": {
+        "WHEAT": 22,
+        "MELON": 19,
+        "WOOL": 8,
+        "FERTILIZER": 21
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 68,
+        "moving": 130,
+        "idle": 8
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 12,
+      "bank": 17483.0,
+      "bank_change": 10292.0,
+      "implied_revenue": 6560.0,
+      "realised_revenue": 8531,
+      "produced": {
+        "MILK": 6,
+        "WOOL": 28
+      },
+      "sold": {
+        "FERTILIZER": 21,
+        "WOOL": 8,
+        "MELON": 19,
+        "WHEAT": 1
+      },
+      "undelivered": {
+        "WHEAT": 23,
+        "MILK": 6,
+        "WOOL": 16,
+        "FERTILIZER": 15
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 87,
+        "moving": 149,
+        "idle": 13
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 13,
+      "bank": 16080.0,
+      "bank_change": -1403.0,
+      "implied_revenue": 5120.0,
+      "realised_revenue": 996,
+      "produced": {
+        "WOOL": 16,
+        "MILK": 12
+      },
+      "sold": {
+        "FERTILIZER": 12
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 18,
+        "WOOL": 27,
+        "FERTILIZER": 19
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 102,
+        "moving": 187,
+        "idle": 2
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 4048.0981595092026,
+        "rotted": 0.0,
+        "price_slippage": 75.90184049079754
+      }
+    },
+    {
+      "day": 14,
+      "bank": 27034.0,
+      "bank_change": 10954.0,
+      "implied_revenue": 2680.0,
+      "realised_revenue": 11817,
+      "produced": {
+        "WOOL": 11,
+        "MILK": 3
+      },
+      "sold": {
+        "FERTILIZER": 19,
+        "WOOL": 27,
+        "MILK": 18,
+        "WHEAT": 1
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 3,
+        "WOOL": 11,
+        "FERTILIZER": 17
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 94,
+        "moving": 174,
+        "idle": 4
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 15,
+      "bank": 27250.0,
+      "bank_change": 216.0,
+      "implied_revenue": 5560.0,
+      "realised_revenue": 1125,
+      "produced": {
+        "WOOL": 23,
+        "MILK": 6
+      },
+      "sold": {
+        "FERTILIZER": 15
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 9,
+        "WOOL": 34,
+        "FERTILIZER": 24
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 92,
+        "moving": 136
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 4293.03457106274,
+        "rotted": 0.0,
+        "price_slippage": 141.9654289372599
+      }
+    },
+    {
+      "day": 16,
+      "bank": 37914.0,
+      "bank_change": 10664.0,
+      "implied_revenue": 5280.0,
+      "realised_revenue": 11907,
+      "produced": {
+        "WOOL": 24,
+        "MILK": 3
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 34,
+        "MILK": 9,
+        "WHEAT": 1
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 3,
+        "WOOL": 24,
+        "FERTILIZER": 24
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 88,
+        "moving": 140
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 17,
+      "bank": 38372.0,
+      "bank_change": 458.0,
+      "implied_revenue": 3520.0,
+      "realised_revenue": 1608,
+      "produced": {
+        "WOOL": 8,
+        "MILK": 12
+      },
+      "sold": {
+        "FERTILIZER": 24
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 15,
+        "WOOL": 32,
+        "FERTILIZER": 24
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 89,
+        "moving": 139
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 1792.6883075953356,
+        "rotted": 0.0,
+        "price_slippage": 119.31169240466434
+      }
+    },
+    {
+      "day": 18,
+      "bank": 49353.0,
+      "bank_change": 10981.0,
+      "implied_revenue": 6240.0,
+      "realised_revenue": 12445,
+      "produced": {
+        "WOOL": 24,
+        "MILK": 9
+      },
+      "sold": {
+        "FERTILIZER": 24,
+        "WOOL": 32,
+        "MILK": 15,
+        "WHEAT": 1
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 9,
+        "WOOL": 24,
+        "FERTILIZER": 24
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 98,
+        "moving": 174
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 19,
+      "bank": 57086.0,
+      "bank_change": 7733.0,
+      "implied_revenue": 10080.0,
+      "realised_revenue": 6999,
+      "produced": {
+        "WOOL": 44,
+        "MILK": 8
+      },
+      "sold": {
+        "FERTILIZER": 22,
+        "WOOL": 16,
+        "MILK": 9,
+        "WHEAT": 1
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 8,
+        "WOOL": 44,
+        "FERTILIZER": 24
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 98,
+        "moving": 152
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 3081.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 20,
+      "bank": 69162.0,
+      "bank_change": 12076.0,
+      "implied_revenue": 3520.0,
+      "realised_revenue": 13440,
+      "produced": {
+        "WOOL": 8,
+        "MILK": 12
+      },
+      "sold": {
+        "FERTILIZER": 21,
+        "WOOL": 44,
+        "MILK": 8
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 12,
+        "WOOL": 8,
+        "FERTILIZER": 22
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 96,
+        "moving": 176,
+        "idle": 1
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 21,
+      "bank": 69987.0,
+      "bank_change": 825.0,
+      "implied_revenue": 7200.0,
+      "realised_revenue": 730,
+      "produced": {
+        "WOOL": 24,
+        "MILK": 15
+      },
+      "sold": {
+        "FERTILIZER": 16
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 21,
+        "WOOL": 32,
+        "FERTILIZER": 24
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 100,
+        "moving": 171,
+        "idle": 1
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 6060.029133284777,
+        "rotted": 0.0,
+        "price_slippage": 409.97086671522214
+      }
+    },
+    {
+      "day": 22,
+      "bank": 84954.0,
+      "bank_change": 14967.0,
+      "implied_revenue": 8640.0,
+      "realised_revenue": 12942,
+      "produced": {
+        "WOOL": 36,
+        "MILK": 9
+      },
+      "sold": {
+        "FERTILIZER": 20,
+        "WOOL": 32,
+        "MILK": 21
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 3,
+        "WOOL": 24,
+        "FERTILIZER": 16
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 111,
+        "moving": 213,
+        "idle": 15
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 23,
+      "bank": 86279.0,
+      "bank_change": 1325.0,
+      "implied_revenue": 3520.0,
+      "realised_revenue": 0,
+      "produced": {
+        "MILK": 12,
+        "WOOL": 8
+      },
+      "sold": {},
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 12,
+        "WOOL": 24,
+        "FERTILIZER": 37
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 91,
+        "moving": 160
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 3519.9999999999995,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 24,
+      "bank": 94804.0,
+      "bank_change": 8525.0,
+      "implied_revenue": 6240.0,
+      "realised_revenue": 9636,
+      "produced": {
+        "WOOL": 24,
+        "MILK": 9
+      },
+      "sold": {
+        "FERTILIZER": 36,
+        "WOOL": 24,
+        "MILK": 12,
+        "WHEAT": 1
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 6,
+        "WOOL": 24,
+        "FERTILIZER": 21
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 104,
+        "moving": 189,
+        "idle": 1
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 25,
+      "bank": 103031.0,
+      "bank_change": 8227.0,
+      "implied_revenue": 9120.0,
+      "realised_revenue": 5657,
+      "produced": {
+        "MILK": 12,
+        "WOOL": 36
+      },
+      "sold": {
+        "FERTILIZER": 17,
+        "WOOL": 16,
+        "MILK": 6,
+        "WHEAT": 1
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 12,
+        "WOOL": 28,
+        "FERTILIZER": 21
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 104,
+        "moving": 167,
+        "idle": 1
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 3388.145620022753,
+        "rotted": 0.0,
+        "price_slippage": 74.85437997724686
+      }
+    },
+    {
+      "day": 26,
+      "bank": 103039.0,
+      "bank_change": 8.0,
+      "implied_revenue": 3040.0,
+      "realised_revenue": 432,
+      "produced": {
+        "WOOL": 8,
+        "MILK": 9
+      },
+      "sold": {
+        "FERTILIZER": 18
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 21,
+        "WOOL": 32,
+        "FERTILIZER": 25
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 94,
+        "moving": 178
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 2358.994974874372,
+        "rotted": 0.0,
+        "price_slippage": 249.00502512562815
+      }
+    },
+    {
+      "day": 27,
+      "bank": 114506.0,
+      "bank_change": 11467.0,
+      "implied_revenue": 6720.0,
+      "realised_revenue": 13007,
+      "produced": {
+        "WOOL": 24,
+        "MILK": 12
+      },
+      "sold": {
+        "FERTILIZER": 19,
+        "WOOL": 32,
+        "MILK": 21,
+        "WHEAT": 1
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 12,
+        "WOOL": 24,
+        "FERTILIZER": 24
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 93,
+        "moving": 135
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0.0,
+        "rotted": 0.0,
+        "price_slippage": 0.0
+      }
+    },
+    {
+      "day": 28,
+      "bank": 122106.0,
+      "bank_change": 7600.0,
+      "implied_revenue": 8640.0,
+      "realised_revenue": 8188,
+      "produced": {
+        "WOOL": 36,
+        "MILK": 9
+      },
+      "sold": {
+        "FERTILIZER": 22,
+        "WOOL": 20,
+        "MILK": 12,
+        "WHEAT": 5
+      },
+      "undelivered": {
+        "WHEAT": 28,
+        "MILK": 9,
+        "WOOL": 36,
+        "FERTILIZER": 16
+      },
+      "rotted": {},
+      "hand_turns": {
+        "acting": 61,
+        "moving": 78
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 449.65717923069934,
+        "rotted": 0.0,
+        "price_slippage": 2.3428207693007184
+      }
+    },
+    {
+      "day": 29,
+      "bank": 139281.0,
+      "bank_change": 17175.0,
+      "implied_revenue": 3520.0,
+      "realised_revenue": 12531,
+      "produced": {
+        "MILK": 12,
+        "WOOL": 8
+      },
+      "sold": {
+        "FERTILIZER": 19,
+        "WOOL": 36,
+        "MILK": 9,
+        "WHEAT": 27
+      },
+      "undelivered": {},
+      "rotted": {},
+      "hand_turns": {
+        "acting": 12,
+        "moving": 46,
+        "idle": 31
+      },
+      "execution_loss": {
+        "travel": 0.0,
+        "idle": 0.0,
+        "undelivered": 0,
+        "rotted": 0,
+        "price_slippage": 0.0
+      }
+    }
+  ],
+  "substitutions": [],
+  "expectation_basis": "schedule.expected_revenue_by_day when supplied; otherwise realised production at engine base prices",
+  "router": "bots/exec_b/main.py@7baa291",
+  "idle_fix": true,
+  "fertilizer_threshold": 10,
+  "animal_sweep": false,
+  "layout_mode": "scheduled"
+}
