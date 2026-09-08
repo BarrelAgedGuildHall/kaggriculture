@@ -1,0 +1,104 @@
+{
+  "method": "whole-seed paired bootstrap, 10000 resamples, both seats averaged per seed",
+  "seed_base": 4100,
+  "seed_count": 8,
+  "games_per_opponent": 16,
+  "hs3": {
+    "tag": "hs3-screen",
+    "agent_id": "main@hc046901375",
+    "run_id": "20260907-183315-ba7b8f",
+    "opponents": [
+      {
+        "opponent": "V46",
+        "opponent_id": "main@h1b8c525dd4",
+        "games": 16,
+        "seeds": 8,
+        "mean_bank": 78147.375,
+        "bank_ci95": [
+          67975.25,
+          86572.125
+        ],
+        "mean_margin": -32080.8125,
+        "margin_ci95": [
+          -43045.1875,
+          -21852.4375
+        ],
+        "faults": 0,
+        "crashes": 0,
+        "timeouts": 0,
+        "p99_ms": 7.059,
+        "max_ms": 249.182
+      },
+      {
+        "opponent": "tapeselect",
+        "opponent_id": "main@a63d154",
+        "games": 16,
+        "seeds": 8,
+        "mean_bank": 61837.0,
+        "bank_ci95": [
+          47672.625,
+          73600.0
+        ],
+        "mean_margin": -46256.125,
+        "margin_ci95": [
+          -51767.25,
+          -41322.875
+        ],
+        "faults": 0,
+        "crashes": 0,
+        "timeouts": 0,
+        "p99_ms": 6.678,
+        "max_ms": 155.892
+      }
+    ]
+  },
+  "control": {
+    "tag": "hs3-control",
+    "agent_id": "main@h1be7f1d914",
+    "run_id": "20260907-183400-5a15fc",
+    "opponents": [
+      {
+        "opponent": "V46",
+        "opponent_id": "main@h1b8c525dd4",
+        "games": 16,
+        "seeds": 8,
+        "mean_bank": 78147.375,
+        "bank_ci95": [
+          67975.25,
+          86572.125
+        ],
+        "mean_margin": -32080.8125,
+        "margin_ci95": [
+          -43045.1875,
+          -21852.4375
+        ],
+        "faults": 0,
+        "crashes": 0,
+        "timeouts": 0,
+        "p99_ms": 6.831,
+        "max_ms": 119.637
+      },
+      {
+        "opponent": "tapeselect",
+        "opponent_id": "main@a63d154",
+        "games": 16,
+        "seeds": 8,
+        "mean_bank": 61837.0,
+        "bank_ci95": [
+          47672.625,
+          73600.0
+        ],
+        "mean_margin": -46256.125,
+        "margin_ci95": [
+          -51767.25,
+          -41322.875
+        ],
+        "faults": 0,
+        "crashes": 0,
+        "timeouts": 0,
+        "p99_ms": 6.724,
+        "max_ms": 121.259
+      }
+    ]
+  }
+}

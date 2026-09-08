@@ -1,4 +1,4 @@
-"""HINDSIGHT SOLVER v2: efficiently optimise Strawberry-Brain plans against a live opponent.
+"""HINDSIGHT SOLVER v3: many-draw contested optimisation of Strawberry-Brain.
 
 Usage (from the repository root)::
 
@@ -31,9 +31,9 @@ REPO = Path(__file__).resolve().parents[2]
 BOT = REPO / "bots" / "brain_strawberry" / "main.py"
 OPPONENT = REPO / "bots" / "v46" / "main.py"
 SOLO_RESULT_ROOT = REPO / "data" / "results" / "hindsight"
-RESULT_ROOT = REPO / "data" / "results" / "hindsight-v2"
+RESULT_ROOT = REPO / "data" / "results" / "hindsight-v3"
 CONTESTED_V1 = REPO / "data" / "results" / "hindsight-contested" / "best.json"
-CONTEST_SEEDS = (3910, 3911, 3912, 3913)
+CONTEST_SEEDS = (5005, 5033, 5043, 5072, 5026, 5038, 5024, 5064, 5063, 5090)
 PRUNE_STEPS = (24 * 19, 24 * 24)
 PRUNED_SCORE = -1_000_000_000.0
 sys.path.insert(0, str(REPO / "scripts"))
@@ -60,8 +60,9 @@ def _plain_mix(values: list[int], total: int) -> dict[str, int]:
 
 
 def _base_plan() -> dict[str, Any]:
-    """A search origin matching the current bot's intent, not a claimed replay."""
+    """Exact raw-bot anchor; mutations leave the anchor and enable plan knobs."""
     return {
+        "raw_bot": True,
         "crop_mix": {
             "opening": {"WHEAT": 20, "CARROT": 0, "MELON": 5, "STRAWBERRY": 0},
             "days_10_16": {"WHEAT": 55, "CARROT": 0, "MELON": 20, "STRAWBERRY": 25},
@@ -84,6 +85,7 @@ def _base_plan() -> dict[str, Any]:
 
 def _normalise(plan: dict[str, Any]) -> dict[str, Any]:
     p = copy.deepcopy(plan)
+    p["raw_bot"] = bool(p.get("raw_bot", False))
     p["crop_mix"]["opening"] = _plain_mix([p["crop_mix"]["opening"].get(c, 0) for c in CROPS], 25)
     for phase in PHASES[1:]:
         p["crop_mix"][phase] = _plain_mix([p["crop_mix"][phase].get(c, 0) for c in CROPS], 100)
@@ -131,6 +133,9 @@ def _load_parameterised_agent(plan: dict[str, Any]):
     brain = importlib.util.module_from_spec(spec)
     sys.modules[name] = brain
     spec.loader.exec_module(brain)
+
+    if plan["raw_bot"]:
+        return brain.agent
 
     # Remove the coordinator's hard-coded two-land ceiling; our market module issues
     # the requested sequential NE/SW/SE purchases when their earliest day and reserve permit.
@@ -332,6 +337,7 @@ def _panel_result(games: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "games": games,
         "mean_margin": PRUNED_SCORE if pruned else statistics.fmean(g["margin"] for g in games),
+        "worst_margin": PRUNED_SCORE if pruned else min(g["margin"] for g in games),
         "mean_our_bank": statistics.fmean(g["our_bank"] for g in games),
         "our_banks": [g["our_bank"] for g in games],
         "their_banks": [g["their_bank"] for g in games],
@@ -385,6 +391,7 @@ def _transfer_mix(rng: random.Random, mix: dict[str, int], magnitude: int) -> No
 
 def _mutate(parent: dict[str, Any], rng: random.Random, heat: float = 1.0) -> dict[str, Any]:
     p = copy.deepcopy(parent)
+    p["raw_bot"] = False
     # Independent per-group rates let heat act as a genuine mutation-rate scalar.
     # The generation-level 1/5 rule raises/lower this scalar from observed success.
     rates = {"mix": .42, "land": .10, "animal": .35, "reserve": .16,
@@ -423,6 +430,7 @@ def _mutate(parent: dict[str, Any], rng: random.Random, heat: float = 1.0) -> di
 def _crossover(a: dict[str, Any], b: dict[str, Any], rng: random.Random) -> dict[str, Any]:
     """Uniform crossover at the semantic top-level-group boundary."""
     child = copy.deepcopy(a)
+    child["raw_bot"] = False
     for group in ("crop_mix", "land_days", "animals", "cash_reserve", "hands_by_5day",
                   "fertilize", "sell_policy", "last_plant_day"):
         if rng.random() < .5:
@@ -443,25 +451,31 @@ def _seed_plans(init_from: list[Path]) -> list[dict[str, Any]]:
             plans.append(_load_plan(path))
     for crop in CROPS:
         p = copy.deepcopy(base)
+        p["raw_bot"] = False
         p["crop_mix"]["opening"] = {c: (25 if c == crop else 0) for c in CROPS}
         plans.append(p)
     for hands in (8, 10, 12, 14, 16):
         p = copy.deepcopy(base)
+        p["raw_bot"] = False
         p["hands_by_5day"] = [hands] * 6
         plans.append(p)
     p = copy.deepcopy(base)
+    p["raw_bot"] = False
     for a in ANIMALS:
         p["animals"][a].update(start_day=30, batch=0, total=0)
     plans.append(p)
     p = copy.deepcopy(base)
+    p["raw_bot"] = False
     p["animals"]["GOOSE"].update(start_day=1, interval=1, batch=2, total=16)
     p["animals"]["COW"].update(start_day=30, batch=0, total=0)
     p["animals"]["SHEEP"].update(start_day=30, batch=0, total=0)
     plans.append(p)
     p = copy.deepcopy(base)
+    p["raw_bot"] = False
     p["land_days"] = {"NE": 10, "SW": 11, "SE": 12}
     plans.append(p)
     p = copy.deepcopy(base)
+    p["raw_bot"] = False
     p["sell_policy"] = {x: "immediate" for x in PRODUCTS}
     plans.append(p)
     return [_normalise(x) for x in plans]
@@ -590,48 +604,49 @@ def solve_contested(
             incumbent = ranked[0]
             incumbent_games = {g["seed"]: g for g in incumbent["games"]}
             incumbent_margin = {g["seed"]: g["margin"] for g in incumbent["games"]}
-            staged: list[tuple[dict[str, Any], dict[str, Any], int]] = []
+            race_seeds = seeds[:2]
+            staged: list[tuple[dict[str, Any], dict[str, Any]]] = []
             futures = {}
-            for offset, plan in enumerate(batch):
-                seed = seeds[(len(rows) + offset) % len(seeds)]
-                futures[pool.submit(_worker, plan, (seed,), opponent, incumbent_games, prune_slack)] = (plan, seed)
+            for plan in batch:
+                futures[pool.submit(_worker, plan, race_seeds, opponent, incumbent_games, prune_slack)] = plan
             for future in as_completed(futures):
-                plan, seed = futures[future]
+                plan = futures[future]
                 one = future.result()
-                staged.append((plan, one, seed))
+                staged.append((plan, one))
 
             finalists = []
-            for plan, one, seed in staged:
+            for plan, one in staged:
                 game = one["games"][0] if one["games"] else None
-                qualifies = bool(game and not game["pruned"] and not one["error"] and
-                                 game["margin"] >= incumbent_margin[seed] - race_slack)
+                incumbent_race = statistics.fmean(incumbent_margin[s] for s in race_seeds)
+                qualifies = bool(len(one["games"]) == 2 and not one["pruned"] and not one["error"] and
+                                 one["mean_margin"] >= incumbent_race - race_slack)
                 if qualifies:
-                    remaining = tuple(s for s in seeds if s != seed)
+                    remaining = tuple(s for s in seeds if s not in race_seeds)
                     fut = pool.submit(_worker, plan, remaining, opponent, incumbent_games, prune_slack)
-                    finalists.append((fut, plan, one, seed))
+                    finalists.append((fut, plan, one))
                     continue
                 row = one
                 row["mean_margin"] = PRUNED_SCORE
-                row["outcome"] = "pruned" if game and game["pruned"] else "raced_out"
-                row["stage1_margin"] = game["margin"] if game else PRUNED_SCORE
-                row["stages"] = [{"stage": 1, "seed": seed, "qualified": False,
+                row["outcome"] = "pruned" if one.get("pruned") else "raced_out"
+                row["stage1_margin"] = one.get("mean_margin", PRUNED_SCORE)
+                row["stages"] = [{"stage": 1, "seeds": list(race_seeds), "qualified": False,
                                   "pruned": bool(game and game["pruned"])}]
                 row.update(generation=generation, heat=heat,
                            completed_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
                 _append_log(log_path, row); rows.append(row); seen.add(row["plan_id"])
 
             successes = 0
-            for fut, plan, one, seed in finalists:
+            for fut, plan, one in finalists:
                 rest = fut.result()
                 games = one["games"] + rest["games"]
                 row = _panel_result(games)
                 row.update(params=_normalise(plan), plan_id=_plan_key(plan),
                            error=one.get("error") or rest.get("error"),
                            eval_seconds=one.get("eval_seconds", 0) + rest.get("eval_seconds", 0),
-                           stage1_margin=one["games"][0]["margin"], generation=generation, heat=heat,
+                           stage1_margin=one["mean_margin"], generation=generation, heat=heat,
                            outcome="pruned" if row["pruned"] else "completed",
-                           stages=[{"stage": 1, "seed": seed, "qualified": True, "pruned": False},
-                                   {"stage": 2, "seeds": [s for s in seeds if s != seed],
+                           stages=[{"stage": 1, "seeds": list(race_seeds), "qualified": True, "pruned": False},
+                                   {"stage": 2, "seeds": [s for s in seeds if s not in race_seeds],
                                     "pruned": rest.get("pruned", False)}],
                            completed_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
                 if row["outcome"] == "completed" and row["mean_margin"] > incumbent["mean_margin"]:
@@ -653,7 +668,7 @@ def solve_contested(
     if old_best.exists():
         wall_previous = float(json.loads(old_best.read_text(encoding="utf-8")).get("wall_seconds", 0))
     payload = {
-        "schema_version": 2, "engine": engine_version(), "seeds": list(seeds),
+        "schema_version": 3, "engine": engine_version(), "seeds": list(seeds),
         "seats": [s % 2 for s in seeds],
         "opponent": str(opponent.relative_to(REPO)), "source_bot": str(BOT.relative_to(REPO)),
         "plan": best_row["params"], "plan_id": best_row["plan_id"], **measured,
@@ -671,6 +686,8 @@ def solve_contested(
 
 
 def _plain_plan(p: dict[str, Any]) -> str:
+    if p.get("raw_bot"):
+        return "Exact raw bots/brain_strawberry/main.py behavior (plan-space anchor)."
     opening = ", ".join(f"{v} {k.lower()}" for k,v in p["crop_mix"]["opening"].items() if v)
     replants = "; ".join(f"{phase.replace('_', ' ')} " + "/".join(f"{c.lower()} {v}%" for c,v in p["crop_mix"][phase].items() if v) for phase in PHASES[1:])
     lands = ", ".join(f"{q} d{p['land_days'][q]}" if p["land_days"][q] < 30 else f"{q} never" for q in ("NE", "SW", "SE"))
@@ -689,15 +706,19 @@ def _money(value: float) -> str:
 
 def emit_bot(plan: dict[str, Any], destination: Path) -> Path:
     source = BOT.read_text(encoding="utf-8")
-    template = Path(__file__).with_name("EMIT_ADAPTER.txt").read_text(encoding="utf-8")
-    adapter = template.replace("__PLAN_LITERAL__", repr(_normalise(plan)))
+    normalised = _normalise(plan)
+    if normalised.get("raw_bot"):
+        adapter = ""
+    else:
+        template = Path(__file__).with_name("EMIT_ADAPTER.txt").read_text(encoding="utf-8")
+        adapter = "\n" + template.replace("__PLAN_LITERAL__", repr(normalised))
     destination.mkdir(parents=True, exist_ok=True)
     path = destination / "main.py"
     path.write_text(source.rstrip() + "\n" + adapter, encoding="utf-8")
     return path
 
 
-def verify_emitted(plan: dict[str, Any], emitted: Path, opponent: Path, seed: int = 3910) -> dict[str, float]:
+def verify_emitted(plan: dict[str, Any], emitted: Path, opponent: Path, seed: int = CONTEST_SEEDS[0]) -> dict[str, float]:
     expected = _run_episode(seed, plan, seed % 2, opponent)["our_bank"]
     ke = import_engine()
     seat = seed % 2
@@ -712,12 +733,12 @@ def verify_emitted(plan: dict[str, Any], emitted: Path, opponent: Path, seed: in
 
 def write_report(result: dict[str, Any]) -> Path:
     path = RESULT_ROOT / "REPORT.md"
-    panels = [("brain_strawberry baseline", result["baseline"]), ("hindsight-v2 best", result)]
-    lines = ["# Hindsight Solver v2 — Contested", "",
+    panels = [("brain_strawberry baseline", result["baseline"]), ("hindsight-v3 best", result)]
+    lines = ["# Hindsight Solver v3 — Many-draw contested", "",
              f"Engine `{engine_version()}`; seeds {', '.join(map(str, result['seeds']))}; one alternating seat per seed; live opponent `{result['opponent']}`. Objective: mean paired margin.", "",
-             "## Panel results", "", "| strategy | mean margin | mean our bank | mean opponent bank |", "|---|---:|---:|---:|"]
+             "## Panel results", "", "| strategy | mean margin | worst margin | mean our bank | mean opponent bank |", "|---|---:|---:|---:|---:|"]
     for name, panel in panels:
-        lines.append(f"| {name} | {_money(panel['mean_margin'])} | {_money(statistics.fmean(panel['our_banks']))} | {_money(statistics.fmean(panel['their_banks']))} |")
+        lines.append(f"| {name} | {_money(panel['mean_margin'])} | {_money(panel['worst_margin'])} | {_money(statistics.fmean(panel['our_banks']))} | {_money(statistics.fmean(panel['their_banks']))} |")
     lines += ["", "| strategy | seed | seat | our bank | opponent bank | margin |", "|---|---:|---:|---:|---:|---:|"]
     for name, panel in panels:
         for game in panel["games"]:
@@ -747,7 +768,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seeds", nargs="+", type=int, default=list(CONTEST_SEEDS), help="panel seeds; seat is seed %% 2")
     parser.add_argument("--opponent", type=Path, default=OPPONENT)
     parser.add_argument("--prune-slack", type=float, default=12_000)
-    parser.add_argument("--race-slack", type=float, default=8_000)
+    parser.add_argument("--race-slack", type=float, default=30_000)
     parser.add_argument("--init-from", nargs="*", type=Path, default=[CONTESTED_V1], help="plan JSON files; base is always included")
     parser.add_argument("--emit-bot", type=Path, help="directory receiving standalone main.py")
     args=parser.parse_args(argv)

@@ -1,0 +1,14 @@
+{
+  "method": "raw path agent versus _load_parameterised_agent(_base_plan()), V46 opponent, alternating seed-parity seat",
+  "before_fix": [
+    {"seed": 5005, "raw_final": 43189, "adapter_base_final": 34103, "residual": -9086},
+    {"seed": 5033, "raw_final": 61932, "adapter_base_final": 44613, "residual": -17319},
+    {"seed": 5026, "raw_final": 88877, "adapter_base_final": 65443, "residual": -23434}
+  ],
+  "after_fix": [
+    {"seed": 5005, "raw_final": 43189, "adapter_base_final": 43189, "residual": 0, "action_mismatches": 0, "actions_compared": 719, "daily_bank_mismatches": 0},
+    {"seed": 5033, "raw_final": 61932, "adapter_base_final": 61932, "residual": 0, "action_mismatches": 0, "actions_compared": 719, "daily_bank_mismatches": 0},
+    {"seed": 5026, "raw_final": 88877, "adapter_base_final": 88877, "residual": 0, "action_mismatches": 0, "actions_compared": 719, "daily_bank_mismatches": 0}
+  ],
+  "fix": "The plan space now contains an explicit raw_bot anchor loaded through the same fresh-module adapter. Any mutation disables raw_bot and activates the plan knobs."
+}
