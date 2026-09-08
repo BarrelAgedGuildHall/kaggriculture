@@ -1,0 +1,2192 @@
+{
+  "schema_version": 1,
+  "seed": 3910,
+  "source": "schedule-v2.json valid_upper_bound witness",
+  "integerization": "cumulative nearest-integer; carrots nearest shed; exact LP timing",
+  "variant": "v3",
+  "days": [
+    {
+      "day": 0,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "GOOSE",
+          "qty": 6
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 16
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 17
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "kind": "COOP"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 1,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "WHEAT_SEED",
+          "qty": 4
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 6
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 2,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "GOOSE",
+          "qty": 4
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 16
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 12
+        },
+        {
+          "item": "LAND",
+          "qty": 2
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "kind": "COOP"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 3,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 5
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 11
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 12
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 4,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 7
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 5,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 11
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 27
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            8,
+            5
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 6,
+      "hires": 12,
+      "purchases": [],
+      "builds": [
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "kind": "COOP"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "kind": "COOP"
+        }
+      ],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 7,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 3
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 8,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 5
+        },
+        {
+          "item": "MELON_SEED",
+          "qty": 16
+        }
+      ],
+      "builds": [
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            8,
+            6
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            9,
+            6
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            6,
+            7
+          ],
+          "kind": "PASTURE"
+        },
+        {
+          "tile": [
+            7,
+            7
+          ],
+          "kind": "PASTURE"
+        }
+      ],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "crop": "MELON"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 9,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 10,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "CARROT_SEED",
+          "qty": 3
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 11,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 12,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "CARROT_SEED",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 13,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "CARROT_SEED",
+          "qty": 3
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 14,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 15,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 16,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "CARROT_SEED",
+          "qty": 3
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 17,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 18,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 19,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "STRAWBERRY_SEED",
+          "qty": 9
+        },
+        {
+          "item": "MELON_SEED",
+          "qty": 9
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 20,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 21,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 22,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 23,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 24,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "CARROT_SEED",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 25,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 26,
+      "hires": 12,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 27,
+      "hires": 10,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 28,
+      "hires": 10,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 29,
+      "hires": 10,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "integerized_bank": 329.0,
+  "best_variant": "v5",
+  "best_playable_bank": 83764.0,
+  "bound": 381689.7,
+  "gap": 297925.7,
+  "iterations": {
+    "v0": {
+      "bank": 329.0,
+      "faults": 0,
+      "p99_ms": 2.9599000699818134
+    },
+    "v1": {
+      "bank": 190.0,
+      "faults": 0,
+      "p99_ms": 1.9856998696923256
+    },
+    "v2": {
+      "bank": 8432.0,
+      "faults": 0,
+      "p99_ms": 2.317700069397688
+    },
+    "v3": {
+      "bank": 31190.0,
+      "faults": 0,
+      "p99_ms": 3.1950001139193773
+    },
+    "v4": {
+      "bank": 79679.0,
+      "faults": 0,
+      "p99_ms": 3.295700065791607
+    },
+    "v5": {
+      "bank": 83764.0,
+      "faults": 0,
+      "p99_ms": 1.4529000036418438
+    }
+  },
+  "products": {
+    "WHEAT": {
+      "bound_units": 283,
+      "bound_average_price": 36.17314487632509,
+      "playable_units": 184,
+      "playable_average_price": 40.97826086956522,
+      "town_drain": 282,
+      "bound_model_revenue": 10237,
+      "playable_revenue": 7540.0
+    },
+    "CARROT": {
+      "bound_units": 379,
+      "bound_average_price": 56.2401055408971,
+      "playable_units": 11,
+      "playable_average_price": 36.90909090909091,
+      "town_drain": 462,
+      "bound_model_revenue": 21315,
+      "playable_revenue": 406.0
+    },
+    "TOMATO": {
+      "bound_units": 0,
+      "bound_average_price": null,
+      "playable_units": 0,
+      "playable_average_price": null,
+      "town_drain": 192,
+      "bound_model_revenue": 0,
+      "playable_revenue": 0.0
+    },
+    "STRAWBERRY": {
+      "bound_units": 36,
+      "bound_average_price": 178.16666666666666,
+      "playable_units": 0,
+      "playable_average_price": null,
+      "town_drain": 66,
+      "bound_model_revenue": 6414,
+      "playable_revenue": 0.0
+    },
+    "MELON": {
+      "bound_units": 150,
+      "bound_average_price": 216.67333333333335,
+      "playable_units": 4,
+      "playable_average_price": 272.75,
+      "town_drain": 30,
+      "bound_model_revenue": 32501,
+      "playable_revenue": 1091.0
+    },
+    "EGG": {
+      "bound_units": 2224,
+      "bound_average_price": 39.34622302158273,
+      "playable_units": 250,
+      "playable_average_price": 43.136,
+      "town_drain": 120,
+      "bound_model_revenue": 87506,
+      "playable_revenue": 10784.0
+    },
+    "MILK": {
+      "bound_units": 276,
+      "bound_average_price": 223.93840579710144,
+      "playable_units": 133,
+      "playable_average_price": 218.90977443609023,
+      "town_drain": 228,
+      "bound_model_revenue": 61807,
+      "playable_revenue": 29115.0
+    },
+    "WOOL": {
+      "bound_units": 655,
+      "bound_average_price": 239.6824427480916,
+      "playable_units": 266,
+      "playable_average_price": 247.49624060150376,
+      "town_drain": 606,
+      "bound_model_revenue": 156992,
+      "playable_revenue": 65834.0
+    },
+    "FERTILIZER": {
+      "bound_units": 693,
+      "bound_average_price": 36.42857142857143,
+      "playable_units": 169,
+      "playable_average_price": 85.0828402366864,
+      "town_drain": 0,
+      "bound_model_revenue": 25245,
+      "playable_revenue": 14379.0
+    }
+  },
+  "attribution": {
+    "labour_travel": 69518,
+    "cash_timing": 136356,
+    "pricing_model": 9104.0,
+    "animal_ramp": 54765,
+    "other": 28182.70000000001,
+    "sum": 297925.7
+  },
+  "attribution_method": {
+    "pricing_model": "all-drain-first envelope on playable units minus actual revenue",
+    "cash_timing": "bound animal-product envelope minus max envelope of best schedule's requested cohorts",
+    "animal_ramp": "requested-cohort perfect-care envelope minus playable animal-product envelope",
+    "labour_travel": "missing crop and fertilizer revenue at the bound envelope",
+    "other": "exact residual: wheat, expenses, speculation, fractionality, storage and model interactions"
+  },
+  "bound_farm_revenue": 402017,
+  "bound_expenses_implied": 45527.29999999999,
+  "playable_revenue": 129149.0,
+  "playable_expenses_implied": 48385.0,
+  "animal_cap_units": {
+    "EGG": 288,
+    "MILK": 153,
+    "WOOL": 462
+  }
+}

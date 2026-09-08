@@ -1,0 +1,33 @@
+{
+  "variant": "v5",
+  "final_bank": 83764.0,
+  "faults": 0,
+  "timing_ms": {
+    "p99": 1.4529000036418438,
+    "max": 27.333900099620223,
+    "mean": 0.9554605017855287
+  },
+  "produced": {
+    "EGG": 256,
+    "CARROT": 11,
+    "WHEAT": 12,
+    "WOOL": 282,
+    "MILK": 139,
+    "MELON": 4
+  },
+  "sold": {
+    "WHEAT": 197,
+    "FERTILIZER": 148,
+    "EGG": 196,
+    "CARROT": 8,
+    "WOOL": 175,
+    "MILK": 92,
+    "MELON": 4
+  },
+  "revenue": 94249,
+  "hand_turns": {
+    "acting": 2019,
+    "moving": 4215,
+    "idle": 646
+  }
+}
