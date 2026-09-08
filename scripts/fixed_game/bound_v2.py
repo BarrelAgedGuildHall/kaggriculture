@@ -494,11 +494,11 @@ def main() -> None:
     details = {"valid": valid, "realistic": realistic, "product_trading": trades,
                "exec_b_reference_calibration": calibration, "exec_b_pinned_calibration": pinned_calibration,
                "routing": routing,
-               "instance_mismatch":"7baa291 earns $138,413 only with its endogenous ICE_CREAM/YARN/... shop draw; under the requested pin it earns $76,009."}
+               "instance_comparison":"The reference calibration uses this seed's endogenous action-coupled shop draw; the pinned calibration uses the pass/pass schedule."}
     (args.output_dir / "exec-b-7baa291-actions-v2.json").write_text(json.dumps(reference_run["actions"], indent=2)+"\n", encoding="utf-8")
     (args.output_dir / "exec-b-7baa291-pinned-actions-v2.json").write_text(json.dumps(run["actions"], indent=2)+"\n", encoding="utf-8")
     (args.output_dir / "bound-details-v2.json").write_text(json.dumps(details, indent=2)+"\n", encoding="utf-8")
-    schedule = {"schema_version":1,"seed":3910,"seat":0,"opponent":"pass","pinned":True,
+    schedule = {"schema_version":1,"seed":int(instance["seed"]),"seat":0,"opponent":"pass","pinned":True,
                 "warning":"Fractional LP witness; execute.py accepts the schema but cannot realize fractional relaxed work.",
                 "valid_upper_bound":valid["objective_final_bank"],"realistic_bound":realistic["objective_final_bank"],
                 "product_trading_credit":{"WHEAT":carry,"FERTILIZER":0,"kind":"per-drain 100-unit valid carry ceiling"},

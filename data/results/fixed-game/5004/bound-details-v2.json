@@ -12832,5 +12832,5 @@
       }
     ]
   },
-  "instance_mismatch": "7baa291 earns $138,413 only with its endogenous ICE_CREAM/YARN/... shop draw; under the requested pin it earns $76,009."
+  "instance_comparison": "The reference calibration uses this seed's endogenous action-coupled shop draw; the pinned calibration uses the pass/pass schedule."
 }
