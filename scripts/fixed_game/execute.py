@@ -389,10 +389,19 @@ class Executor:
 class ReferenceExecutor(Executor):
     """Schedule adapter around the exact 7baa291 work router."""
 
-    def __init__(self, schedule: dict, *, idle_fix: bool = True):
+    def __init__(self, schedule: dict, *, idle_fix: bool = True,
+                 fertilizer_drain: int = 0, fertilizer_threshold: int = 10,
+                 animal_sweep: bool = False, layout_mode: str = "scheduled"):
         super().__init__(schedule)
         self.router = _load_reference_router()
         self.idle_fix = idle_fix
+        self.fertilizer_drain = int(fertilizer_drain)
+        self.fertilizer_threshold = int(fertilizer_threshold)
+        self.animal_sweep = animal_sweep
+        self.layout_mode = layout_mode
+        self.sale_policies = {str(k): str(v) for k, v in
+                              (self.schedule.get("sale_policies", {}) or {}).items()}
+        self._current_fertilizer_price = BASE_PRICE["FERTILIZER"]
         self.positive_job_idle = defaultdict(int)
         self._sales_issued = defaultdict(Counter)
         self._scheduled_buys_issued = set()
@@ -406,8 +415,13 @@ class ReferenceExecutor(Executor):
                 planned_crop_tiles[planting["crop"]].append(tuple(planting["tile"]))
             planned_build_tiles.extend(tuple(build["tile"]) for build in spec["builds"])
         original_layout_rank = self.router._layout_rank
+        if self.layout_mode == "swap_melon_wheat":
+            planned_crop_tiles["MELON"], planned_crop_tiles["WHEAT"] = (
+                planned_crop_tiles["WHEAT"], planned_crop_tiles["MELON"])
 
         def scheduled_layout_rank(pos, crop=None):
+            if self.layout_mode == "reference":
+                return original_layout_rank(pos, crop)
             targets = planned_crop_tiles.get(crop, ()) if crop else planned_build_tiles
             if targets:
                 return (min(self.router._dist(pos, target) for target in targets),
@@ -448,6 +462,39 @@ class ReferenceExecutor(Executor):
         original_assign = self.router._assign
 
         def assigned_with_preposition(positions, inventories, jobs, hour):
+            # Fertilizer has no sink on many pinned instances.  Once its quote no
+            # longer clears the configured floor, collecting it spends a field
+            # action and a route visit to manufacture glut.  A schedule can make
+            # this unconditional with the ``never_collect`` policy.
+            fert_policy = self.sale_policies.get("FERTILIZER", "sell_on_sight")
+            collect_fertilizer = not (
+                fert_policy == "never_collect"
+                or (self.fertilizer_drain == 0
+                    and self._current_fertilizer_price < self.fertilizer_threshold)
+            )
+            if not collect_fertilizer:
+                jobs[:] = [job for job in jobs
+                           if job.get("action", [None])[0] != "COLLECT_FERTILIZER"]
+
+            # Keep each hand on one contiguous animal strip for the full sweep.
+            # The reference divided ranks by all 25 NW tiles, leaving skewed
+            # ownership when the herd occupied only part of the quadrant.
+            if self.animal_sweep and positions:
+                animal_targets = sorted(
+                    {job["target"] for job in jobs
+                     if job.get("tag") in ("feed", "care", "fert")},
+                    key=lambda p: ((4 - p[1]) * 5
+                                   + ((4 - p[0]) if (4 - p[1]) % 2 == 0 else p[0]), p),
+                )
+                owner_by_target = {
+                    target: min(len(positions) - 1,
+                                rank * len(positions) // max(1, len(animal_targets)))
+                    for rank, target in enumerate(animal_targets)
+                }
+                for job in jobs:
+                    if job.get("target") in owner_by_target and job.get("tag") in (
+                            "feed", "care", "fert", "harvest"):
+                        job["owner"] = owner_by_target[job["target"]]
             actions = original_assign(positions, inventories, jobs, hour)
             if not self.idle_fix or not jobs:
                 return actions
@@ -478,6 +525,8 @@ class ReferenceExecutor(Executor):
         try:
             self._observe_transition(obs)
             day = int(obs.get("day", 0))
+            self._current_fertilizer_price = int(
+                obs.get("market", {}).get("prices", {}).get("FERTILIZER", 0) or 0)
             phase = min(5, day // 5)
             self.router.PLAN["hands_by_5day"][phase] = self.days[day]["hires"]
             action = self.router.agent(obs)
@@ -502,6 +551,22 @@ class ReferenceExecutor(Executor):
                         market.append(["SELL", product, qty])
                         self._sales_issued[day][product] += qty
                 action["market"] = market
+
+            # Product-level policies are orthogonal to daily quantity targets.
+            # ``hold_to_drain`` waits for the final day, while ``never_collect``
+            # also suppresses fertilizer sales already sitting in the shed.
+            filtered = []
+            for order in action["market"]:
+                if order[0] != "SELL":
+                    filtered.append(order)
+                    continue
+                policy = self.sale_policies.get(order[1], "sell_on_sight")
+                if policy in ("never", "never_collect"):
+                    continue
+                if policy == "hold_to_drain" and day < 29:
+                    continue
+                filtered.append(order)
+            action["market"] = filtered
 
             # The reference router had no land order path; honour scheduled land.
             land_target = sum(
@@ -599,7 +664,7 @@ def _result(executor: Executor, env, schedule: dict, seed: int) -> dict:
 
 
 def _write_outputs(result: dict, actions: list, schedule_path: Path | None, tag: str):
-    out = ROOT / "data" / "results" / "fixed-game" / "3910" / "execution" / tag
+    out = ROOT / "data" / "results" / "fixed-game" / str(result["seed"]) / "execution" / tag
     out.mkdir(parents=True, exist_ok=True)
     (out / "ledger.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     padded = list(actions)
@@ -620,17 +685,27 @@ def _write_outputs(result: dict, actions: list, schedule_path: Path | None, tag:
 
 
 def execute(schedule: dict, seed: int = 3910, workers: int = 1, *, tag: str = "run",
-            schedule_path: Path | None = None, idle_fix: bool = True) -> dict:
+            schedule_path: Path | None = None, idle_fix: bool = True,
+            instance_path: Path | None = None, fertilizer_threshold: int = 10,
+            animal_sweep: bool = False, layout_mode: str = "scheduled") -> dict:
     del workers
-    controller = ReferenceExecutor(schedule, idle_fix=idle_fix)
-    instance = load_instance()
+    instance = load_instance(instance_path) if instance_path else load_instance()
     if int(instance["seed"]) != int(seed):
         raise ValueError(f"pinned instance seed is {instance['seed']}, requested {seed}")
+    fertilizer_drain = sum(int(row.get("drain", {}).get("FERTILIZER", 0))
+                           for row in instance.get("town", {}).get("daily_drain", []))
+    controller = ReferenceExecutor(schedule, idle_fix=idle_fix,
+                                   fertilizer_drain=fertilizer_drain,
+                                   fertilizer_threshold=fertilizer_threshold,
+                                   animal_sweep=animal_sweep, layout_mode=layout_mode)
     env = make_env(instance, debug=True)
     env.run([controller.policy, "pass"])
     result = _result(controller, env, controller.schedule, seed)
     result["router"] = f"bots/exec_b/main.py@{REFERENCE_ROUTER_COMMIT}"
     result["idle_fix"] = idle_fix
+    result["fertilizer_threshold"] = fertilizer_threshold
+    result["animal_sweep"] = animal_sweep
+    result["layout_mode"] = layout_mode
     result["output_dir"] = str(_write_outputs(result, controller.actions, schedule_path, tag))
     return result
 
@@ -642,10 +717,20 @@ def main():
     parser.add_argument("--workers", type=int, default=1, help="compatibility option; one fixed game is run")
     parser.add_argument("--tag", help="output directory tag (default: schedule stem)")
     parser.add_argument("--no-idle-fix", action="store_true", help="measure the verbatim router before pre-positioning")
+    parser.add_argument("--instance", type=Path, help="pinned instance JSON (default: seed 3910)")
+    parser.add_argument("--fertilizer-threshold", type=int, default=10,
+                        help="minimum zero-drain fertilizer quote worth collecting")
+    parser.add_argument("--animal-sweep", action="store_true",
+                        help="normalize herd strips across the active animal footprint")
+    parser.add_argument("--layout-mode", choices=("scheduled", "reference", "swap_melon_wheat"),
+                        default="scheduled", help="crop block placement policy")
     args = parser.parse_args()
     schedule = json.loads(args.schedule.read_text(encoding="utf-8"))
     result = execute(schedule, args.seed, args.workers, tag=args.tag or args.schedule.stem,
-                     schedule_path=args.schedule, idle_fix=not args.no_idle_fix)
+                     schedule_path=args.schedule, idle_fix=not args.no_idle_fix,
+                     instance_path=args.instance,
+                     fertilizer_threshold=args.fertilizer_threshold,
+                     animal_sweep=args.animal_sweep, layout_mode=args.layout_mode)
     print(json.dumps({k: result[k] for k in ("final_bank", "faults", "timing_ms", "execution_loss", "output_dir")}, indent=2))
 
 

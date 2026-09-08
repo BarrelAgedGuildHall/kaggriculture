@@ -1,8 +1,8 @@
-"""Eight-process local search over pinned fixed-game day schedules.
+"""Parallel anytime search over pinned fixed-game schedules.
 
-Each worker keeps day-boundary engine snapshots for its accepted incumbent.  A
-mutation first affecting day d restores that snapshot and executes only d..29;
-the final winner is independently replayed by ``sim.replay``.
+Round 3 mixes distinct economic families, block moves, herd timing moves,
+hands-profile moves, sale policies, annealing, and top-k restarts.  Every winner
+is replayed independently through the pinned real-engine simulator.
 """
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import argparse
 import copy
 import hashlib
 import json
+import math
 import multiprocessing as mp
 import queue
 import random
@@ -22,9 +23,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.fixed_game.execute import ReferenceExecutor, validate_schedule
+from scripts.fixed_game.pin import DEFAULT_INSTANCE, load_instance
 from scripts.fixed_game.sim import PASS, Sim, replay
 
-OUT = ROOT / "data" / "results" / "fixed-game" / "3910" / "search"
 SCHEDULES = ROOT / "scripts" / "fixed_game" / "schedules"
 PRODUCTS = ("WHEAT", "CARROT", "TOMATO", "STRAWBERRY", "MELON", "EGG", "MILK", "WOOL", "FERTILIZER")
 CROPS = ("WHEAT", "CARROT", "TOMATO", "STRAWBERRY", "MELON")
@@ -40,102 +41,162 @@ def _phase_start(day):
     return 0 if day < 10 else 10 if day < 17 else 17 if day < 23 else 23
 
 
-def random_start(base, rng):
-    schedule = copy.deepcopy(base)
-    # A demand-shaped starting point: carrot/wool, one land purchase, and a
-    # smaller milk line.  Planting rows are target block markers for the router.
-    for day in schedule["days"]:
-        day["plantings"] = []
-        day["builds"] = []
-        day["purchases"] = [p for p in day["purchases"] if p["item"] not in ANIMALS]
-        day["hires"] = rng.randint(7, 12)
-    schedule["days"][rng.randint(5, 10)]["purchases"].append({"item": "LAND", "qty": 1})
+def _clear_plan(base, family):
+    out = validate_schedule(base)
+    out["family"] = family
+    out["sale_policies"] = {}
+    for day in out["days"]:
+        day.update(hires=8, purchases=[], builds=[], plantings=[], sales=[])
+    return out
+
+
+def _tile_block(crop, count, *, near=True, offset=0):
     tiles = [(x, y) for y in range(10) for x in range(10)]
-    rng.shuffle(tiles)
-    for index, tile in enumerate(tiles[:rng.randint(35, 70)]):
-        day = rng.choice((0, 10, 17, 23))
-        crop = rng.choices(CROPS, weights=(25, 50, 7, 5, 8))[0]
-        schedule["days"][day]["plantings"].append({"tile": list(tile), "crop": crop})
-    for animal, total in (("SHEEP", rng.randint(12, 22)), ("COW", rng.randint(1, 8)), ("GOOSE", rng.randint(0, 6))):
-        for index in range(total):
-            day = min(20, index + rng.randint(0, 4))
-            schedule["days"][day]["purchases"].append({"item": animal, "qty": 1})
-    return validate_schedule(schedule)
+    shed = ((4, 4), (5, 4), (4, 5), (5, 5))
+    tiles.sort(key=lambda p: (min(abs(p[0] - x) + abs(p[1] - y) for x, y in shed), p[1], p[0]),
+               reverse=not near)
+    return [{"tile": list(tile), "crop": crop} for tile in tiles[offset:offset + count]]
+
+
+def _buy_each(schedule, animal, total, days):
+    for index in range(total):
+        schedule["days"][days[index % len(days)]]["purchases"].append({"item": animal, "qty": 1})
+
+
+def family_starts(prior, tempo):
+    incumbent = validate_schedule(prior)
+    incumbent["family"] = "round2_incumbent"
+
+    bound = _clear_plan(tempo, "goose_carrot_sheep")
+    bound["days"][0]["hires"] = 7
+    bound["days"][0]["purchases"] += [{"item": "WHEAT_SEED", "qty": 14},
+                                        {"item": "CARROT_SEED", "qty": 18}]
+    bound["days"][0]["plantings"] = (_tile_block("CARROT", 12, near=True)
+                                         + _tile_block("WHEAT", 13, near=False))
+    bound["days"][8]["purchases"].append({"item": "LAND", "qty": 1})
+    # A feasible integer foothold in the LP's family.  The herd-count operator
+    # can scale it toward the LP's 49/22 corner without starting bankrupt.
+    _buy_each(bound, "GOOSE", 16, list(range(8)))
+    _buy_each(bound, "SHEEP", 14, list(range(1, 11)))
+    bound["days"][5]["plantings"] += _tile_block("MELON", 10, near=True, offset=20)
+
+    crop = _clear_plan(tempo, "tomato_carrot_crop")
+    crop["days"][0]["purchases"] += [{"item": "CARROT_SEED", "qty": 40},
+                                       {"item": "TOMATO_SEED", "qty": 18}]
+    crop["days"][0]["plantings"] = (_tile_block("CARROT", 17, near=True)
+                                        + _tile_block("TOMATO", 8, near=False))
+    crop["days"][6]["purchases"].append({"item": "LAND", "qty": 1})
+    _buy_each(crop, "SHEEP", 8, list(range(2, 10)))
+
+    mixed = _clear_plan(tempo, "mixed")
+    mixed["days"][0]["purchases"] += [{"item": "WHEAT_SEED", "qty": 14},
+                                        {"item": "CARROT_SEED", "qty": 14},
+                                        {"item": "MELON_SEED", "qty": 10}]
+    mixed["days"][0]["plantings"] = (_tile_block("CARROT", 8, near=True)
+                                         + _tile_block("WHEAT", 9, near=False)
+                                         + _tile_block("MELON", 8, near=True, offset=8))
+    _buy_each(mixed, "GOOSE", 10, list(range(8)))
+    _buy_each(mixed, "SHEEP", 12, list(range(1, 10)))
+    _buy_each(mixed, "COW", 4, list(range(3, 10)))
+    return [validate_schedule(x) for x in (incumbent, bound, crop, mixed)]
+
+
+def _block(schedule, rng):
+    candidates = []
+    for day in schedule["days"]:
+        for crop in CROPS:
+            rows = [p for p in day["plantings"] if p["crop"] == crop]
+            if len(rows) >= 2:
+                candidates.append((day, crop, rows))
+    return rng.choice(candidates) if candidates else None
 
 
 def mutate(schedule, rng):
     out = copy.deepcopy(schedule)
-    kind = rng.choice(("move_plant", "purchase", "hands", "sale", "swap_crop", "animal"))
+    kind = rng.choices(
+        ("recrop_block", "shift_block_day", "swap_block_positions", "herd_shift",
+         "hands_profile", "sale_policy", "purchase", "animal_count"),
+        weights=(18, 14, 10, 14, 18, 8, 8, 10), k=1)[0]
     earliest = 0
-    if kind == "move_plant":
-        source_days = [d for d in out["days"] if d["plantings"]]
-        if source_days:
-            source = rng.choice(source_days)
-            row = source["plantings"].pop(rng.randrange(len(source["plantings"])))
-        else:
-            source = out["days"][0]
-            row = {"tile": [rng.randrange(10), rng.randrange(10)], "crop": rng.choice(CROPS)}
-        old_day = source["day"]
-        new_day = max(0, min(26, old_day + rng.choice((-7, -3, 3, 7))))
-        row["tile"] = [rng.randrange(10), rng.randrange(10)]
-        if rng.random() < .45:
-            row["crop"] = rng.choice(CROPS)
-        out["days"][new_day]["plantings"].append(row)
-        earliest = min(_phase_start(old_day), _phase_start(new_day))
+    if kind == "recrop_block":
+        chosen = _block(out, rng)
+        if chosen:
+            day, old_crop, rows = chosen
+            new_crop = rng.choice([c for c in CROPS if c != old_crop])
+            for row in rng.sample(rows, rng.randint(2, len(rows))):
+                row["crop"] = new_crop
+            earliest = _phase_start(day["day"])
+    elif kind == "shift_block_day":
+        chosen = _block(out, rng)
+        if chosen:
+            source, _crop, rows = chosen
+            new_day = max(0, min(27, source["day"] + rng.choice((-7, -3, -1, 1, 3, 7))))
+            take = rng.sample(rows, rng.randint(2, len(rows)))
+            for row in take:
+                source["plantings"].remove(row)
+                out["days"][new_day]["plantings"].append(row)
+            earliest = min(_phase_start(source["day"]), _phase_start(new_day))
+    elif kind == "swap_block_positions":
+        blocks = []
+        for day in out["days"]:
+            for crop in CROPS:
+                rows = [p for p in day["plantings"] if p["crop"] == crop]
+                if rows:
+                    blocks.append((day, rows))
+        if len(blocks) >= 2:
+            left, right = rng.sample(blocks, 2)
+            n = min(len(left[1]), len(right[1]))
+            for a, b in zip(rng.sample(left[1], n), rng.sample(right[1], n)):
+                a["tile"], b["tile"] = b["tile"], a["tile"]
+            earliest = min(_phase_start(left[0]["day"]), _phase_start(right[0]["day"]))
+    elif kind == "herd_shift":
+        animal = rng.choice(ANIMALS)
+        rows = [(d, p) for d in out["days"] for p in d["purchases"] if p["item"] == animal]
+        shift = rng.choice((-3, -1, 1, 3))
+        for source, row in list(rows):
+            source["purchases"].remove(row)
+            out["days"][max(0, min(25, source["day"] + shift))]["purchases"].append(row)
+        earliest = max(0, min((d["day"] for d, _ in rows), default=0) + min(0, shift))
+    elif kind == "hands_profile":
+        start = rng.randrange(30)
+        end = min(30, start + rng.randint(2, 10))
+        delta = rng.choice((-1, 1))
+        for day in range(start, end):
+            out["days"][day]["hires"] = max(1, min(15, out["days"][day]["hires"] + delta))
+        earliest = start
+    elif kind == "sale_policy":
+        product = rng.choice(PRODUCTS)
+        modes = ["sell_on_sight", "hold_to_drain",
+                 "never_collect" if product == "FERTILIZER" else "never"]
+        current = out.setdefault("sale_policies", {}).get(product, "sell_on_sight")
+        out["sale_policies"][product] = rng.choice([x for x in modes if x != current])
     elif kind == "purchase":
-        choices = [(d, i, p) for d in out["days"] for i, p in enumerate(d["purchases"])]
-        if choices and rng.random() < .75:
-            spec, index, row = rng.choice(choices)
-            old_day = spec["day"]
-            spec["purchases"].pop(index)
-            row["qty"] = max(1, int(row.get("qty", 1)) + rng.choice((-2, -1, 1, 2)))
-            new_day = max(0, min(28, old_day + rng.choice((-3, -1, 1, 3))))
-            out["days"][new_day]["purchases"].append(row)
-            earliest = min(old_day, new_day)
-        else:
-            day = rng.randrange(0, 20)
-            item = rng.choice(("WHEAT_SEED", "CARROT_SEED", "MELON_SEED", "STRAWBERRY_SEED", "WHEAT", "LAND"))
-            out["days"][day]["purchases"].append({"item": item, "qty": 1 if item == "LAND" else rng.randint(3, 60)})
-            earliest = day
-    elif kind == "hands":
-        day = rng.randrange(30)
-        out["days"][day]["hires"] = max(1, min(15, out["days"][day]["hires"] + rng.choice((-2, -1, 1, 2))))
+        day = rng.randrange(20)
+        item = rng.choice(("WHEAT_SEED", "CARROT_SEED", "TOMATO_SEED", "MELON_SEED",
+                           "STRAWBERRY_SEED", "LAND"))
+        out["days"][day]["purchases"].append(
+            {"item": item, "qty": 1 if item == "LAND" else rng.randint(3, 30)})
         earliest = day
-    elif kind == "sale":
-        day = rng.randrange(30)
-        rows = out["days"][day]["sales"]
-        if rows and rng.random() < .6:
-            row = rng.choice(rows)
-            row["qty"] = max(1, row["qty"] + rng.choice((-12, -6, 6, 12)))
-        else:
-            rows.append({"product": rng.choice(PRODUCTS), "qty": rng.randint(6, 60)})
-        earliest = day
-    elif kind == "swap_crop":
-        rows = [(d, p) for d in out["days"] for p in d["plantings"]]
-        if len(rows) >= 2:
-            (a, p), (b, q) = rng.sample(rows, 2)
-            p["crop"], q["crop"] = q["crop"], p["crop"]
-            earliest = min(_phase_start(a["day"]), _phase_start(b["day"]))
     else:
-        rows = [(d, i, p) for d in out["days"] for i, p in enumerate(d["purchases"]) if p["item"] in ANIMALS]
-        if rows and rng.random() < .55:
-            spec, index, _row = rng.choice(rows)
-            spec["purchases"].pop(index)
-            earliest = spec["day"]
+        animal = rng.choice(ANIMALS)
+        rows = [(d, p) for d in out["days"] for p in d["purchases"] if p["item"] == animal]
+        if rows and rng.random() < .5:
+            day, row = rng.choice(rows)
+            day["purchases"].remove(row)
+            earliest = day["day"]
         else:
-            day = rng.randrange(0, 18)
-            out["days"][day]["purchases"].append({"item": rng.choice(ANIMALS), "qty": 1})
+            day = rng.randrange(18)
+            out["days"][day]["purchases"].append({"item": animal, "qty": 1})
             earliest = day
     return validate_schedule(out), earliest, kind
 
 
-def evaluate(schedule, incumbent=None, earliest=0):
-    controller = ReferenceExecutor(schedule, idle_fix=False)
+def evaluate(schedule, instance_path, fertilizer_drain, incumbent=None, earliest=0):
+    controller = ReferenceExecutor(schedule, idle_fix=True, fertilizer_drain=fertilizer_drain,
+                                   fertilizer_threshold=10, animal_sweep=False)
     if incumbent is None or earliest <= 0:
-        sim = Sim()
-        actions = []
-        snapshots = {}
-        curve = {}
+        sim = Sim(instance_path)
+        actions, snapshots, curve = [], {}, {}
     else:
         sim = incumbent["sim"]
         start = min(29, max(0, int(earliest)))
@@ -161,50 +222,49 @@ def evaluate(schedule, incumbent=None, earliest=0):
             "snapshots": snapshots, "sim": sim, "faults": controller.faults}
 
 
-def worker_main(worker, start_schedule, eval_limit, deadline, seed, result_queue):
+def worker_main(worker, start_schedule, eval_limit, deadline, started, seed, instance_path,
+                fertilizer_drain, temperature, top_k, result_queue):
     rng = random.Random(seed)
+    family = start_schedule.get("family", f"worker_{worker}")
     incumbent_schedule = validate_schedule(start_schedule)
-    incumbent = evaluate(incumbent_schedule)
-    champion_schedule, champion = incumbent_schedule, incumbent
-    accepted = 0
-    stale = 0
-    result_queue.put({"type": "best", "worker": worker, "bank": incumbent["bank"],
-                      "schedule": incumbent_schedule, "actions": incumbent["actions"],
-                      "curve": incumbent["curve"], "accepted_count": accepted})
+    incumbent = evaluate(incumbent_schedule, instance_path, fertilizer_drain)
+    leaders = [(incumbent["bank"], copy.deepcopy(incumbent_schedule), incumbent)]
+    accepted = stale = 0
+    result_queue.put({"type": "best", "worker": worker, "family": family,
+                      "bank": incumbent["bank"], "schedule": incumbent_schedule,
+                      "actions": incumbent["actions"], "curve": incumbent["curve"]})
     for index in range(eval_limit):
         if time.time() >= deadline:
             break
         candidate_schedule, earliest, mutation = mutate(incumbent_schedule, rng)
-        candidate = evaluate(candidate_schedule, incumbent, earliest)
-        better = candidate["faults"] == 0 and candidate["bank"] > incumbent["bank"]
-        if better:
+        candidate = evaluate(candidate_schedule, instance_path, fertilizer_drain, incumbent, earliest)
+        delta = candidate["bank"] - incumbent["bank"]
+        fraction = max(0.0, min(1.0, (time.time() - started) / max(1.0, deadline - started)))
+        temp = max(40.0, temperature * (1.0 - .85 * fraction))
+        take = candidate["faults"] == 0 and (delta > 0 or rng.random() < math.exp(delta / temp))
+        if take:
             incumbent_schedule, incumbent = candidate_schedule, candidate
-            if incumbent["bank"] > champion["bank"]:
-                champion_schedule, champion = incumbent_schedule, incumbent
             accepted += 1
-            stale = 0
+            stale = 0 if delta > 0 else stale + 1
+            leaders.append((incumbent["bank"], copy.deepcopy(incumbent_schedule), incumbent))
+            leaders = sorted(leaders, key=lambda row: row[0], reverse=True)[:top_k]
         else:
             stale += 1
         restarted = False
-        if stale >= 80:
-            if worker % 4 == 0:
-                incumbent_schedule, incumbent = champion_schedule, champion
-            else:
-                incumbent_schedule = random_start(start_schedule, rng)
-                incumbent = evaluate(incumbent_schedule)
+        if stale >= 60:
+            _score, incumbent_schedule, incumbent = rng.choice(leaders)
+            incumbent_schedule = copy.deepcopy(incumbent_schedule)
             stale = 0
             restarted = True
-        result_queue.put({
-            "type": "evaluation", "worker": worker, "index": index,
-            "hash": schedule_hash(candidate_schedule), "bank": candidate["bank"],
-            "day10_bank": candidate["curve"].get(10), "day20_bank": candidate["curve"].get(20),
-            "accepted": better, "mutation": mutation, "earliest_day": earliest,
-            "faults": candidate["faults"], "restarted": restarted,
-        })
-        if better:
-            result_queue.put({"type": "best", "worker": worker, "bank": incumbent["bank"],
-                              "schedule": incumbent_schedule, "actions": incumbent["actions"],
-                              "curve": incumbent["curve"], "accepted_count": accepted})
+        result_queue.put({"type": "evaluation", "worker": worker, "family": family,
+                          "index": index, "hash": schedule_hash(candidate_schedule),
+                          "bank": candidate["bank"], "accepted": take,
+                          "mutation": mutation, "earliest_day": earliest,
+                          "faults": candidate["faults"], "restarted": restarted})
+        if candidate["faults"] == 0 and candidate["bank"] >= leaders[0][0]:
+            result_queue.put({"type": "best", "worker": worker, "family": family,
+                              "bank": candidate["bank"], "schedule": candidate_schedule,
+                              "actions": candidate["actions"], "curve": candidate["curve"]})
     result_queue.put({"type": "done", "worker": worker, "accepted_count": accepted})
 
 
@@ -214,31 +274,49 @@ def main():
     parser.add_argument("--evaluations", type=int, default=2400)
     parser.add_argument("--minutes", type=float, default=90.0)
     parser.add_argument("--seed", type=int, default=3910)
+    parser.add_argument("--instance", type=Path)
+    parser.add_argument("--tag", help="write to search-<tag> instead of search")
+    parser.add_argument("--temperature", type=float, default=900.0)
+    parser.add_argument("--top-k", type=int, default=6)
     args = parser.parse_args()
     if not 1 <= args.workers <= 8:
         raise ValueError("workers must be between 1 and 8")
-    OUT.mkdir(parents=True, exist_ok=True)
+    if args.top_k < 1:
+        raise ValueError("top-k must be positive")
+    instance_path = args.instance or ROOT / "data" / "results" / "fixed-game" / str(args.seed) / "instance.json"
+    if not instance_path.exists() and args.seed == 3910:
+        instance_path = DEFAULT_INSTANCE
+    instance = load_instance(instance_path)
+    if int(instance["seed"]) != args.seed:
+        raise ValueError(f"instance seed {instance['seed']} does not match --seed {args.seed}")
+    fertilizer_drain = sum(int(row.get("drain", {}).get("FERTILIZER", 0))
+                           for row in instance.get("town", {}).get("daily_drain", []))
+    base_out = ROOT / "data" / "results" / "fixed-game" / str(args.seed)
+    out = base_out / (f"search-{args.tag}" if args.tag else "search")
+    out.mkdir(parents=True, exist_ok=True)
     dairy = json.loads((SCHEDULES / "dairy-v0.json").read_text(encoding="utf-8"))
     tempo = json.loads((SCHEDULES / "tempo.json").read_text(encoding="utf-8"))
-    prior_path = OUT / "best-schedule.json"
+    prior_path = ROOT / "data" / "results" / "fixed-game" / "3910" / "search" / "best-schedule.json"
     prior = json.loads(prior_path.read_text(encoding="utf-8")) if prior_path.exists() else dairy
-    random_a = random_start(dairy, random.Random(args.seed + 101))
-    random_b = random_start(tempo, random.Random(args.seed + 202))
-    starts = (prior, tempo, random_a, random_b)
+    starts = family_starts(prior, tempo)
     context = mp.get_context("spawn")
     result_queue = context.Queue()
     started = time.time()
     deadline = started + args.minutes * 60
     per_worker = (args.evaluations + args.workers - 1) // args.workers
     processes = [context.Process(target=worker_main,
-                                 args=(worker, starts[worker % 4], per_worker, deadline,
-                                       args.seed + 1009 * worker, result_queue))
+                                 args=(worker, starts[worker % len(starts)], per_worker,
+                                       deadline, started, args.seed + 1009 * worker,
+                                       str(instance_path), fertilizer_drain,
+                                       args.temperature, args.top_k, result_queue))
                  for worker in range(args.workers)]
     for process in processes:
         process.start()
-    done = evaluations = accepted = 0
+    done = evaluations = accepted = faults = 0
     best = None
-    log_path = OUT / "log.jsonl"
+    family_best = {}
+    best_events = []
+    log_path = out / "log.jsonl"
     with log_path.open("w", encoding="utf-8") as log:
         while done < len(processes):
             try:
@@ -247,31 +325,50 @@ def main():
                 if not any(process.is_alive() for process in processes):
                     break
                 continue
+            elapsed = time.time() - started
             if message["type"] == "done":
                 done += 1
                 accepted += message["accepted_count"]
             elif message["type"] == "evaluation":
                 evaluations += 1
-                message["elapsed_seconds"] = time.time() - started
+                faults += message["faults"]
+                message["elapsed_seconds"] = elapsed
                 log.write(json.dumps(message, separators=(",", ":")) + "\n")
-                log.flush()
-            elif best is None or message["bank"] > best["bank"]:
-                best = message
-                (OUT / "best-schedule.json").write_text(json.dumps(best["schedule"], indent=2) + "\n", encoding="utf-8")
-                (OUT / "best-actions.json").write_text(json.dumps(best["actions"], indent=2) + "\n", encoding="utf-8")
-                print(f"best ${best['bank']:,.0f} worker={best['worker']} evaluations={evaluations}", flush=True)
+            else:
+                family = message["family"]
+                if family not in family_best or message["bank"] > family_best[family]["bank"]:
+                    family_best[family] = message
+                if best is None or message["bank"] > best["bank"]:
+                    best = message
+                    best_events.append({"elapsed_seconds": elapsed, "bank": best["bank"],
+                                        "family": family, "evaluations": evaluations})
+                    (out / "best-schedule.json").write_text(json.dumps(best["schedule"], indent=2) + "\n", encoding="utf-8")
+                    (out / "best-actions.json").write_text(json.dumps(best["actions"], indent=2) + "\n", encoding="utf-8")
+                    print(f"best ${best['bank']:,.0f} family={family} evaluations={evaluations}", flush=True)
+            log.flush()
     for process in processes:
         process.join(timeout=10)
     if best is None:
-        raise RuntimeError("search produced no accepted schedule")
-    verified = replay(best["actions"])
-    summary = {"evaluations": evaluations, "accepted_moves": accepted,
-               "wall_seconds": time.time() - started, "workers": args.workers,
-               "best_bank": best["bank"], "replay_bank": verified,
-               "best_curve": best["curve"], "faults": 0}
+        raise RuntimeError("search produced no schedule")
+    verified = replay(best["actions"], instance_path)
     if verified != best["bank"]:
-        raise AssertionError(summary)
-    (OUT / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+        raise AssertionError({"search": best["bank"], "replay": verified})
+    wall = time.time() - started
+    milestones = {}
+    for minute in (5, 10, 20, 30):
+        eligible = [event for event in best_events if event["elapsed_seconds"] <= minute * 60]
+        milestones[str(minute)] = max((event["bank"] for event in eligible), default=None)
+    family_summary = {name: {"bank": row["bank"], "worker": row["worker"]}
+                      for name, row in sorted(family_best.items())}
+    summary = {"engine": "kaggle-environments 1.32.7", "seed": args.seed,
+               "instance": str(instance_path), "evaluations": evaluations,
+               "accepted_moves": accepted, "wall_seconds": wall, "workers": args.workers,
+               "evaluations_per_minute": evaluations / max(wall / 60, 1e-9),
+               "best_bank": best["bank"], "replay_bank": verified,
+               "winning_family": best["family"], "family_best": family_summary,
+               "best_so_far_minutes": milestones, "best_events": best_events,
+               "best_curve": best["curve"], "faults": faults}
+    (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(summary, indent=2))
 
 
