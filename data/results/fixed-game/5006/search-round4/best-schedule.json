@@ -1,0 +1,2810 @@
+{
+  "seed": 3910,
+  "days": [
+    {
+      "day": 0,
+      "hires": 5,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 28
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 25
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 23
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 3
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            8
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "crop": "MELON"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 1,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 21
+        },
+        {
+          "item": "MELON_SEED",
+          "qty": 16
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 2,
+      "hires": 6,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 3,
+      "hires": 7,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 4,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "TOMATO_SEED",
+          "qty": 27
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 17
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 5,
+      "hires": 5,
+      "purchases": [
+        {
+          "item": "LAND",
+          "qty": 1
+        },
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 29
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 6,
+      "hires": 5,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 7,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "COW",
+          "qty": 1
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 8,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 22
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 7
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 7
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 23
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 9,
+      "hires": 6,
+      "purchases": [
+        {
+          "item": "LAND",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 16
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 7
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 30
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 10,
+      "hires": 7,
+      "purchases": [
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "MELON_SEED",
+          "qty": 14
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 11,
+      "hires": 12,
+      "purchases": [
+        {
+          "item": "LAND",
+          "qty": 1
+        },
+        {
+          "item": "SHEEP",
+          "qty": 1
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 20
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            3
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 12,
+      "hires": 15,
+      "purchases": [
+        {
+          "item": "MELON_SEED",
+          "qty": 4
+        },
+        {
+          "item": "CARROT_SEED",
+          "qty": 8
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 3
+        },
+        {
+          "item": "MELON_SEED",
+          "qty": 14
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 13,
+      "hires": 15,
+      "purchases": [],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            7
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 14,
+      "hires": 15,
+      "purchases": [
+        {
+          "item": "LAND",
+          "qty": 1
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 7
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 16
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 12
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "WHEAT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 15,
+      "hires": 14,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 16,
+      "hires": 15,
+      "purchases": [
+        {
+          "item": "TOMATO_SEED",
+          "qty": 15
+        },
+        {
+          "item": "TOMATO_SEED",
+          "qty": 28
+        },
+        {
+          "item": "LAND",
+          "qty": 1
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "crop": "MELON"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 17,
+      "hires": 15,
+      "purchases": [
+        {
+          "item": "WHEAT_SEED",
+          "qty": 25
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            9,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            0,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            7,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            8
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            1,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 18,
+      "hires": 14,
+      "purchases": [
+        {
+          "item": "GOOSE",
+          "qty": 1
+        },
+        {
+          "item": "WHEAT_SEED",
+          "qty": 5
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            8,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 19,
+      "hires": 14,
+      "purchases": [
+        {
+          "item": "MELON_SEED",
+          "qty": 26
+        }
+      ],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            6
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            8,
+            6
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            5,
+            9
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "MELON"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 20,
+      "hires": 14,
+      "purchases": [],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 21,
+      "hires": 13,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 22,
+      "hires": 13,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 23,
+      "hires": 8,
+      "purchases": [],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            8,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            7
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            9
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            3,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            6
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            5,
+            4
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            8,
+            4
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            1,
+            6
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            6
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            7,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            5,
+            1
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            0
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            0
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            7,
+            1
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            1,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            8,
+            2
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            3
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            9,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            1,
+            7
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            4
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            1
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            2,
+            1
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            7,
+            4
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            2,
+            3
+          ],
+          "crop": "MELON"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            1
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            8,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            7,
+            9
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            4
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            7,
+            7
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            9,
+            4
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            8,
+            3
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            2,
+            7
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            7,
+            3
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            6,
+            7
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            0,
+            3
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            0,
+            6
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            3,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            4,
+            5
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            5,
+            3
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 24,
+      "hires": 7,
+      "purchases": [],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            5,
+            2
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            6,
+            3
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            6,
+            5
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            0,
+            9
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            2,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        },
+        {
+          "tile": [
+            4,
+            8
+          ],
+          "crop": "STRAWBERRY"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 25,
+      "hires": 8,
+      "purchases": [],
+      "builds": [],
+      "plantings": [
+        {
+          "tile": [
+            3,
+            4
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            2,
+            4
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            3,
+            3
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            4,
+            7
+          ],
+          "crop": "WHEAT"
+        },
+        {
+          "tile": [
+            8,
+            8
+          ],
+          "crop": "TOMATO"
+        },
+        {
+          "tile": [
+            1,
+            0
+          ],
+          "crop": "CARROT"
+        },
+        {
+          "tile": [
+            2,
+            6
+          ],
+          "crop": "CARROT"
+        }
+      ],
+      "sales": []
+    },
+    {
+      "day": 26,
+      "hires": 8,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 27,
+      "hires": 9,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 28,
+      "hires": 10,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    },
+    {
+      "day": 29,
+      "hires": 11,
+      "purchases": [],
+      "builds": [],
+      "plantings": [],
+      "sales": []
+    }
+  ],
+  "family": "brain_strawberry_line",
+  "sale_policies": {
+    "EGG": "sell_on_sight",
+    "TOMATO": "never"
+  },
+  "crop_lines": {
+    "source": "instance_town_drain",
+    "season_drain": {
+      "WHEAT": 624,
+      "CARROT": 480,
+      "TOMATO": 84,
+      "STRAWBERRY": 588,
+      "MELON": 30
+    },
+    "target_tiles": {
+      "WHEAT": 30,
+      "STRAWBERRY": 65,
+      "MELON": 5
+    },
+    "last_plant_day": {
+      "STRAWBERRY": 16,
+      "TOMATO": 14
+    },
+    "priority_products": [
+      "STRAWBERRY",
+      "TOMATO"
+    ]
+  }
+}

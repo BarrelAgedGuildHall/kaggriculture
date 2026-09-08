@@ -1,0 +1,212 @@
+{
+  "engine": "kaggle-environments 1.32.7",
+  "seed": 5006,
+  "instance": "C:\\Guildhall\\guilds\\kaggler\\workshop\\repo\\data\\results\\fixed-game\\5006\\instance.json",
+  "evaluations": 4129,
+  "accepted_moves": 1666,
+  "wall_seconds": 1503.8783593177795,
+  "workers": 6,
+  "evaluations_per_minute": 164.7340680614521,
+  "best_bank": 141562.0,
+  "replay_bank": 141562.0,
+  "winning_family": "brain_strawberry_line",
+  "family_best": {
+    "brain_strawberry_line": {
+      "bank": 141562.0,
+      "worker": 5
+    },
+    "goose_carrot_sheep": {
+      "bank": 63417.0,
+      "worker": 1
+    },
+    "mixed": {
+      "bank": 94349.0,
+      "worker": 3
+    },
+    "round2_incumbent": {
+      "bank": 94704.0,
+      "worker": 0
+    },
+    "strawberry_tomato_drain": {
+      "bank": 120382.0,
+      "worker": 4
+    },
+    "tomato_carrot_crop": {
+      "bank": 93130.0,
+      "worker": 2
+    }
+  },
+  "best_so_far_minutes": {
+    "5": 123658.0,
+    "10": 129557.0,
+    "20": 140782.0,
+    "30": 141562.0
+  },
+  "best_events": [
+    {
+      "elapsed_seconds": 2.3529701232910156,
+      "bank": 93886.0,
+      "family": "round2_incumbent",
+      "evaluations": 0
+    },
+    {
+      "elapsed_seconds": 3.703350782394409,
+      "bank": 117959.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2
+    },
+    {
+      "elapsed_seconds": 43.44251108169556,
+      "bank": 118020.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 112
+    },
+    {
+      "elapsed_seconds": 48.5849404335022,
+      "bank": 122184.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 125
+    },
+    {
+      "elapsed_seconds": 273.72738575935364,
+      "bank": 123264.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 722
+    },
+    {
+      "elapsed_seconds": 291.45247864723206,
+      "bank": 123658.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 772
+    },
+    {
+      "elapsed_seconds": 301.98535656929016,
+      "bank": 123934.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 805
+    },
+    {
+      "elapsed_seconds": 337.09652638435364,
+      "bank": 124080.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 894
+    },
+    {
+      "elapsed_seconds": 360.90423035621643,
+      "bank": 124521.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 956
+    },
+    {
+      "elapsed_seconds": 396.68945479393005,
+      "bank": 125695.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 1055
+    },
+    {
+      "elapsed_seconds": 446.6554026603699,
+      "bank": 126173.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 1188
+    },
+    {
+      "elapsed_seconds": 568.3675277233124,
+      "bank": 129557.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 1523
+    },
+    {
+      "elapsed_seconds": 745.656019449234,
+      "bank": 129852.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2025
+    },
+    {
+      "elapsed_seconds": 778.5616421699524,
+      "bank": 131051.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2115
+    },
+    {
+      "elapsed_seconds": 816.7581782341003,
+      "bank": 133136.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2218
+    },
+    {
+      "elapsed_seconds": 830.9431166648865,
+      "bank": 137177.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2255
+    },
+    {
+      "elapsed_seconds": 850.3026649951935,
+      "bank": 140381.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2312
+    },
+    {
+      "elapsed_seconds": 851.1074655056,
+      "bank": 140470.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2313
+    },
+    {
+      "elapsed_seconds": 856.5026578903198,
+      "bank": 140510.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2330
+    },
+    {
+      "elapsed_seconds": 989.7135305404663,
+      "bank": 140516.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2699
+    },
+    {
+      "elapsed_seconds": 1016.9765567779541,
+      "bank": 140782.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 2772
+    },
+    {
+      "elapsed_seconds": 1308.2156429290771,
+      "bank": 141562.0,
+      "family": "brain_strawberry_line",
+      "evaluations": 3581
+    }
+  ],
+  "best_curve": {
+    "0": 337.0,
+    "1": 245.0,
+    "2": 380.0,
+    "3": 244.0,
+    "4": 435.0,
+    "5": 626.0,
+    "6": 15.0,
+    "7": 476.0,
+    "8": 276.0,
+    "9": 127.0,
+    "10": 74.0,
+    "11": 5434.0,
+    "12": 5809.0,
+    "13": 5196.0,
+    "14": 6172.0,
+    "15": 8797.0,
+    "16": 9998.0,
+    "17": 11583.0,
+    "18": 21319.0,
+    "19": 31794.0,
+    "20": 35644.0,
+    "21": 39451.0,
+    "22": 48217.0,
+    "23": 55851.0,
+    "24": 64983.0,
+    "25": 74812.0,
+    "26": 86758.0,
+    "27": 97830.0,
+    "28": 114753.0,
+    "29": 141562.0
+  },
+  "faults": 0
+}

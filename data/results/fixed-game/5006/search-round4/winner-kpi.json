@@ -1,0 +1,46 @@
+{
+  "seed": 5006,
+  "agent": null,
+  "source_actions": "data\\results\\fixed-game\\5006\\search-round4\\best-actions.json",
+  "final_bank": 141562.0,
+  "status": "DONE",
+  "faults": 0,
+  "sold_units": {
+    "WHEAT": 172,
+    "CARROT": 15,
+    "TOMATO": 0,
+    "STRAWBERRY": 276,
+    "MELON": 142,
+    "EGG": 0,
+    "MILK": 145,
+    "WOOL": 97,
+    "FERTILIZER": 199
+  },
+  "realised_dollars": {
+    "WHEAT": 6271.0,
+    "CARROT": 938.0,
+    "TOMATO": 0.0,
+    "STRAWBERRY": 75934.0,
+    "MELON": 30048.0,
+    "EGG": 0.0,
+    "MILK": 34678.0,
+    "WOOL": 13151.0,
+    "FERTILIZER": 15983.0
+  },
+  "town_demand": {
+    "WHEAT": 624,
+    "CARROT": 480,
+    "TOMATO": 84,
+    "STRAWBERRY": 588,
+    "MELON": 30,
+    "EGG": 336,
+    "MILK": 264,
+    "WOOL": 30,
+    "FERTILIZER": 0
+  },
+  "timing_ms": {
+    "p99": 0.0,
+    "max": 0.0,
+    "mean": 0.0
+  }
+}

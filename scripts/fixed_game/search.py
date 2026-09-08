@@ -63,7 +63,96 @@ def _buy_each(schedule, animal, total, days):
         schedule["days"][days[index % len(days)]]["purchases"].append({"item": animal, "qty": 1})
 
 
-def family_starts(prior, tempo):
+def _season_drain(instance):
+    total = {product: 0 for product in PRODUCTS}
+    for row in instance.get("town", {}).get("daily_drain", []):
+        for product in PRODUCTS:
+            total[product] += int(row.get("drain", {}).get(product, 0))
+    return total
+
+
+def _crop_markers(mix):
+    """Encode target crop proportions as non-overlapping shed-relative blocks."""
+    rows, offset = [], 0
+    for crop in ("STRAWBERRY", "TOMATO", "WHEAT", "CARROT", "MELON"):
+        count = max(0, int(mix.get(crop, 0)))
+        rows.extend(_tile_block(crop, count, near=True, offset=offset))
+        offset += count
+    return rows
+
+
+def _drain_crop_start(tempo, instance, *, strawberry_only=False):
+    drain = _season_drain(instance)
+    # A tile can complete two ongoing-crop cohorts in-season (the second is a
+    # partial late cohort).  Translate season demand into comparable tile load,
+    # then normalize to a 70-tile crop budget, leaving room for a small herd.
+    capacity = {"STRAWBERRY": 12, "TOMATO": 16, "WHEAT": 42,
+                "CARROT": 36, "MELON": 6}
+    load = {crop: drain[crop] / capacity[crop] for crop in capacity}
+    if strawberry_only:
+        load["TOMATO"] = 0
+    scale = 70 / max(1.0, sum(load.values()))
+    mix = {crop: max(1 if drain[crop] else 0, round(load[crop] * scale))
+           for crop in capacity}
+    family = "strawberry_drain" if strawberry_only else "strawberry_tomato_drain"
+    out = _clear_plan(tempo, family)
+    out["crop_lines"] = {
+        "source": "instance_town_drain",
+        "season_drain": {crop: drain[crop] for crop in capacity},
+        "target_tiles": mix,
+        "last_plant_day": {"STRAWBERRY": 19, "TOMATO": 21},
+        "priority_products": ["STRAWBERRY"] + ([] if strawberry_only else ["TOMATO"]),
+    }
+    for day in out["days"]:
+        index = day["day"]
+        day["hires"] = 8 if index < 8 else 12 if index < 24 else 10
+    # Re-state the drain-sized blocks at each router phase boundary.  The router
+    # interprets these markers as phase proportions and plants only legal tiles.
+    for day in (0, 10, 17, 23):
+        phase_mix = dict(mix)
+        if day == 23:
+            phase_mix["STRAWBERRY"] = phase_mix["TOMATO"] = 0
+        out["days"][day]["plantings"] = _crop_markers(phase_mix)
+    out["days"][0]["purchases"].append({"item": "LAND", "qty": 1})
+    out["days"][8]["purchases"].append({"item": "LAND", "qty": 1})
+    out["days"][14]["purchases"].append({"item": "LAND", "qty": 1})
+    # Six animals retain fertilizer generation and non-crop revenue without
+    # consuming the labour/tile majority needed by the high-drain crop line.
+    _buy_each(out, "COW", 3, (2, 4, 6))
+    _buy_each(out, "SHEEP", 3, (3, 5, 7))
+    return validate_schedule(out)
+
+
+def _brain_strawberry_start(tempo, instance):
+    """Schedule-space analogue of the raw strawberry control's economic plan."""
+    drain = _season_drain(instance)
+    out = _clear_plan(tempo, "brain_strawberry_line")
+    out["crop_lines"] = {
+        "source": "instance_town_drain",
+        "season_drain": {crop: drain[crop] for crop in CROPS},
+        "target_tiles": {"WHEAT": 30, "STRAWBERRY": 65, "MELON": 5},
+        "last_plant_day": {"STRAWBERRY": 16, "TOMATO": 14},
+        "priority_products": ["STRAWBERRY", "TOMATO"],
+    }
+    profiles = {
+        0: {"WHEAT": 18, "MELON": 5, "STRAWBERRY": 2},
+        10: {"WHEAT": 30, "STRAWBERRY": 65, "MELON": 5},
+        17: {"WHEAT": 72, "CARROT": 28},
+        23: {"WHEAT": 72, "CARROT": 28},
+    }
+    for day, mix in profiles.items():
+        out["days"][day]["plantings"] = _crop_markers(mix)
+    for day in out["days"]:
+        index = day["day"]
+        day["hires"] = 4 if index < 7 else 5 if index < 10 else 6 if index == 10 else 10 if index == 11 else 12
+    for day in (5, 9, 11):
+        out["days"][day]["purchases"].append({"item": "LAND", "qty": 1})
+    _buy_each(out, "COW", 7, (0, 1, 3, 5, 5, 5, 7))
+    _buy_each(out, "SHEEP", 11, (0, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11))
+    return validate_schedule(out)
+
+
+def family_starts(prior, tempo, instance=None):
     incumbent = validate_schedule(prior)
     incumbent["family"] = "round2_incumbent"
 
@@ -98,7 +187,11 @@ def family_starts(prior, tempo):
     _buy_each(mixed, "GOOSE", 10, list(range(8)))
     _buy_each(mixed, "SHEEP", 12, list(range(1, 10)))
     _buy_each(mixed, "COW", 4, list(range(3, 10)))
-    return [validate_schedule(x) for x in (incumbent, bound, crop, mixed)]
+    starts = [validate_schedule(x) for x in (incumbent, bound, crop, mixed)]
+    if instance is not None:
+        starts += [_drain_crop_start(tempo, instance),
+                   _brain_strawberry_start(tempo, instance)]
+    return starts
 
 
 def _block(schedule, rng):
@@ -298,9 +391,13 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     dairy = json.loads((SCHEDULES / "dairy-v0.json").read_text(encoding="utf-8"))
     tempo = json.loads((SCHEDULES / "tempo.json").read_text(encoding="utf-8"))
-    prior_path = args.start_schedule or ROOT / "data" / "results" / "fixed-game" / "3910" / "search" / "best-schedule.json"
+    seed_dir = ROOT / "data" / "results" / "fixed-game" / str(args.seed)
+    seed_candidates = [seed_dir / "search-round3-generalization" / "best-schedule.json",
+                       seed_dir / "search" / "best-schedule.json"]
+    prior_path = args.start_schedule or next((path for path in seed_candidates if path.exists()),
+                      ROOT / "data" / "results" / "fixed-game" / "3910" / "search" / "best-schedule.json")
     prior = json.loads(prior_path.read_text(encoding="utf-8")) if prior_path.exists() else dairy
-    starts = family_starts(prior, tempo)
+    starts = family_starts(prior, tempo, instance)
     context = mp.get_context("spawn")
     result_queue = context.Queue()
     started = time.time()

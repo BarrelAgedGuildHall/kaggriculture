@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import importlib.util
 import json
 import math
 import statistics
@@ -38,6 +39,19 @@ def _load_reference_router():
     )
     module = types.ModuleType("fixed_game_exec_b_7baa291")
     exec(compile(source, f"git:{REFERENCE_ROUTER_COMMIT}:bots/exec_b/main.py", "exec"), module.__dict__)
+    return module
+
+
+def _load_crop_router():
+    """Load the team's own strawberry executor for crop-line schedules."""
+    path = ROOT / "bots" / "brain_strawberry" / "main.py"
+    name = f"fixed_game_brain_strawberry_{time.perf_counter_ns()}"
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load crop router: {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
     return module
 
 
@@ -479,7 +493,8 @@ class ReferenceExecutor(Executor):
                  animal_sweep: bool = False, layout_mode: str = "scheduled",
                  travel_router: str = "baseline"):
         super().__init__(schedule)
-        self.router = _load_reference_router()
+        self.crop_line_mode = bool(self.schedule.get("crop_lines"))
+        self.router = _load_crop_router() if self.crop_line_mode else _load_reference_router()
         self.idle_fix = idle_fix
         self.fertilizer_drain = int(fertilizer_drain)
         self.fertilizer_threshold = int(fertilizer_threshold)
@@ -496,7 +511,63 @@ class ReferenceExecutor(Executor):
         self.positive_job_idle = defaultdict(int)
         self._sales_issued = defaultdict(Counter)
         self._scheduled_buys_issued = set()
-        self._configure_plan()
+        if self.crop_line_mode:
+            self._configure_crop_router()
+        else:
+            self._configure_plan()
+
+    def _configure_crop_router(self):
+        phase_days = {
+            "opening": range(0, 10),
+            "days_10_16": range(10, 17),
+            "days_17_22": range(17, 23),
+            "days_23_26": range(23, 30),
+        }
+        phase_mix = {}
+        for phase, days in phase_days.items():
+            counts = Counter(
+                planting["crop"] for day in days for planting in self.days[day]["plantings"]
+            )
+            phase_mix[phase] = counts
+        animal_targets = {animal: [] for animal in self.router.ANIMALS}
+        cumulative = Counter()
+        land_targets = []
+        land_count = 1
+        for day in range(30):
+            for purchase in self.days[day]["purchases"]:
+                item = purchase.get("item")
+                qty = max(0, int(purchase.get("qty", 0)))
+                if item in animal_targets:
+                    cumulative[item] += qty
+                elif item == "LAND":
+                    land_count = min(4, land_count + qty)
+            for animal in animal_targets:
+                animal_targets[animal].append(cumulative[animal])
+            land_targets.append(land_count)
+        days = self.days
+        router = self.router
+
+        class FixedCropSeason:
+            @staticmethod
+            def plan_day(view):
+                phase = "opening" if view.day < 10 else "days_10_16" if view.day < 17 else "days_17_22" if view.day < 23 else "days_23_26"
+                weights = phase_mix[phase]
+                if not weights:
+                    weights = Counter({"WHEAT": 1})
+                animals = {animal: animal_targets[animal][view.day] for animal in animal_targets}
+                return router.DayPlan(
+                    phase, days[view.day]["hires"], land_targets[view.day],
+                    tuple(sorted(weights.items())), tuple(sorted(animals.items())),
+                    tuple(sorted(router.RESERVATION.items())),
+                    view.day >= router.config["liquidate_day"], router.config["money_reserve"],
+                )
+
+        self.router.register_module("season", "fixed_crop_line", FixedCropSeason)
+        self.router.config["modules"]["season"] = "fixed_crop_line"
+        self.router.config["hires_per_day"] = max(day["hires"] for day in self.days)
+        self.router.HIRES_PER_DAY = self.router.config["hires_per_day"]
+        self.router.MAX_ANIMALS = max(sum(animal_targets[a][d] for a in animal_targets) for d in range(30))
+        self.router.config["max_animals"] = self.router.MAX_ANIMALS
 
     def _configure_plan(self):
         planned_crop_tiles = defaultdict(list)
@@ -664,8 +735,9 @@ class ReferenceExecutor(Executor):
             self._current_board = obs["farms"][0]["tiles"]
             self._current_fertilizer_price = int(
                 obs.get("market", {}).get("prices", {}).get("FERTILIZER", 0) or 0)
-            phase = min(5, day // 5)
-            self.router.PLAN["hands_by_5day"][phase] = self.days[day]["hires"]
+            if not self.crop_line_mode:
+                phase = min(5, day // 5)
+                self.router.PLAN["hands_by_5day"][phase] = self.days[day]["hires"]
             action = self.router.agent(obs)
 
             if int(obs.get("hour", 0)) == 0 and day not in self._scheduled_buys_issued:
