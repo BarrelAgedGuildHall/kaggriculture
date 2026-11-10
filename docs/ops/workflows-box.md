@@ -2,7 +2,7 @@
 
 Owner split: **Ops** owns the node environment (this doc); **Engineer** owns the Pit hub
 service itself (`arena/`, the web UI, `tailscale serve`). Reach the node via `mcp:nodes`
-(`run_remote node="workflows-box"`) or `ssh barrelaged@barrelagedworkflows-1.tail547ecd.ts.net`.
+(`run_remote node="workflows-box"`) or `ssh user@workflows-box.example`.
 
 ## Hardware / OS (probed 2026-08-19)
 
@@ -12,8 +12,8 @@ service itself (`arena/`, the web UI, `tailscale serve`). Reach the node via `mc
 - Disk: `/` (nvme0n1p2) 1.8 TiB, 839 GiB free as of 2026-08-19 — plenty of headroom, but this
   disk is shared with ComfyUI (`~/comfyui` = 181 GB) and other projects; do not assume it is
   dedicated to Kaggler
-- Tailscale 1.102.2, node reachable at `barrelagedworkflows-1.tail547ecd.ts.net`
-  (100.127.53.45); a second, stale tailnet entry `barrelagedworkflows` (100.105.195.40) has
+- Tailscale 1.102.2, node reachable at `workflows-box.example`
+  (100.x.y.z); a second, stale tailnet entry `workflows-box-old` (100.x.y.z) has
   been offline 43+ days — ignore it, use the `-1` hostname
 
 ## What Ops set up (2026-08-19)
@@ -67,7 +67,7 @@ gate and it has comfortable headroom either way).
 ## Running Kaggler jobs here
 
 ```bash
-ssh barrelaged@barrelagedworkflows-1.tail547ecd.ts.net   # or run_remote via mcp:nodes
+ssh user@workflows-box.example   # or run_remote via mcp:nodes
 export PATH="$HOME/.local/bin:$PATH"
 cd ~/kaggler/repo
 git pull                              # keep the node's clone current before a job

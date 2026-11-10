@@ -66,7 +66,7 @@ path (API, dashboard button, CLI, an import of `arena.hub`) refuses with the lea
 uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gate battery" --ttl 3600
 # ... from a desktop, against the hub over the tailnet:
 uv run python -m arena lease acquire --owner modeler --purpose "exp-N1 traces" \
-    --hub http://barrelagedworkflows-1.tail547ecd.ts.net:8765
+    --hub http://workflows-box.example:8765
 uv run python -m arena lease list
 uv run python -m arena lease renew  <lease-id> --ttl 3600     # nothing auto-renews
 uv run python -m arena lease release <lease-id> --resume      # --resume restarts the ladder
@@ -215,12 +215,12 @@ pkill -f "python -m arena serve"           # stop
 
 Plain HTTP works with no extra setup because the service binds 0.0.0.0:
 
-> **http://barrelagedworkflows-1.tail547ecd.ts.net:8765/**
+> **http://workflows-box.example:8765/**
 
 For HTTPS via `tailscale serve` the node needs a one-time root command (our SSH user has no
 non-interactive sudo): `sudo tailscale set --operator=barrelaged`, then
 `tailscale serve --bg --https=8765 http://127.0.0.1:8765` →
-`https://barrelagedworkflows-1.tail547ecd.ts.net:8765/`. Do **not** reconfigure the desktop's
+`https://workflows-box.example:8765/`. Do **not** reconfigure the desktop's
 tailscale serve (it carries the Guildhall share).
 
 ### Updating the code on the node

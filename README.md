@@ -125,7 +125,7 @@ uv run python -m arena list
 uv run python -m arena match v0 random starter --mode screen   # 64 eps per opponent, seeds 0..31 x both seats
 uv run python -m arena match v1 v0 --mode confirm              # 400 eps, held-out seeds 1000..1199
 uv run python -m arena match --mode round-robin --n 16         # every registered agent vs every other
-uv run python -m arena match v1 v0 --mode confirm --node barrelaged@barrelagedworkflows-1.tail547ecd.ts.net
+uv run python -m arena match v1 v0 --mode confirm --node user@workflows-box.example
 uv run python -m arena serve                                  # dashboard + JSON API on http://127.0.0.1:8765
 uv run python -m arena serve --hub --host 0.0.0.0             # + the continuous ladder (the hub service; see docs/pit.md)
 uv run python -m arena lease acquire --owner engineer-b --purpose "expB-303 gates" --ttl 3600

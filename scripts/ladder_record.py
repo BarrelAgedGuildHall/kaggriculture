@@ -43,7 +43,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _engine import DATA_DIR  # noqa: E402
 from episode_index import post, rows_from_episodes, write_csv  # noqa: E402
 
-HUB = "http://barrelagedworkflows-1.tail547ecd.ts.net:8765"
+HUB = "http://workflows-box.example:8765"
 
 # Our Kaggle submissions and the Pit agent each one was built from. Maintained by hand
 # alongside `workshop/notes/submissions.md`: add a row when the CEO submits. `None` means the
